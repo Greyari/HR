@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'nama',
         'email',
         'password',
+        'peran_id',
+        'jabatan_id',
+        'departemen_id',
+        'status_pernikahan_id',
     ];
 
     /**
@@ -45,4 +49,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    //relasi ke tabel peran
+    public function peran()
+    {
+        return $this->belongsTo(Peran::class, 'peran_id');
+    }
+
+    //relasi ke tabel jabatan
+    public function jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'jabatan_id');
+    }
+
+    //relasi ke tabel departemen
+    public function departemen()
+    {
+        return $this->belongsTo(Departemen::class, 'departemen_id');
+    }
+
+    //relasi ke tabel status pernikahan
+    public function statusPernikahan()
+    {
+        return $this->belongsTo(StatusPernikahan::class, 'status_pernikahan_id');
+    }
+
 }
