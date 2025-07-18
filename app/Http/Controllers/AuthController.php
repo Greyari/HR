@@ -10,7 +10,7 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login', [
+        return view('pages.auth.login', [
             'title' => 'Login'
         ]);
     }
