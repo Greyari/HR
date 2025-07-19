@@ -6,6 +6,8 @@
     <title>{{ $title }}</title>
     @vite('resources/css/app.css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -72,7 +74,7 @@
         </div>
 
         <!-- Main Content -->
-        <main class="flex-1 lg:ml-44 overflow-y-auto p-4 bg-gray-50 min-h-screen">
+        <main class="flex-1 lg:ml-44 overflow-y-auto bg-gray-50 min-h-screen">
             @yield('content')
         </main>
 
