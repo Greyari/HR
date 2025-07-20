@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class DepartemenController
 {
+    // Menampilkan halaman
     public function show ()
     {
         $departemen = Departemen::all();
@@ -17,6 +18,7 @@ class DepartemenController
         ]);
     }
 
+    // List tabel departemen
     public function store(Request $request)
     {
         $request->validate([
@@ -28,13 +30,6 @@ class DepartemenController
         ]);
 
         return redirect()->back()->with('success', 'Departemen berhasil ditambahkan.');
-    }
-
-    // Tampilkan form edit
-    public function edit($id)
-    {
-        $departemen = Departemen::findOrFail($id);
-        return view('pages.admin.edit_departemen', compact('departemen'));
     }
 
     // Proses update data
@@ -49,10 +44,10 @@ class DepartemenController
             'nama_departemen' => $request->nama_departemen,
         ]);
 
-        return redirect()->route('departemen.index')->with('success', 'Departemen berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Departemen berhasil diperbarui.');
     }
 
-    //Hapus
+    // Hapus data
     public function destroy($id)
     {
         $departemen = Departemen::findOrFail($id);
@@ -61,4 +56,16 @@ class DepartemenController
         return redirect()->back()->with('success', 'Departemen berhasil dihapus.');
     }
 
+    // Cari data
+    public function search(Request $request)
+    {
+        $keyword = $request->input('q');
+
+        $departemen = Departemen::where('nama_departemen', 'like', "%{$keyword}%")->get();
+
+        return response()->json([
+            'html' => view('components.admin.departemen.tabel-data-hasil-cari-departemen', compact('departemen'))->render()
+        ]);
+
+    }
 }

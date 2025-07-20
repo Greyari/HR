@@ -15,20 +15,12 @@
 
             <!-- Kartu Manajemen Departemen -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-
                 <!-- Header Kartu: Pencarian & Tambah -->
                 <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">
                         <h2 class="text-xl font-semibold text-gray-800">Daftar Departemen</h2>
                         <p class="text-gray-500 mt-1">Total {{ count($departemen) }} departemen terdaftar</p>
                     </div>
-                    {{-- tes notif --}}
-                    @if(session('success'))
-                        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition
-                            class="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-md text-sm relative">
-                            {{ session('success') }}
-                        </div>
-                    @endif
 
                     <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                         <!-- Input Pencarian -->
@@ -38,13 +30,22 @@
                                     <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            <input type="text" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-full bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Cari departemen...">
+
+                            <input
+                                id="searchInput"
+                                type="text"
+                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-full bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Cari departemen..."
+                            >
                         </div>
 
                         <!-- Tombol Tambah -->
-                        @include('components.admin.modal-tambah-departemen')
+                        @include('components.admin.departemen.modal-tambah-departemen')
                     </div>
                 </div>
+
+                <!--Component notifikasi-->
+                @include ('components.admin.notif-succes-error')
 
                 <!-- Tabel Departemen -->
                 <div class="p-6">
@@ -57,50 +58,9 @@
                                     <th class="px-4 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-100">
-                                @forelse($departemen as $index => $item)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-2 py-3 text-center">{{ $index + 1 }}</td>
-                                        <td class="px-4 py-3 text-left">{{ $item->nama_departemen }}</td>
-                                        <td class="px-4 py-3">
-                                            <div class="flex justify-center gap-3">
-                                                <!-- Tombol Edit -->
-                                                <div class="relative group inline-block">
-                                                    <button class="p-2 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 transition-all shadow-md">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                        </svg>
-                                                    </button>
-                                                    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-yellow-600 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                        Edit
-                                                    </div>
-                                                </div>
-
-                                                <!-- Tombol Hapus -->
-                                                <div class="relative group inline-block">
-                                                    <form action="{{ route('departemen.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus departemen ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button class="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all shadow-md">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                            </svg>
-                                                        </button>
-                                                        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-red-600 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                            Hapus
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center py-4 text-gray-500">Belum ada departemen.</td>
-                                    </tr>
-                                @endforelse
+                            <tbody id="tabelDepartemen" class="bg-white divide-y divide-gray-100">
+                                @include('components.admin.departemen.tabel-data-hasil-cari-departemen', ['departemen' => $departemen])
                             </tbody>
-
                         </table>
                     </div>
                 </div>
@@ -152,9 +112,26 @@
                         </div>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const keyword = this.value;
+
+            fetch(`/admin/departemen/search?q=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tabelDepartemen').innerHTML = data.html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+    @endpush
+
 
 @endsection

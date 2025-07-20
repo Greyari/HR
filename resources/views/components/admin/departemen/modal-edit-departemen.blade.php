@@ -1,12 +1,22 @@
-<div x-data="{ showModal: false }">
-    <button
-        @click="showModal = true"
-        class="flex items-center justify-center w-full gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full shadow-md transition-all hover:shadow-lg transform hover:scale-95">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+@props(['departemen'])
+
+@php
+    $id = $departemen->id;
+    $nama = $departemen->nama_departemen;
+@endphp
+
+<div x-data="{ showModal: false }" @keydown.escape.window="showModal = false">
+    <!-- Tombol Edit -->
+    <button @click="showModal = true" class="p-2 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 transition-all shadow-md" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
         </svg>
-        Tambah Departemen
     </button>
+
+    <!-- Tooltip edit-->
+    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-yellow-600 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        Edit
+    </div>
 
     <!-- Modal Overlay -->
     <div
@@ -32,14 +42,21 @@
             x-transition:leave-end="opacity-0 scale-90"
             class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative z-50"
         >
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Tambah Departemen</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Edit Departemen</h2>
 
-            <form method="POST" action="{{ route('departemen.store') }}">
+            <form action="{{ route('departemen.update', $id) }}" method="POST">
                 @csrf
+                @method('PUT')
+
                 <div class="mb-4">
-                    <label for="nama_departemen" class="block text-sm font-medium text-gray-700 mb-1">Nama Departemen</label>
-                    <input type="text" id="nama_departemen" name="nama_departemen" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <label for="nama_departemen_{{ $id }}" class="block text-sm font-medium text-gray-700 mb-1">Nama Departemen</label>
+                    <input type="text"
+                        id="nama_departemen_{{ $id }}"
+                        name="nama_departemen"
+                        value="{{ $nama }}"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
@@ -52,11 +69,10 @@
                     <button
                         type="submit"
                         class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
-                        Simpan
+                        Update
                     </button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
