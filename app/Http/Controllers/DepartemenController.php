@@ -8,13 +8,14 @@ use Illuminate\Http\Request;
 class DepartemenController
 {
     // Menampilkan halaman
-    public function show ()
+    public function show()
     {
-        $departemen = Departemen::all();
+        $departemen = Departemen::paginate(5);
+        $departemen->setPath('/admin/departemen/search');
 
         return view('pages.admin.departemen', [
-            'title'=> 'departemen',
-            'departemen'=> $departemen
+            'title' => 'departemen',
+            'departemen' => $departemen
         ]);
     }
 
@@ -59,13 +60,26 @@ class DepartemenController
     // Cari data
     public function search(Request $request)
     {
-        $keyword = $request->input('q');
+        $keyword = $request->query('q');
 
-        $departemen = Departemen::where('nama_departemen', 'like', "%{$keyword}%")->get();
+        $departemen = Departemen::when($keyword, function ($query, $keyword) {
+            $query->where('nama_departemen', 'like', "%$keyword%");
+        })->paginate(5);
+
+        $departemen->setPath('/admin/departemen/search');
+
+        $html = view('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
+        $pagination = $departemen
+            ->appends(['q' => $keyword])
+            ->links('components.admin.departemen.pagination-departemen')
+            ->render();
 
         return response()->json([
-            'html' => view('components.admin.departemen.tabel-data-hasil-cari-departemen', compact('departemen'))->render()
+            'html' => $html,
+            'pagination' => $pagination,
+            'total' => $departemen->total(),
         ]);
-
     }
+
+
 }

@@ -19,7 +19,7 @@
                 <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">
                         <h2 class="text-xl font-semibold text-gray-800">Daftar Departemen</h2>
-                        <p class="text-gray-500 mt-1">Total {{ count($departemen) }} departemen terdaftar</p>
+                        <p class="text-gray-500 mt-1">Total <span id="totalDepartemen">{{ $departemen->total() }}</span> departemen terdaftar</p>
                     </div>
 
                     <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
@@ -32,9 +32,7 @@
                             </div>
 
                             <input
-                                id="searchInput"
-                                type="text"
-                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-full bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                id="searchInput" type="text" class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-full bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Cari departemen..."
                             >
                         </div>
@@ -58,80 +56,26 @@
                                     <th class="px-4 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">Aksi</th>
                                 </tr>
                             </thead>
+
                             <tbody id="tabelDepartemen" class="bg-white divide-y divide-gray-100">
-                                @include('components.admin.departemen.tabel-data-hasil-cari-departemen', ['departemen' => $departemen])
+                                @include('components.admin.departemen.body-tabel-departemen')
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Navigasi Tabel -->
-                <div class="px-6 py-4 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between">
-                    <div class="text-sm text-gray-500 mb-4 md:mb-0">
-                        Menampilkan <span class="font-semibold text-gray-800">1</span> hingga <span class="font-semibold text-gray-800">3</span> dari <span class="font-semibold text-gray-800">3</span> hasil
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
+                    <div id="paginationWrapper">
+                        {!! $departemen->links('components.admin.departemen.pagination-departemen') !!}
                     </div>
-
-                    <nav class="flex items-center gap-1">
-                        <!-- Tombol Sebelumnya -->
-                        <div class="relative group inline-block">
-                            <button class="px-3 py-2 rounded-full bg-white text-gray-500 border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <!-- Tooltip -->
-                            <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-gray-500 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                Sebelumnya
-                            </div>
-                        </div>
-
-                        <!-- Nomor Halaman -->
-                        <button class="w-9 h-9 flex items-center justify-center rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
-                            1
-                        </button>
-                        <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white text-gray-700 border hover:bg-gray-100">
-                            2
-                        </button>
-                        <button class="w-9 h-9 flex items-center justify-center rounded-full bg-white text-gray-700 border hover:bg-gray-100">
-                            3
-                        </button>
-
-                        <!-- Tombol Berikutnya -->
-                        <div class="relative group inline-block">
-                            <button class="px-3 py-2 rounded-full bg-white text-gray-500 border hover:bg-gray-100">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            <!-- Tooltip -->
-                            <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-gray-500 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                Selanjutnya
-                            </div>
-                        </div>
-                    </nav>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Ajax untuk fitur cari -->
     @push('scripts')
-    <script>
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const keyword = this.value;
-
-            fetch(`/admin/departemen/search?q=${encodeURIComponent(keyword)}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('tabelDepartemen').innerHTML = data.html;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        });
-    </script>
+        <script src="{{ asset('js/admin/admin-departemen.js') }}"></script>
     @endpush
-
 
 @endsection
