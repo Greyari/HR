@@ -27,7 +27,7 @@
                 <h1 class="text-xl font-bold">Admin Panel</h1>
             </div>
 
-            <nav class="flex-1 p-2 overflow-y-auto">
+            <nav class="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500">
                 <ul class="space-y-1">
                     <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-tachometer-alt w-6 text-center"></i><span class="ml-3">Dashboard</span></a></li>
                     <li><a href="#" class="flex items-center p-2 rounded bg-gray-700"><i class="fas fa-building w-6 text-center"></i><span class="ml-3">Departemen</span></a></li>
@@ -57,12 +57,20 @@
                 <button id="close-sidebar"><i class="fas fa-times text-gray-300 hover:text-gray-500 hover:bg-slate-200 rounded-sm pr-1 py-1 px-1 duration-100"></i></button>
             </div>
 
-            <nav class="flex-1 p-2 overflow-y-auto">
+            <nav class="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500">
                 <ul class="space-y-1">
                     <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-tachometer-alt w-6 text-center"></i><span class="ml-3">Dashboard</span></a></li>
                     <li><a href="#" class="flex items-center p-2 rounded bg-gray-700"><i class="fas fa-building w-6 text-center"></i><span class="ml-3">Departemen</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-car w-6 text-center"></i><span class="ml-3">Peran</span></a></li>
                     <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-users w-6 text-center"></i><span class="ml-3">Karyawan</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-moon w-6 text-center"></i><span class="ml-3">Hak Akses</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-person w-6 text-center"></i><span class="ml-3">Absensi</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-book w-6 text-center"></i><span class="ml-3">Cuti</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-tv w-6 text-center"></i><span class="ml-3">Lembur</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-home w-6 text-center"></i><span class="ml-3">Tugas</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-dollar w-6 text-center"></i><span class="ml-3">Penggajian</span></a></li>
                     <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-cog w-6 text-center"></i><span class="ml-3">Pengaturan</span></a></li>
+                    <li><a href="#" class="flex items-center p-2 rounded hover:bg-gray-700"><i class="fas fa-list w-6 text-center"></i><span class="ml-3">Log Aktivitas</span></a></li>
                 </ul>
             </nav>
 
