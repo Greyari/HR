@@ -1,4 +1,9 @@
-<div x-data="{ showModal: false }" @keydown.escape.window="showModal = false">
+<div id="modalTambahDepartemen"
+     x-data="{ showModal: false }"
+     @tutup-modal.window="showModal = false"
+     x-ref="modalContainer"
+     @keydown.escape.window="showModal = false">
+
     <button
         @click="showModal = true"
         class="flex items-center justify-center w-full gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-full shadow-md transition-all hover:shadow-lg transform hover:scale-95">
@@ -34,11 +39,11 @@
         >
             <h2 class="text-xl font-bold text-gray-800 mb-4">Tambah Departemen</h2>
 
-            <form method="POST" action="{{ route('departemen.store') }}">
+            <form id="form-tambah-departemen">
                 @csrf
                 <div class="mb-4">
                     <label for="nama_departemen" class="block text-sm font-medium text-gray-700 mb-1">Nama Departemen</label>
-                    <input type="text" id="nama_departemen" name="nama_departemen" required
+                    <input type="text" id="nama_departemen_input" name="nama_departemen" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
 
@@ -59,3 +64,81 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Ambil form tambah departemen berdasarkan ID
+    const form = document.querySelector('#form-tambah-departemen');
+
+    if (form) {
+        // Saat form disubmit
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Hindari reload bawaan form
+
+            // Ambil data dari form
+            const formData = new FormData(form);
+
+            // Ambil halaman saat ini dari URL (agar bisa kembali ke halaman tersebut)
+            const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+            formData.append('page', currentPage); // Kirim halaman saat ini ke server
+
+            // Kirim request AJAX POST ke server
+            fetch('/admin/departemen', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                // Jika response bukan 2xx, lempar error JSON
+                if (!res.ok) {
+                    return res.json().then(err => { throw err });
+                }
+                return res.json(); // Parse response sebagai JSON
+            })
+            .then(data => {
+                // Ganti isi tabel dan pagination dengan data terbaru
+                document.getElementById('tabelDepartemen').innerHTML = data.table;
+                document.getElementById('paginationWrapper').innerHTML = data.pagination;
+                document.getElementById('totalDepartemen').textContent = data.total;
+
+                // Inisialisasi ulang komponen Alpine di dalam tabel
+                Alpine.initTree(document.getElementById('tabelDepartemen'));
+
+                // Jika fungsi edit ada, panggil ulang (penting kalau ada tombol edit baru)
+                if (typeof bindEditButtons === 'function') {
+                    bindEditButtons();
+                }
+
+                // Re-bind pagination agar tetap bisa diklik
+                bindPaginationLinks();
+
+                // Reset form agar kosong lagi setelah submit
+                form.reset();
+
+                // Kirim event ke Alpine (untuk menutup modal)
+                window.dispatchEvent(new CustomEvent('tutup-modal'));
+
+                // Tampilkan notifikasi sukses
+                setTimeout(() => {
+                    alert('Departemen berhasil ditambahkan!');
+                }, 400);
+            })
+            .catch(err => {
+                // Tangani jika error dari server
+                console.error(err);
+                alert('Gagal menambah departemen');
+            });
+
+            // Scroll otomatis ke baris terakhir setelah submit
+            setTimeout(() => {
+                const lastRow = document.querySelector('#tabelDepartemen tbody tr:last-child');
+                if (lastRow) {
+                    lastRow.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 500);
+
+        });
+    }
+});
+</script>
+@endpush
