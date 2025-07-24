@@ -6,6 +6,7 @@ use App\Models\Departemen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class DepartemenController
 {
@@ -25,10 +26,27 @@ class DepartemenController
     public function store(Request $request)
     {
         try {
-            // 1. Validasi input: nama_departemen harus diisi, berupa string, max 255 karakter, dan unik
-            $request->validate([
-                'nama_departemen' => 'required|string|max:255|unique:departemen,nama_departemen'
-            ]);
+           $request->validate(
+                [
+                    'nama_departemen' => [
+                        'required',
+                        'string',
+                        'max:255',
+                        'unique:departemen,nama_departemen',
+                        'regex:/^[^0-9]*$/'
+                    ]
+                ],
+                [
+                    'nama_departemen.required' => 'Nama departemen wajib diisi.',
+                    'nama_departemen.string' => 'Nama departemen harus berupa teks.',
+                    'nama_departemen.max' => 'Nama departemen maksimal 255 karakter.',
+                    'nama_departemen.unique' => 'Nama departemen telah tersedia.',
+                    'nama_departemen.regex' => 'Nama departemen tidak boleh mengandung angka.'
+                ]
+            );
+
+            $nama = ucwords(strtolower($request->nama_departemen));
+            $request->merge(['nama_departemen' => $nama]);
 
             // 2. Simpan data baru ke tabel 'departemen'
             Departemen::create([
@@ -56,16 +74,27 @@ class DepartemenController
 
             // 9. Kirim response JSON berisi HTML tabel baru, pagination, total data, dan halaman terakhir
             return response()->json([
+                'status' => 'success',
+                'message' => 'Departemen Berhasil di tambahkan ini di kontroler',
                 'table' => $tableHtml,
                 'pagination' => $paginationHtml,
                 'total' => $total,
-                'last_page' => $lastPage // opsional kalau frontend ingin scroll ke halaman terakhir
             ]);
-        } catch (\Exception $e) {
-            // 10. Jika terjadi error, log errornya dan kirim response error JSON
+        }
+
+        catch (ValidationException $e) {
+            return response()->json([
+                'status' => 'validation_error',
+                'message' => 'Data tidak valid, mohon periksa kembali.',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        catch (\Exception $e) {
             Log::error('Error di store departemen: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Terjadi kesalahan pada server.',
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan di sisi server.',
                 'error' => $e->getMessage()
             ], 500);
         }

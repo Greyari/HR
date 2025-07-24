@@ -42,23 +42,20 @@
                     </div>
                 </div>
 
-                <!--Component notifikasi-->
-                @include ('components.admin.notif-succes-error')
-
                 <!-- Tabel Departemen -->
                 <div class="p-6">
                     <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <table class="min-w-full table-fixed divide-y divide-gray-200">
                             <thead class="bg-gray-800">
                                 <tr>
-                                    <th class="px-2 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">No</th>
+                                    <th class="w-12 px-2 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">No</th>
                                     <th class="px-4 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">Nama Departemen</th>
-                                    <th class="px-4 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">Aksi</th>
+                                    <th class="w-32 px-4 py-4 text-center text-xs font-medium text-gray-100 uppercase tracking-wide">Aksi</th>
                                 </tr>
                             </thead>
 
                             <tbody id="tabelDepartemen" class="bg-white divide-y divide-gray-100">
-                                @include('components.admin.departemen.body-tabel-departemen')
+                                    @include('components.admin.departemen.body-tabel-departemen')
                             </tbody>
                         </table>
                     </div>
@@ -73,9 +70,8 @@
         </div>
     </div>
 
-    <!-- Ajax untuk fitur cari -->
+    <!-- Ajax Departemen -->
     @push('scripts')
         <script src="{{ asset('js/admin/admin-departemen.js') }}"></script>
     @endpush
-
 @endsection

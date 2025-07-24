@@ -20,7 +20,9 @@
         @yield('content')
     </main>
 
-    @stack('scripts')
+    <!--Component notifikasi-->
+    @include ('components.admin.notif-succes-error')
 
+    @stack('scripts')
 </body>
 </html>
