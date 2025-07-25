@@ -1,61 +1,43 @@
 // ========================
-// Konstanta dan Variabel
+// Variabel Global
 // ========================
 
-// Digunakan untuk menyimpan timeout saat user mengetik di input pencarian
+// Timeout untuk debounce input pencarian
 let debounceTimeout = null;
 
 // ========================
-// Inisialisasi Awal
+// Inisialisasi Setelah Halaman Siap
 // ========================
 
-// Setelah halaman dimuat, jalankan semua fungsi inisialisasi
-document.addEventListener('DOMContentLoaded', function () {
-    initSearchInput();            // Aktifkan fitur pencarian real-time
-    bindPaginationLinks();       // Aktifkan klik pagination AJAX
-    initFormTambahDepartemen();  // Tangani form tambah departemen tanpa reload
+document.addEventListener('DOMContentLoaded', () => {
+    initSearchInput();            // Pencarian real-time
+    bindPaginationLinks();       // Tangani pagination AJAX
+    initFormTambahDepartemen();  // Form tambah via AJAX
+    initFormEditDepartemen();    // Form edit via AJAX
 });
 
 // ========================
-// Inisialisasi Search Input
+// 1. Pencarian Real-Time
 // ========================
 
-// Fungsi untuk menyiapkan event pencarian real-time dengan debounce
 function initSearchInput() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput) return;
 
-    searchInput.addEventListener('input', function () {
-        clearTimeout(debounceTimeout); // Hapus timeout sebelumnya
-        const keyword = this.value.trim(); // Ambil kata kunci dari input
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        const keyword = searchInput.value.trim();
 
-        // Tunggu 300ms setelah user berhenti mengetik, baru fetch data
         debounceTimeout = setTimeout(() => {
-            fetchDepartemen(keyword);
+            fetchDepartemen(keyword); // Ambil data setelah delay 300ms
         }, 300);
     });
 }
 
 // ========================
-// Bind Event Pagination
+// 2. Fetch Data Departemen
 // ========================
 
-// Fungsi untuk menangani klik link pagination agar tidak reload halaman
-function bindPaginationLinks() {
-    document.querySelectorAll('#paginationWrapper a').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const keyword = document.getElementById('searchInput').value;
-            fetchDepartemen(keyword, this.href); // Fetch halaman baru
-        });
-    });
-}
-
-// ========================
-// Fetch Data Departemen
-// ========================
-
-// Ambil data tabel departemen dari server menggunakan AJAX
 function fetchDepartemen(keyword = '', pageUrl = null) {
     let url;
 
@@ -63,126 +45,207 @@ function fetchDepartemen(keyword = '', pageUrl = null) {
         const urlObj = new URL(pageUrl, window.location.origin);
         if (keyword) {
             urlObj.pathname = '/admin/departemen/search';
-            urlObj.searchParams.set('q', keyword); // Tambah keyword ke URL
+            urlObj.searchParams.set('q', keyword);
         }
         url = urlObj.toString();
     } else {
-        // Default pencarian awal
         url = `/admin/departemen/search?q=${encodeURIComponent(keyword)}`;
     }
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => updateTabelDepartemen(data)) // Update isi tabel
-        .catch(error => console.error('Fetch error:', error));
+    // Simpan ke riwayat browser agar bisa Back/Forward
+    history.pushState({ keyword, url }, '', url);
+
+    fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => updateTabelDepartemen(data))
+    .catch(err => console.error('Fetch error:', err));
 }
 
 // ========================
-// Update UI Tabel Departemen
+// 3. Update UI Tabel + Pagination
 // ========================
 
-// Fungsi untuk menampilkan data hasil fetch ke dalam elemen tabel
 function updateTabelDepartemen(data) {
     document.getElementById('tabelDepartemen').innerHTML = data.html;
     document.getElementById('paginationWrapper').innerHTML = data.pagination;
     document.getElementById('totalDepartemen').textContent = data.total;
 
-    bindPaginationLinks(); // Re-bind karena elemen pagination baru
+    bindPaginationLinks();
+    bindEditButtons();
+    initFormEditDepartemen();
 }
 
 // ========================
-// Inisialisasi Form Tambah
+// 4. Tangani Pagination Link
 // ========================
 
-// Tangani submit form tambah departemen secara AJAX
+function bindPaginationLinks() {
+    document.querySelectorAll('#paginationWrapper a').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const keyword = document.getElementById('searchInput').value;
+            fetchDepartemen(keyword, link.href);
+        });
+    });
+}
+
+// ========================
+// 5. Form Tambah Departemen
+// ========================
+
 function initFormTambahDepartemen() {
     const form = document.querySelector('#form-tambah-departemen');
     if (!form) return;
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault(); // Hindari reload
+    form.addEventListener('submit', e => {
+        e.preventDefault();
 
         const formData = new FormData(form);
         const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
-        formData.append('page', currentPage); // Kirim info halaman aktif
+        formData.append('page', currentPage);
 
         fetch('/admin/departemen', {
             method: 'POST',
             body: formData
         })
-            .then(res => {
-                if (!res.ok) return res.json().then(err => { throw err }); // Tangani error validasi
-                return res.json();
-            })
-            .then(data => handleSuccessSubmit(form, data)) // Jika sukses, update UI
-            .catch(handleValidationErrors); // Jika error, tampilkan pesan
+        .then(res => res.ok ? res.json() : res.json().then(err => { throw err }))
+        .then(data => handleSuccessSubmit(form, data))
+        .catch(handleValidationErrors);
     });
 }
 
 // ========================
-// Handle Submit Sukses
+// 6. Sukses Submit Tambah
 // ========================
 
-// Fungsi untuk menangani hasil sukses submit form
 function handleSuccessSubmit(form, data) {
     document.getElementById('tabelDepartemen').innerHTML = data.table;
     document.getElementById('paginationWrapper').innerHTML = data.pagination;
     document.getElementById('totalDepartemen').textContent = data.total;
 
-    Alpine.initTree(document.getElementById('tabelDepartemen')); // Re-inisialisasi Alpine.js jika dipakai
+    Alpine.initTree(document.getElementById('tabelDepartemen'));
 
-    if (typeof bindEditButtons === 'function') {
-        bindEditButtons(); // Kalau ada tombol edit dinamis, bind ulang
-    }
-
-    bindPaginationLinks(); // Re-bind pagination setelah update
-    form.reset(); // Reset form setelah submit
+    bindEditButtons();
+    bindPaginationLinks();
+    form.reset();
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.value = '';
 
-    window.dispatchEvent(new CustomEvent('tutup-modal')); // Trigger tutup modal
-    showToast(data.status, data.message); // Tampilkan notifikasi
+    window.dispatchEvent(new CustomEvent('tutup-modal'));
+    showToast(data.status, data.message);
 }
 
 // ========================
-// Handle Error Validasi
+// 7. Form Edit Departemen
 // ========================
 
-// Fungsi untuk menampilkan pesan error per input
+// Tombol "Edit" akan mengisi form dan buka modal
+function bindEditButtons() {
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', () => {
+            const { id, nama } = button.dataset;
+
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_nama_departemen').value = nama;
+
+            document.getElementById('modal-edit')?.classList.remove('hidden');
+        });
+    });
+}
+
+// Submit form edit via AJAX
+function initFormEditDepartemen() {
+    document.querySelectorAll('form[id^="form-edit-departemen-"]').forEach(form => {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            const id = form.getAttribute('data-id');
+            const formData = new FormData(form);
+            formData.append('_method', 'PUT');
+
+            const keyword = document.getElementById('searchInput')?.value ?? '';
+            const page = new URLSearchParams(window.location.search).get('page') ?? 1;
+
+            formData.append('q', keyword);
+            formData.append('page', page);
+
+            fetch(`/departemen/${id}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.ok ? res.json() : res.json().then(err => { throw err }))
+            .then(response => {
+                document.getElementById('tabelDepartemen').innerHTML = response.table;
+                document.getElementById('paginationWrapper').innerHTML = response.pagination;
+
+                bindEditButtons();
+                bindPaginationLinks();
+                initFormEditDepartemen();
+
+                showToast(response.status, response.message);
+            })
+            .catch(handleValidationErrors);
+        });
+    });
+}
+
+// ========================
+// 8. Validasi & Error Handling
+// ========================
+
 function handleValidationErrors(error) {
-    clearAllFieldErrors(); // Bersihkan error sebelumnya
+    clearAllFieldErrors();
 
     if (error.status === 'validation_error' && error.errors) {
-        showToast(error.message, error.message); // Notif error umum
-        displayFieldErrors(error.errors); // Tampilkan error spesifik per field
+        showToast(error.message, error.message);
+        displayFieldErrors(error.errors);
     } else {
         showToast(error.status || 'error', error.message || 'Terjadi kesalahan.');
     }
 }
 
-// ========================
-// Helpers
-// ========================
-
-// Menghapus semua pesan error dan styling merah pada input
 function clearAllFieldErrors() {
-    document.querySelectorAll('input, textarea, select').forEach(input => {
-        input.classList.remove('border-red-500');
-        const errorEl = document.querySelector(`#error-${input.name}`);
-        if (errorEl) errorEl.innerHTML = '';
+    document.querySelectorAll('form').forEach(form => {
+        form.querySelectorAll('input, textarea, select').forEach(input => {
+            input.classList.remove('border-red-500');
+            const id = form.getAttribute('data-id');
+            const errorEl = form.querySelector(`#error-${input.name}${id ? '_' + id : ''}`);
+            if (errorEl) errorEl.innerHTML = '';
+        });
     });
 }
 
-// Menampilkan pesan error validasi di bawah masing-masing input
 function displayFieldErrors(errors) {
     Object.entries(errors).forEach(([field, messages]) => {
-        const input = document.querySelector(`[name="${field}"]`);
-        const errorEl = document.querySelector(`#error-${field}`);
+        document.querySelectorAll(`[name="${field}"]`).forEach(input => {
+            const form = input.closest('form');
+            const id = form?.getAttribute('data-id');
+            const errorEl = form?.querySelector(`#error-${field}${id ? '_' + id : ''}`);
 
-        if (input) input.classList.add('border-red-500');
-        if (errorEl) {
-            errorEl.innerHTML = messages.map(msg => `<li>${msg}</li>`).join('');
-        }
+            if (input) input.classList.add('border-red-500');
+            if (errorEl) errorEl.innerHTML = messages.map(msg => `<li>${msg}</li>`).join('');
+        });
     });
 }
+
+// ========================
+// 9. Navigasi Browser (Back/Forward)
+// ========================
+
+window.addEventListener('popstate', event => {
+    const keyword = document.getElementById('searchInput')?.value || '';
+    const url = event.state?.url || window.location.href;
+
+    if (url.includes('/admin/departemen/search')) {
+        fetchDepartemen(keyword, url);
+    } else {
+        window.location.href = url;
+    }
+});

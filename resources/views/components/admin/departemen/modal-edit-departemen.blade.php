@@ -5,7 +5,24 @@
     $nama = $departemen->nama_departemen;
 @endphp
 
-<div x-data="{ showModal: false }" @keydown.escape.window="showModal = false">
+<div
+    x-data="{
+        showModal: false,
+        init() {
+            this.$watch('showModal', value => {
+                if (value) {
+                    this.$nextTick(() => {
+                        const form = document.querySelector('#form-edit-departemen-{{ $id }}');
+                        // Bersihkan semua pesan error dan border merah
+                        form.querySelectorAll('[id^=error-]').forEach(el => el.innerHTML = '');
+                        form.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+                    });
+                }
+            });
+        }
+    }"
+    @keydown.escape.window="showModal = false">
+
     <!-- Tombol Edit -->
     <button @click="showModal = true" class="p-2 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 transition-all shadow-md" type="button">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -44,19 +61,19 @@
         >
             <h2 class="text-xl font-bold text-gray-800 mb-4">Edit Departemen</h2>
 
-            <form action="{{ route('departemen.update', $id) }}" method="POST">
+            <form id="form-edit-departemen-{{ $id }}" data-id="{{ $id }}">
                 @csrf
-                @method('PUT')
-
                 <div class="mb-4">
                     <label for="nama_departemen_{{ $id }}" class="block text-sm font-medium text-gray-700 mb-1">Nama Departemen</label>
                     <input type="text"
                         id="nama_departemen_{{ $id }}"
                         name="nama_departemen"
                         value="{{ $nama }}"
-                        required
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
+
+                    <!-- Pesan error -->
+                    <p id="error-nama_departemen_{{ $id }}" class="px-4 text-sm text-red-600 mt-1"></p>
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">

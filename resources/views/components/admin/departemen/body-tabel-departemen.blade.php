@@ -3,7 +3,7 @@
     <td class="px-2 py-3 text-center">{{ $departemen->firstItem() + $index }}</td>
     <td class="px-4 py-3 whitespace-normal break-words">{{ $item->nama_departemen }}</td>
 
-    <td class="px-4 py-3 text-center">
+    <td class="px-4 py-3">
         @include('components.admin.departemen.tombol-aksi-departemen', ['item' => $item])
     </td>
 </tr>

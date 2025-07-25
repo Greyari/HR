@@ -61,7 +61,7 @@
                     </div>
                 </div>
 
-                <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
+                <div class="border-t border-gray-100">
                     <div id="paginationWrapper">
                         {!! $departemen->links('components.admin.departemen.pagination-departemen') !!}
                     </div>
