@@ -1,3 +1,7 @@
+@php
+    $id = $item->id;
+@endphp
+
 <div class="flex justify-center gap-3" x-data="{ showModal: false }" @keydown.escape.window="showModal = false">
     <!--Tombol edit-->
     <div class="relative group inline-block">
@@ -18,7 +22,8 @@
         </button>
 
         <!-- Tooltip hapus-->
-        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-red-600 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white
+                  bg-red-600 rounded shadow opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none">
             Hapus
         </div>
 
@@ -49,7 +54,15 @@
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">Konfirmasi Penghapusan</h2>
                 <p class="text-gray-600 mb-4">Apakah kamu yakin ingin menghapus departemen <strong>{{ $item->nama_departemen }}</strong>?</p>
 
-                <form action="{{ route('departemen.destroy', $item->id) }}" method="POST" class="flex justify-center gap-3 mt-4">
+                <form
+                    id="form-hapus-departemen-{{ $id }}"
+                    data-id="{{ $id }}"
+                    data-page="{{ request()->input('page', 1) }}"
+                    data-q="{{ request()->input('q', '') }}"
+                    action="{{ route('departemen.destroy', $id) }}"
+                    method="POST"
+                    class="form-hapus-departemen flex justify-center gap-3 mt-4"
+                >
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition">

@@ -14,7 +14,7 @@
             </div>
 
             <!-- Kartu Manajemen Departemen -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xl overflow-visible">
                 <!-- Header Kartu: Pencarian & Tambah -->
                 <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">

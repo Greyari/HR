@@ -4,6 +4,8 @@
 
 // Timeout untuk debounce input pencarian
 let debounceTimeout = null;
+let baruSajaMenambahData = false;
+
 
 // ========================
 // Inisialisasi Setelah Halaman Siap
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindPaginationLinks();       // Tangani pagination AJAX
     initFormTambahDepartemen();  // Form tambah via AJAX
     initFormEditDepartemen();    // Form edit via AJAX
+    initFormHapusDepartemen();   // Tanganin aksi hapus
 });
 
 // ========================
@@ -59,7 +62,10 @@ function fetchDepartemen(keyword = '', pageUrl = null) {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(res => res.json())
-    .then(data => updateTabelDepartemen(data))
+    .then(data => {
+        updateTabelDepartemen(data);
+        baruSajaMenambahData = false;
+    })
     .catch(err => console.error('Fetch error:', err));
 }
 
@@ -68,13 +74,14 @@ function fetchDepartemen(keyword = '', pageUrl = null) {
 // ========================
 
 function updateTabelDepartemen(data) {
-    document.getElementById('tabelDepartemen').innerHTML = data.html;
+    document.getElementById('tabelDepartemen').innerHTML = data.tabel;
     document.getElementById('paginationWrapper').innerHTML = data.pagination;
     document.getElementById('totalDepartemen').textContent = data.total;
 
     bindPaginationLinks();
     bindEditButtons();
     initFormEditDepartemen();
+    initFormHapusDepartemen();
 }
 
 // ========================
@@ -97,45 +104,56 @@ function bindPaginationLinks() {
 
 function initFormTambahDepartemen() {
     const form = document.querySelector('#form-tambah-departemen');
-    if (!form) return;
 
-    form.addEventListener('submit', e => {
-        e.preventDefault();
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-        const formData = new FormData(form);
-        const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
-        formData.append('page', currentPage);
+            const formData = new FormData(form);
+            const keyword = document.getElementById('searchInput')?.value ?? '';
 
-        fetch('/admin/departemen', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.ok ? res.json() : res.json().then(err => { throw err }))
-        .then(data => handleSuccessSubmit(form, data))
-        .catch(handleValidationErrors);
-    });
-}
+            fetch('/admin/departemen', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+            })
+            .then(res => res.ok ? res.json() : res.json().then(err => { throw err }))
+            .then(response => {
+                document.getElementById('tabelDepartemen').innerHTML = response.table;
+                document.getElementById('paginationWrapper').innerHTML = response.pagination;
+                document.getElementById('totalDepartemen').textContent = response.total;
 
-// ========================
-// 6. Sukses Submit Tambah
-// ========================
+                baruSajaMenambahData = true;
 
-function handleSuccessSubmit(form, data) {
-    document.getElementById('tabelDepartemen').innerHTML = data.table;
-    document.getElementById('paginationWrapper').innerHTML = data.pagination;
-    document.getElementById('totalDepartemen').textContent = data.total;
+                document.getElementById('searchInput').value = '';
+                baruSajaMenambahData = true;
 
-    Alpine.initTree(document.getElementById('tabelDepartemen'));
+                window.dispatchEvent(new CustomEvent('tutup-modal'));
 
-    bindEditButtons();
-    bindPaginationLinks();
-    form.reset();
+                // Bind ulang
+                bindPaginationLinks();
+                bindEditButtons();
+                initFormEditDepartemen();
+                initFormHapusDepartemen();
+                showToast(response.status, response.message);
 
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.value = '';
+                const currentUrl = new URL(window.location.href);
+                const currentPage = currentUrl.searchParams.get('page') ?? '1';
 
-    window.dispatchEvent(new CustomEvent('tutup-modal'));
-    showToast(data.status, data.message);
+                if (response.page_valid && response.page_valid !== currentPage) {
+                    currentUrl.searchParams.set('page', response.page_valid);
+                    history.replaceState({}, '', currentUrl.toString());
+                }
+
+                // Reset form
+                form.reset();
+            })
+            .catch(handleValidationErrors);
+        });
+    }
 }
 
 // ========================
@@ -145,9 +163,10 @@ function handleSuccessSubmit(form, data) {
 // Tombol "Edit" akan mengisi form dan buka modal
 function bindEditButtons() {
     document.querySelectorAll('.btn-edit').forEach(button => {
-        button.addEventListener('click', () => {
-            const { id, nama } = button.dataset;
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
 
+            const { id, nama } = this.dataset;
             document.getElementById('edit_id').value = id;
             document.getElementById('edit_nama_departemen').value = nama;
 
@@ -188,6 +207,7 @@ function initFormEditDepartemen() {
                 bindEditButtons();
                 bindPaginationLinks();
                 initFormEditDepartemen();
+                initFormHapusDepartemen();
 
                 showToast(response.status, response.message);
             })
@@ -249,3 +269,63 @@ window.addEventListener('popstate', event => {
         window.location.href = url;
     }
 });
+
+// ========================
+// 10. Form Hapus Departemen
+// ========================
+function initFormHapusDepartemen() {
+    document.querySelectorAll('.form-hapus-departemen').forEach(form => {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            const actionUrl = form.getAttribute('action');
+
+            // Ambil data pencarian & halaman
+            const keyword = document.getElementById('searchInput')?.value ?? '';
+            const page = new URLSearchParams(window.location.search).get('page') ?? 1;
+
+            fetch(actionUrl, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    q: keyword,
+                    page: page,
+                    recently_added: baruSajaMenambahData
+                })
+            })
+            .then(res => res.ok ? res.json() : res.json().then(err => { throw err }))
+            .then(response => {
+                // Update tampilan
+                document.getElementById('tabelDepartemen').innerHTML = response.table;
+                document.getElementById('paginationWrapper').innerHTML = response.pagination;
+                document.getElementById('totalDepartemen').textContent = response.total;
+
+                // Re-bind semua event handler
+                bindPaginationLinks();
+                bindEditButtons();
+                initFormEditDepartemen();
+                initFormHapusDepartemen();
+                showToast(response.status, response.message);
+
+                // ✅ Perbarui URL jika page valid berbeda
+                const currentUrl = new URL(window.location.href);
+                const currentPage = currentUrl.searchParams.get('page') ?? '1';
+
+                if (response.page_valid && response.page_valid !== currentPage) {
+                    currentUrl.searchParams.set('page', response.page_valid);
+                    history.replaceState({}, '', currentUrl.toString());
+                }
+
+                // Reset flag setelah penghapusan
+                baruSajaMenambahData = false;
+            })
+            .catch(handleValidationErrors);
+        });
+    });
+}
+
+

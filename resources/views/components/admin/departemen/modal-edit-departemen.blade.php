@@ -1,5 +1,3 @@
-@props(['departemen'])
-
 @php
     $id = $departemen->id;
     $nama = $departemen->nama_departemen;
@@ -31,7 +29,8 @@
     </button>
 
     <!-- Tooltip edit-->
-    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-sm text-white bg-yellow-600 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+    <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white
+              bg-yellow-600 rounded shadow opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none">
         Edit
     </div>
 
@@ -84,7 +83,7 @@
                         Batal
                     </button>
                     <button
-                        type="submit"
+                        type="button"
                         class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
                         Update
                     </button>
