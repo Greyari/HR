@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 class DepartemenController
 {
     // ========================
-    // Tampilkan Halaman Awal
+    // Tampilkan Halaman Utama
     // ========================
     public function show()
     {
@@ -20,22 +20,21 @@ class DepartemenController
         $departemen->setPath('/admin/departemen/search');
 
         return view('pages.admin.departemen', [
-            'title' => 'departemen',
+            'title'      => 'departemen',
             'departemen' => $departemen
         ]);
     }
 
     // ========================
-    // Tambah Data
+    // Tambah Data Departemen
     // ========================
     public function store(Request $request)
     {
         try {
+            // Validasi input
             $request->validate([
                 'nama_departemen' => [
-                    'required',
-                    'string',
-                    'max:255',
+                    'required', 'string', 'max:255',
                     'unique:departemen,nama_departemen',
                     'regex:/^[^0-9]*$/'
                 ]
@@ -47,45 +46,40 @@ class DepartemenController
                 'nama_departemen.regex'    => 'Nama departemen tidak boleh mengandung angka.'
             ]);
 
-            $nama = ucwords(strtolower($request->nama_departemen));
-            $request->merge(['nama_departemen' => $nama]);
+            $nama = $request->nama_departemen;
 
-            Departemen::create([
-                'nama_departemen' => $request->nama_departemen
-            ]);
+            // Simpan ke database
+            Departemen::create([ 'nama_departemen' => $nama ]);
 
-            $perPage  = 5;
-            $total    = Departemen::count();
-            $page = ceil($total / $perPage);
+            // Ambil data halaman terakhir
+            $perPage = 5;
+            $total   = Departemen::count();
+            $page    = ceil($total / $perPage);
 
             $departemen = Departemen::orderBy('id', 'asc')->paginate($perPage, ['*'], 'page', $page);
-
             $departemen->setPath('/admin/departemen/search');
 
-            $paginationHtml = $departemen
-                ->links('components.admin.departemen.pagination-departemen')->render();
-
-            $tableHtml = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
+            // Render HTML untuk dikirim ke frontend
+            $paginationHtml = $departemen->links('components.admin.departemen.pagination-departemen')->render();
+            $tabelHtml      = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
 
             return response()->json([
                 'status'     => 'success',
                 'message'    => 'Departemen berhasil ditambahkan',
-                'table'      => $tableHtml,
+                'tabel'      => $tabelHtml,
                 'pagination' => $paginationHtml,
                 'total'      => $total,
                 'page_valid' => $page
             ]);
-        }
 
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status'  => 'validation_error',
                 'message' => 'Data tidak valid, mohon periksa kembali.',
                 'errors'  => $e->errors()
             ], 422);
-        }
 
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error di store departemen: ' . $e->getMessage());
             return response()->json([
                 'status'  => 'error',
@@ -96,17 +90,15 @@ class DepartemenController
     }
 
     // ========================
-    // Edit Data
+    // Update Data Departemen
     // ========================
     public function update(Request $request, $id)
     {
         try {
+            // Validasi input
             $request->validate([
                 'nama_departemen' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    'regex:/^[^0-9]*$/',
+                    'required', 'string', 'max:255', 'regex:/^[^0-9]*$/',
                     Rule::unique('departemen', 'nama_departemen')->ignore($id),
                 ]
             ], [
@@ -114,17 +106,28 @@ class DepartemenController
                 'nama_departemen.string'   => 'Nama departemen harus berupa teks.',
                 'nama_departemen.max'      => 'Nama departemen maksimal 255 karakter.',
                 'nama_departemen.unique'   => 'Nama departemen sudah tersedia.',
-                'nama_departemen.regex'    => 'Nama departemen tidak boleh mengandung angka.'
+                'nama_departemen.regex'    => 'Nama departemen tidak boleh mengandung angka.',
             ]);
+            $namaBaru = $request->nama_departemen;
 
-            $nama = ucwords(strtolower($request->nama_departemen));
-            $request->merge(['nama_departemen' => $nama]);
-
+            // Ambil data lama dari DB
             $departemen = Departemen::findOrFail($id);
-            $departemen->update([
-                'nama_departemen' => $request->nama_departemen,
-            ]);
 
+            // Validasi: nama baru tidak boleh sama persis dengan sebelumnya
+            if ($departemen->nama_departemen === $namaBaru) {
+                return response()->json([
+                    'status' => 'validation_error',
+                    'message' => 'Data tidak valid, mohon periksa kembali.',
+                    'errors' => [
+                        'nama_departemen' => ['Data tidak boleh sama dengan sebelumnya.']
+                    ]
+                ], 422);
+            }
+
+            // Update data
+            $departemen->update(['nama_departemen' => $namaBaru]);
+
+            // Ambil data sesuai page dan keyword
             $perPage = 5;
             $keyword = $request->input('q', '');
             $page    = $request->input('page', 1);
@@ -136,29 +139,26 @@ class DepartemenController
 
             $departemen->setPath('/admin/departemen/search');
 
-            $paginationHtml = $departemen
-                ->links('components.admin.departemen.pagination-departemen')->render();
-
-            $tableHtml = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
+            // Render hasil
+            $paginationHtml = $departemen->links('components.admin.departemen.pagination-departemen')->render();
+            $tabelHtml      = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
 
             return response()->json([
                 'status'     => 'success',
                 'message'    => 'Departemen berhasil diedit',
-                'table'      => $tableHtml,
+                'tabel'      => $tabelHtml,
                 'pagination' => $paginationHtml,
                 'total'      => $departemen->total(),
             ]);
-        }
 
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status'  => 'validation_error',
                 'message' => 'Data tidak valid, mohon periksa kembali.',
                 'errors'  => $e->errors()
             ], 422);
-        }
 
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error di update departemen: ' . $e->getMessage());
             return response()->json([
                 'status'  => 'error',
@@ -169,62 +169,52 @@ class DepartemenController
     }
 
     // ========================
-    // Hapus Data
+    // Hapus Data Departemen
     // ========================
     public function destroy(Request $request, $id)
     {
         try {
-            // Cari data berdasarkan ID, jika tidak ketemu akan error
             $departemen = Departemen::findOrFail($id);
-            $departemen->delete(); // Hapus data
+            $departemen->delete();
 
-            // Ambil parameter pencarian dan halaman dari request
-            $perPage = 5;
-            $keyword = $request->input('q', '');
-            $page    = (int) $request->input('page', 1);
+            // Ambil ulang data
+            $perPage        = 5;
+            $keyword        = $request->input('q', '');
+            $page           = (int) $request->input('page', 1);
+            $recentlyAdded  = $request->boolean('recently_added', false);
 
-            // Siapkan query pencarian
             $query = Departemen::query()
                 ->when($keyword, fn($q) => $q->where('nama_departemen', 'like', "%$keyword%"))
                 ->orderBy('id', 'asc');
 
-            // Hitung total data & halaman terakhir setelah data dihapus
             $total    = $query->count();
             $lastPage = max(ceil($total / $perPage), 1);
+            $page     = $recentlyAdded ? $lastPage : min($page, $lastPage);
 
-            $recentlyAdded = $request->boolean('recently_added', false);
-            $page = $recentlyAdded ? $lastPage : min($page, $lastPage);
-
-            // Ambil data sesuai halaman valid
             $departemen = $query->paginate($perPage, ['*'], 'page', $page);
             $departemen->setPath('/admin/departemen/search');
 
-            // Render ulang HTML tabel dan pagination
-            $tableHtml = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
-            $paginationHtml = $departemen
-                ->links('components.admin.departemen.pagination-departemen')->render();
+            $tabelHtml      = View::make('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
+            $paginationHtml = $departemen->links('components.admin.departemen.pagination-departemen')->render();
 
-            // Kirim response JSON ke JavaScript
             return response()->json([
                 'status'     => 'success',
                 'message'    => 'Departemen berhasil dihapus.',
-                'table'      => $tableHtml,
+                'tabel'      => $tabelHtml,
                 'pagination' => $paginationHtml,
                 'total'      => $total,
                 'page_valid' => $page,
             ]);
-        }
 
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'status'  => 'validation_error',
                 'message' => 'Data tidak valid, mohon periksa kembali.',
                 'errors'  => $e->errors()
             ], 422);
-        }
 
-        catch (\Exception $e) {
-            Log::error('Error di hapus departemen: '.$e->getMessage());
+        } catch (\Exception $e) {
+            Log::error('Error di hapus departemen: ' . $e->getMessage());
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Terjadi kesalahan di sisi server.',
@@ -233,30 +223,28 @@ class DepartemenController
         }
     }
 
-
     // ========================
-    // Cari / Search Data
+    // Pencarian Data AJAX
     // ========================
     public function search(Request $request)
     {
         $perPage = 5;
         $keyword = $request->query('q', '');
 
-        $departemen = Departemen::when($keyword, function ($query, $keyword) {
-            return $query->where('nama_departemen', 'like', "%$keyword%");
-        })->orderBy('id', 'asc')->paginate($perPage);
+        $departemen = Departemen::when($keyword, fn($q) => $q->where('nama_departemen', 'like', "%$keyword%"))
+            ->orderBy('id', 'asc')
+            ->paginate($perPage);
 
         $departemen->setPath('/admin/departemen/search');
 
         if ($request->ajax()) {
-            $tabel = view('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
-            $pagination = $departemen
-                ->appends(['q' => $keyword])
+            $tabel      = view('components.admin.departemen.body-tabel-departemen', compact('departemen'))->render();
+            $pagination = $departemen->appends(['q' => $keyword])
                 ->links('components.admin.departemen.pagination-departemen')
                 ->render();
 
             return response()->json([
-                'tabel'       => $tabel,
+                'tabel'      => $tabel,
                 'pagination' => $pagination,
                 'total'      => $departemen->total(),
             ]);
