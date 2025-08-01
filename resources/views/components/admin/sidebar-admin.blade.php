@@ -31,7 +31,13 @@
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
                         <i class="fas fa-user-shield w-6 text-center"></i>
-                        <span class="ml-3">Peran</span>
+                        <span class="ml-3">Jabatan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
+                        <i class="fas fa-key w-6 text-center"></i>
+                        <span class="ml-3">Peran & Module</span>
                     </a>
                 </li>
                 <li>
@@ -42,26 +48,20 @@
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-key w-6 text-center"></i>
-                        <span class="ml-3">Hak Akses</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
                         <i class="fas fa-clipboard-check w-6 text-center"></i>
                         <span class="ml-3">Absensi</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-plane-departure w-6 text-center"></i>
-                        <span class="ml-3">Cuti</span>
+                        <i class="fas fa-business-time w-6 text-center"></i>
+                        <span class="ml-3">Lembur</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-business-time w-6 text-center"></i>
-                        <span class="ml-3">Lembur</span>
+                        <i class="fas fa-plane-departure w-6 text-center"></i>
+                        <span class="ml-3">Cuti</span>
                     </a>
                 </li>
                 <li>
@@ -120,7 +120,13 @@
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
                         <i class="fas fa-user-shield w-6 text-center"></i>
-                        <span class="ml-3">Peran</span>
+                        <span class="ml-3">Jabatan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
+                        <i class="fas fa-key w-6 text-center"></i>
+                        <span class="ml-3">Peran & Module</span>
                     </a>
                 </li>
                 <li>
@@ -131,26 +137,20 @@
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-key w-6 text-center"></i>
-                        <span class="ml-3">Hak Akses</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
                         <i class="fas fa-clipboard-check w-6 text-center"></i>
                         <span class="ml-3">Absensi</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-plane-departure w-6 text-center"></i>
-                        <span class="ml-3">Cuti</span>
+                        <i class="fas fa-business-time w-6 text-center"></i>
+                        <span class="ml-3">Lembur</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center p-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-business-time w-6 text-center"></i>
-                        <span class="ml-3">Lembur</span>
+                        <i class="fas fa-plane-departure w-6 text-center"></i>
+                        <span class="ml-3">Cuti</span>
                     </a>
                 </li>
                 <li>
