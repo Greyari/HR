@@ -15,13 +15,19 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Bersihkan cache sebelum generate key
 php artisan config:clear
 php artisan cache:clear
-php artisan config:cache
+
+# Generate APP_KEY
 php artisan key:generate
 
+# Baru cache ulang config SETELAH key dibuat
+php artisan config:cache
+
+# Migrasi dan seeder
 php artisan migrate --force
 php artisan db:seed --force
 
-# Jalankan perintah CMD dari Dockerfile (php artisan serve ...)
+# Jalankan perintah dari CMD Dockerfile (php artisan serve ...)
 exec "$@"
