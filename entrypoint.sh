@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Build frontend assets (Vite)..."
+npm install && npm run build
+
 echo "Menunggu database MySQL..."
 
 # Tunggu sampai MySQL bisa diakses
@@ -19,10 +22,7 @@ fi
 php artisan config:clear
 php artisan cache:clear
 
-# ❌ HAPUS BARIS INI:
-# php artisan key:generate
-
-# Baru cache ulang config
+# Cache ulang config
 php artisan config:cache
 
 # Migrasi dan seeder
