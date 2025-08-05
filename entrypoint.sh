@@ -1,17 +1,24 @@
 #!/bin/bash
 
-# Tunggu database siap (opsional, jika perlu)
-echo "Menunggu MySQL..."
-until mysqladmin ping -h"$DB_HOST" --silent; do
-  sleep 1
+echo "Menunggu database MySQL..."
+
+# Tunggu sampai MySQL bisa diakses
+until mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SHOW DATABASES;" > /dev/null 2>&1; do
+  echo "Menunggu MySQL..."
+  sleep 3
 done
 
-# Generate key
-php artisan key:generate
+echo "MySQL siap, jalankan migrate dan seeder..."
 
-# Jalankan migrate dan seeder
+# Generate key jika belum
+if [ ! -f .env ]; then
+    cp .env.example .env
+fi
+
+php artisan config:clear
+php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force
 
-# Jalankan perintah utama dari Dockerfile (php artisan serve ...)
+# Jalankan perintah CMD dari Dockerfile (php artisan serve ...)
 exec "$@"
