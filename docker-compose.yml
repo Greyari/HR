@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./HR
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./HR:/var/www
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql.railway.internal
+      - DB_PORT=3306
+      - DB_DATABASE=railway
+      - DB_USERNAME=root
+      - DB_PASSWORD=HZzOngffqIUKwauqjfsGmRtLWYAYtNgH
