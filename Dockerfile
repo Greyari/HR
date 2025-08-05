@@ -35,7 +35,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Expose port Laravel
-EXPOSE 8000
+EXPOSE 8080
 
 # Jalankan script entrypoint
 CMD ["/entrypoint.sh"]

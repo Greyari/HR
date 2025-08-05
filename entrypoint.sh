@@ -12,4 +12,4 @@ php artisan migrate --force
 php artisan db:seed --force
 
 # Jalankan Laravel server
-php artisan serve --host=0.0.0.0 --port=8000
+php artisan serve --host=0.0.0.0 --port=8080
