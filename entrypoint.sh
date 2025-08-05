@@ -16,7 +16,10 @@ if [ ! -f .env ]; then
 fi
 
 php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
 php artisan key:generate
+
 php artisan migrate --force
 php artisan db:seed --force
 
