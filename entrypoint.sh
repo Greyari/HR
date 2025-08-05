@@ -1,19 +1,17 @@
 #!/bin/bash
 
-# Tunggu DB siap
-echo "Menunggu database siap..."
-until php artisan migrate:status > /dev/null 2>&1; do
-  sleep 2
+# Tunggu database siap (opsional, jika perlu)
+echo "Menunggu MySQL..."
+until mysqladmin ping -h"$DB_HOST" --silent; do
+  sleep 1
 done
 
-# Clear dan cache config agar baca dari Railway ENV
-php artisan config:clear
-php artisan config:cache
+# Generate key
+php artisan key:generate
 
 # Jalankan migrate dan seeder
-echo "Menjalankan migrate dan seed..."
 php artisan migrate --force
 php artisan db:seed --force
 
-# Jalankan Laravel
-php artisan serve --host=0.0.0.0 --port=8080
+# Jalankan perintah utama dari Dockerfile (php artisan serve ...)
+exec "$@"

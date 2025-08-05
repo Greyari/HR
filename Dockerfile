@@ -1,10 +1,11 @@
-# Gunakan image resmi Laravel yang ringan
+# Gunakan image PHP resmi dengan ekstensi Laravel
 FROM php:8.2-fpm
 
-# Install dependensi sistem
+# Install dependencies sistem
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
+    libjpeg-dev \
     libonig-dev \
     libxml2-dev \
     zip \
@@ -12,30 +13,42 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+    libpq-dev \
+    libmcrypt-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    mariadb-client \
+    npm \
+    nodejs
+
+# Install ekstensi PHP
+RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Atur direktori kerja
 WORKDIR /var/www
 
-# Copy semua file Laravel ke container
+# Copy semua file ke container
 COPY . .
 
-# Install dependensi Laravel
-RUN composer install --no-dev --optimize-autoloader
+# Install dependencies Laravel
+RUN composer install --no-interaction --optimize-autoloader
+RUN php artisan config:clear
 
-# Set permission
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Set permission storage & bootstrap
+RUN chmod -R 777 storage bootstrap/cache
 
-# Copy dan izinkan script entrypoint
-COPY entrypoint.sh /entrypoint.sh
+# Copy entrypoint
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose port Laravel
+# Jalankan script ketika container run
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Laravel biasanya pakai port 8000, tapi Railway kamu pakai 8080
 EXPOSE 8080
 
-# Jalankan script entrypoint
-CMD ["/entrypoint.sh"]
+# Jalankan Laravel pakai built-in server
+CMD php artisan serve --host=0.0.0.0 --port=8080
