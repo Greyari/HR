@@ -30,12 +30,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
 
-# Jalankan Laravel command jika perlu (opsional)
-# RUN php artisan config:cache
-# RUN php artisan route:cache
+# Copy dan izinkan script entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Expose port
+# Expose port Laravel
 EXPOSE 8000
 
-# Jalankan Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Jalankan script entrypoint
+CMD ["/entrypoint.sh"]
