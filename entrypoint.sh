@@ -10,19 +10,19 @@ done
 
 echo "MySQL siap, jalankan migrate dan seeder..."
 
-# Generate key jika belum
+# Generate .env jika belum ada
 if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# Bersihkan cache sebelum generate key
+# Bersihkan cache sebelum caching ulang
 php artisan config:clear
 php artisan cache:clear
 
-# Generate APP_KEY
-php artisan key:generate
+# ❌ HAPUS BARIS INI:
+# php artisan key:generate
 
-# Baru cache ulang config SETELAH key dibuat
+# Baru cache ulang config
 php artisan config:cache
 
 # Migrasi dan seeder
