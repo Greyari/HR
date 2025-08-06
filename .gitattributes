@@ -1,11 +1,14 @@
+# Konversi line ending secara otomatis dan konsisten pakai LF (Unix-style)
 * text=auto eol=lf
 
+# Deteksi jenis file untuk diff yang lebih baik di GitHub atau Git client
 *.blade.php diff=html
-*.css diff=css
-*.html diff=html
-*.md diff=markdown
-*.php diff=php
+*.css       diff=css
+*.html      diff=html
+*.md        diff=markdown
+*.php       diff=php
 
-/.github export-ignore
-CHANGELOG.md export-ignore
-.styleci.yml export-ignore
+# Abaikan file tertentu saat membuat release/archive
+/.github          export-ignore
+CHANGELOG.md      export-ignore
+.styleci.yml      export-ignore
