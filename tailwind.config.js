@@ -4,6 +4,10 @@ export default {
     "./resources/**/*.js",
     "./resources/**/*.vue",
   ],
+  safelist: [
+    { pattern: /./ }, 
+  ],
+
   theme: {
     extend: {},
   },
