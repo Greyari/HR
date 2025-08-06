@@ -13,7 +13,7 @@ export default defineConfig({
             targets: [
                 {
                     src: 'public/build/.vite/manifest.json',
-                    dest: '.' // ➜ akan disalin ke public/build/manifest.json
+                    dest: '.' 
                 },
             ],
         }),
