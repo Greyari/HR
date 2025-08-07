@@ -17,7 +17,7 @@ class AuthController extends Controller
 
         // cek kredensial
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Email atau password salah'], 401);
+            return response()->json(['message' => 'Email atau password anjing salah'], 401);
         }
 
         // ambil user
@@ -29,7 +29,12 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login berhasil',
             'token'   => $token,
-            'user'    => $user,
+            'user'    => [
+                'id'         => $user->id,
+                'nama'       => $user->nama,
+                'email'      => $user->email,
+                'nama_peran' => $user->peran->nama_peran,
+            ],
         ]);
     }
 

@@ -11,13 +11,13 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $peran = Peran::where('nama_peran', 'General Manager')->first();
+        $peran = Peran::where('nama_peran', 'Super Admin')->first();
 
         if ($peran) {
             User::create([
-                'nama' => 'General Manager',
-                'email' => 'gm@gmail.com',
-                'password' => Hash::make('gm123'),
+                'nama' => 'Grey Ari',
+                'email' => 'grey@gmail.com',
+                'password' => Hash::make('123'),
                 'peran_id' => $peran->id,
             ]);
         } else {

@@ -9,11 +9,11 @@ class PeranSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     */
+     */ 
     public function run()
     {
         Peran::create([
-            'nama_peran' => 'General Manager',
+            'nama_peran' => 'Super Admin',
         ]);
     }
 }
