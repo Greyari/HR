@@ -76,4 +76,11 @@ class User extends Authenticatable
         return $this->belongsTo(StatusPernikahan::class, 'status_pernikahan_id');
     }
 
+    //relasi ke tabel lembur
+    public function lembur()
+    {
+        return $this->hasMany(Lembur::class);
+    }
+
+
 }

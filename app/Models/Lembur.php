@@ -15,8 +15,8 @@ class Lembur extends Model
         'status',
     ];
 
-    public function karyawan()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'karyawan_id');
+        return $this->belongsTo(User::class);
     }
 }

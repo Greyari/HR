@@ -13,7 +13,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // Lembur routes
-    Route::post('/lembur', [LemburController::class, 'store']);
     Route::get('/lembur', [LemburController::class, 'index']);
-    Route::patch('/lembur/{id}/status', [LemburController::class, 'updateStatus']);
+    Route::post('/lembur', [LemburController::class, 'store']);
+    Route::put('/lembur/{id}/approve', [LemburController::class, 'approve']);
+    Route::put('/lembur/{id}/decline', [LemburController::class, 'decline']);
+
 });
