@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LemburController extends Controller
 {
+    // Menampilkan daftar lembur
     public function index()
     {
         $user = Auth::user();
@@ -29,6 +30,7 @@ class LemburController extends Controller
         ]);
     }
 
+    // Menyimpan pengajuan lembur
     public function store(Request $request)
     {
         $request->validate([
@@ -53,6 +55,7 @@ class LemburController extends Controller
         ], 201);
     }
 
+    // Approve lembur
     public function approve($id)
     {
         $lembur = Lembur::find($id);
@@ -70,6 +73,7 @@ class LemburController extends Controller
         ]);
     }
 
+    // Decline lembur
     public function decline($id)
     {
         $lembur = Lembur::find($id);
