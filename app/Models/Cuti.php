@@ -19,6 +19,8 @@ class Cuti extends Model
         'alasan',
     ];
 
+
+    // Relasi ke tabel User
     public function user() {
         return $this ->belongsTo(User::class);
     }

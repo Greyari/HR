@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LemburController;
+use App\Http\Controllers\Api\TugasController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
@@ -23,4 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cuti', [CutiController::class, 'store']);
     Route::put('/cuti/{id}/approve', [CutiController::class, 'approve']);
     Route::put('/cuti/{id}/decline', [CutiController::class, 'decline']);
+
+    // Tugas routes
+    Route::get('/tugas', [TugasController::class, 'index']);
+    Route::post('/tugas', [TugasController::class, 'store']);
+    Route::put('/tugas/{id}', [TugasController::class, 'update']);
+    Route::delete('/tugas/{id}', [TugasController::class, 'destroy']);
 });

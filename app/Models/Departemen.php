@@ -13,8 +13,16 @@ class Departemen extends Model
 
     protected $fillable = ['nama_departemen'];
 
+    // Relasi ke tabel User
     public function users()
     {
         return $this->hasMany(User::class, 'departemen_id');
     }
+
+    // Relasi ke tabel Tugas
+    public function tugas()
+    {
+        return $this->hasMany(Tugas::class, 'departemen_id');
+    }
+
 }

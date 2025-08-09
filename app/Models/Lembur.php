@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Testing\Fluent\Concerns\Has;
 
 class Lembur extends Model
 {
@@ -21,6 +20,7 @@ class Lembur extends Model
         'status',
     ];
 
+    // Relasi ke tabel User
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -82,5 +82,15 @@ class User extends Authenticatable
         return $this->hasMany(Lembur::class);
     }
 
+    //relasi ke tabel cuti
+    public function cuti()
+    {
+        return $this->hasMany(Cuti::class);
+    }
 
+    //relasi ke tabel tugas
+    public function tugas()
+    {
+        return $this->hasMany(Tugas::class);
+    }
 }
