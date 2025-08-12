@@ -26,7 +26,6 @@ class User extends Authenticatable
         'peran_id',
         'jabatan_id',
         'departemen_id',
-        'status_pernikahan_id',
     ];
 
     /**
@@ -70,12 +69,6 @@ class User extends Authenticatable
         return $this->belongsTo(Departemen::class, 'departemen_id');
     }
 
-    //relasi ke tabel status pernikahan
-    public function statusPernikahan()
-    {
-        return $this->belongsTo(StatusPernikahan::class, 'status_pernikahan_id');
-    }
-
     //relasi ke tabel lembur
     public function lembur()
     {
@@ -91,6 +84,8 @@ class User extends Authenticatable
     //relasi ke tabel tugas
     public function tugas()
     {
-        return $this->hasMany(Tugas::class);
+        return $this->belongsToMany(Tugas::class, 'tugas_user')
+                    ->withPivot('status', 'laporan_user')
+                    ->withTimestamps();
     }
 }

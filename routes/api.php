@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\TugasController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
+use App\Http\Controllers\Api\DepartemenController;
+use App\Http\Controllers\Api\KaryawanController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -30,4 +32,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tugas', [TugasController::class, 'store']);
     Route::put('/tugas/{id}', [TugasController::class, 'update']);
     Route::delete('/tugas/{id}', [TugasController::class, 'destroy']);
+
+    // Departemen routes
+    route::get('/departemen', [DepartemenController::class, 'index']);
+    route::post('/departemen', [DepartemenController::class, 'store']);
+    route::put('/departemen/{id}', [DepartemenController::class, 'update']);
+    route::delete('/departemen/{id}', [DepartemenController::class, 'destroy']);
+
+    // Karyawan routes
+    route::get('/karyawan', [KaryawanController::class, 'index']);
+    route::post('/karyawan', [KaryawanController::class, 'store']);
+
+    // Peran routes
+    
+
+
 });

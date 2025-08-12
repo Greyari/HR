@@ -14,10 +14,10 @@ class CutiController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->nama_peran === 'Super admin') {
-            $cutiRecords = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen', 'user.statusPernikahan'])->latest()->get();
+        if ($user->peran_id === 1) {
+            $cuti = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen'])->latest()->get();
         } else {
-            $cutiRecords = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen', 'user.statusPernikahan'])
+            $cuti = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
@@ -25,7 +25,7 @@ class CutiController extends Controller
 
         return response()->json([
             'message' => 'Data cuti berhasil diambil',
-            'data' => $cutiRecords
+            'data' => $cuti
         ]);
     }
 
@@ -58,7 +58,7 @@ class CutiController extends Controller
         $cuti = Cuti::find($id);
 
         if (!$cuti) {
-            return response()->json(['message' => 'Cuti not found'], 404);
+            return response()->json(['message' => 'Data cuti tidak ditemukan'], 404);
         }
 
         $cuti->status = 'Disetujui';

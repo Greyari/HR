@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('peran_id')->constrained('peran');
             $table->foreignId('jabatan_id')->nullable()->constrained('jabatan');
-            $table->foreignId('status_pernikahan_id')->nullable()->constrained('status_pernikahan');
             $table->foreignId('departemen_id')->nullable()->constrained('departemen');
             $table->string('nama');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->default('Laki-laki');
+            $table->enum('status_pernikahan', ['Menikah', 'Singgel'])->default('Singgel');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
@@ -35,7 +36,6 @@ return new class extends Migration
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
             $table->foreignId('jabatan_id')->nullable()->index();
-            $table->foreignId('status_pernikahan_id')->nullable()->index();
             $table->foreignId('departemen_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();

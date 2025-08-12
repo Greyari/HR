@@ -14,11 +14,11 @@ class LemburController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->nama_peran === 'Super admin') {
-            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen', 'user.statusPernikahan'])->latest()->get();
+        if ($user->nama_peran === 'model') {
+            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen'])->latest()->get();
         }
         else {
-            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen', 'user.statusPernikahan'])
+            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
