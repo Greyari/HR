@@ -14,7 +14,7 @@ class LemburController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->nama_peran === 'model') {
+        if ($user->peran_id === 1) {
             $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen'])->latest()->get();
         }
         else {
@@ -53,6 +53,50 @@ class LemburController extends Controller
             'message' => 'Pengajuan lembur berhasil dikirim',
             'data' => $lembur
         ], 201);
+    }
+
+    // Update lembur
+    public function update(Request $request, $id)
+    {
+        $lembur = Lembur::find($id);
+
+        if (!$lembur) {
+            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
+        }
+
+        $request->validate([
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'deskripsi' => 'nullable|string|max:255',
+        ]);
+
+        $lembur->tanggal = $request->tanggal;
+        $lembur->jam_mulai = $request->jam_mulai;
+        $lembur->jam_selesai = $request->jam_selesai;
+        $lembur->deskripsi = $request->deskripsi;
+        $lembur->save();
+
+        return response()->json([
+            'message' => 'Lembur berhasil diperbarui',
+            'data' => $lembur
+        ]);
+    }
+
+    // Hapus lembur
+    public function destroy($id)
+    {
+        $lembur = Lembur::find($id);
+
+        if (!$lembur) {
+            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
+        }
+
+        $lembur->delete();
+
+        return response()->json([
+            'message' => 'Lembur berhasil dihapus'
+        ]);
     }
 
     // Approve lembur

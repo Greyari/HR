@@ -107,12 +107,11 @@ class TugasController extends Controller
             'lokasi', 'instruksi_tugas', 'departemen_id'
         ]));
 
-        if ($request->filled('user_id')) {
+        if ($request->assignment_mode === 'Per User' && !empty($request->user_id)) {
             $tugas->departemen_id = null;
             $tugas->save();
-
             $tugas->users()->sync($request->user_id);
-        } elseif ($request->filled('departemen_id')) {
+        } elseif ($request->assignment_mode === 'Per Departemen' && $request->departemen_id) {
             $tugas->departemen_id = $request->departemen_id;
             $tugas->save();
 
