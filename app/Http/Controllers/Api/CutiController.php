@@ -52,6 +52,50 @@ class CutiController extends Controller
         ], 201);
     }
 
+    // Update cuti
+    public function update(Request $request, $id)
+    {
+        $cuti = Cuti::find($id);
+
+        if (!$cuti) {
+            return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
+        }
+
+        $request->validate([
+            'tipe_cuti' => 'required|string|max:50',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'alasan' => 'nullable|string|max:255',
+        ]);
+
+        $cuti->tipe_cuti = $request->tipe_cuti;
+        $cuti->tanggal_mulai = $request->tanggal_mulai;
+        $cuti->tanggal_selesai = $request->tanggal_selesai;
+        $cuti->alasan = $request->alasan;
+        $cuti->save();
+
+        return response()->json([
+            'message' => 'Cuti berhasil diperbarui',
+            'data' => $cuti
+        ]);
+    }
+
+    // Hapus cuti
+    public function destroy($id)
+    {
+        $cuti = Cuti::find($id);
+
+        if (!$cuti) {
+            return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
+        }
+
+        $cuti->delete();
+
+        return response()->json([
+            'message' => 'Cuti berhasil dihapus'
+        ]);
+    }
+
     // Approve cuti
     public function approve($id)
     {

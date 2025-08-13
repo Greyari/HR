@@ -17,11 +17,11 @@ class AuthController extends Controller
 
         // cek kredensial
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Email atau password anjing salah'], 401);
+            return response()->json(['message' => 'Email atau password salah'], 401);
         }
 
         // ambil user
-        $user = User::where('email', $request->email)->first();
+        $user = User::with(['peran', 'departemen'])->where('email', $request->email)->first();
 
         // buat token
         $token = $user->createToken('token_login')->plainTextToken;
@@ -29,12 +29,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login berhasil',
             'token'   => $token,
-            'user'    => [
-                'id'         => $user->id,
-                'nama'       => $user->nama,
-                'email'      => $user->email,
-                'nama_peran' => $user->peran->nama_peran,
-            ],
+            'data' => $user,
         ]);
     }
 

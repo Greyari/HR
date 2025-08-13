@@ -6,19 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class KaryawanController extends Controller
+class UserController extends Controller
 {
-    // List semua karyawan
-    Public function index()
-    {
-        $karyawan = User::get();
+    // List semua user
+    public function index() {
+        $user = User::with(['peran', 'departemen'],)->get();
 
         return response()->json([
-            'message' => 'Data karyawan berhasil diambil',
-            'data' => $karyawan
+            'message' => 'Data user berhasil diambil',
+            'data' => $user
         ]);
     }
 
+    // Simpan user baru
     public function store (request $request)
     {
         $request->validate([
@@ -43,11 +43,5 @@ class KaryawanController extends Controller
             'message' => 'Karyawan berhasil dibuat',
             'data' => $karyawan
         ]);
-    }
-
-    // Update karyawan
-    public function update(Request $request, $id)
-    {
-        // OTW Dikerjakan
     }
 }
