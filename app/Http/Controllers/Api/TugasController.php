@@ -38,16 +38,17 @@ class TugasController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_tugas' => 'required|string|max:255',
-            'jam_mulai' => 'required',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'lokasi' => 'nullable|string',
-            'instruksi_tugas' => 'nullable|string',
-            'departemen_id' => 'nullable|exists:departemen,id',
-            'user_id' => 'nullable|array',
-            'user_id.*' => 'exists:users,id',
+            'nama_tugas'        => 'required|string|max:255',
+            'jam_mulai'         => 'required|date_format:H:i:s',
+            'tanggal_mulai'     => 'required|date',
+            'tanggal_selesai'   => 'required|date|after_or_equal:tanggal_mulai',
+            'lokasi'            => 'nullable|string',
+            'instruksi_tugas'   => 'nullable|string',
+            'departemen_id'     => 'nullable|exists:departemen,id',
+            'user_id'           => 'nullable|array',
+            'user_id.*'         => 'exists:users,id',
         ]);
+
 
         $tugas = Tugas::create([
             'nama_tugas' => $request->nama_tugas,

@@ -26,6 +26,12 @@ class User extends Authenticatable
         'peran_id',
         'jabatan_id',
         'departemen_id',
+        'gaji_pokok',
+        'npwp',
+        'bpjs_kesehatan',
+        'bpjs_ketenagakerjaan',
+        'jenis_kelamin',
+        'status_pernikahan',
     ];
 
     /**

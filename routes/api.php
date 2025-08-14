@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\TugasController;
@@ -8,14 +9,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
 use App\Http\Controllers\Api\DepartemenController;
-use App\Http\Controllers\Api\KaryawanController;
+
 
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/profile', [AuthController::class, 'profile']);
-
 
     // Lembur routes
     Route::get('/lembur', [LemburController::class, 'index']);
@@ -44,6 +42,18 @@ Route::middleware('auth:sanctum')->group(function () {
     route::post('/departemen', [DepartemenController::class, 'store']);
     route::put('/departemen/{id}', [DepartemenController::class, 'update']);
     route::delete('/departemen/{id}', [DepartemenController::class, 'destroy']);
+
+    // Peran routes //note mungkin belum bisa di kerjakan sekedar membuat controler dan route nunggu  perancangan fitur dan izin fitur
+    route::get('/peran', [PeranController::class, 'index']);
+    route::post('/peran', [PeranController::class, 'store']);
+    route::put('/peran/{id}', [PeranController::class, 'update']);
+    route::delete('/peran/{id}', [PeranController::class, 'destroy']);
+
+    // Jabatan routes
+    route::get('/jabatan', [JabatanController::class, 'index']);
+    route::post('/jabatan', [JabatanController::class, 'store']);
+    route::put('/jabatan/{id}', [JabatanController::class, 'update']);
+    route::delete('/jabatan/{id}', [JabatanController::class, 'destroy']);
 
     // User routes
     route::get('/user', [UserController::class, 'index']);

@@ -13,14 +13,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('peran_id')->constrained('peran');
-            $table->foreignId('jabatan_id')->nullable()->constrained('jabatan');
-            $table->foreignId('departemen_id')->nullable()->constrained('departemen');
+            $table->foreignId('peran_id')->nullable()->constrained('peran')->nullOnDelete();
+            $table->foreignId('jabatan_id')->nullable()->constrained('jabatan')->nullOnDelete();
+            $table->foreignId('departemen_id')->nullable()->constrained('departemen')->nullOnDelete()   ;
             $table->string('nama');
+            $table->decimal('gaji_pokok', 15, 2)->nullable();
+            $table->string('npwp')->unique()->nullable();
+            $table->string('bpjs_kesehatan')->unique()->nullable();
+            $table->string('bpjs_ketenagakerjaan')->unique()->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->default('Laki-laki');
-            $table->enum('status_pernikahan', ['Menikah', 'Singgel'])->default('Singgel');
+            $table->enum('status_pernikahan', ['Menikah', 'Belum Menikah'])->default('Belum Menikah');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
