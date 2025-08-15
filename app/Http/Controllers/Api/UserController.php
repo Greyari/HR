@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -32,7 +33,7 @@ class UserController extends Controller
             'bpjs_ketenagakerjaan' => 'required|string|unique:users,bpjs_ketenagakerjaan',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'status_pernikahan' => 'required|in:Menikah,Belum Menikah',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:1',
         ]);
 
         // Untuk generate email otomatis
@@ -65,5 +66,61 @@ class UserController extends Controller
         ], 201);
     }
 
+    // Update User
+    public function update (Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User tidak ditemukan'], 404);
+        }
+
+        $request->validate([
+            'nama' => 'nullable|string|max:255',
+            'peran_id' => 'nullable|exists:peran,id',
+            'jabatan_id' => 'nullable|exists:jabatan,id',
+            'departemen_id' => 'nullable|exists:departemen,id',
+            'gaji_pokok' => 'numeric|min:0',
+            'npwp' => ['nullable', 'string', Rule::unique('users','npwp')->ignore($user->id)],
+            'bpjs_kesehatan' => ['nullable', 'string', Rule::unique('users','bpjs_kesehatan')->ignore($user->id)],
+            'bpjs_ketenagakerjaan' => ['nullable', 'string', Rule::unique('users','bpjs_ketenagakerjaan')->ignore($user->id)],
+            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
+            'status_pernikahan' => 'nullable|in:Menikah,Belum Menikah',
+        ]);
+
+        $user->update($request->only([
+            'nama',
+            'peran_id',
+            'jabatan_id',
+            'departemen_id',
+            'gaji_pokok',
+            'npwp',
+            'bpjs_kesehatan',
+            'bpjs_ketenagakerjaan',
+            'jenis_kelamin',
+            'status_pernikahan'
+        ]));
+
+        return response()->json([
+            'message' => 'User berhasil diperbarui',
+            'data' => $user
+        ]);
+    }
+    
+    // Hapus user
+    public function destroy ($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['User tidak ditemukan']);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User berhasil dihapus'
+        ]);
+    }
 
 }
