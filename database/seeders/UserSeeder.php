@@ -41,6 +41,5 @@ class UserSeeder extends Seeder
                 'peran_id' => $peranWA->id,
                 'departemen_id' => $departemenOffice->id,
             ]);
-
     }
 }
