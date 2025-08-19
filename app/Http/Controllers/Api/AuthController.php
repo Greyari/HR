@@ -21,7 +21,7 @@ class AuthController extends Controller
         }
 
         // ambil user
-        $user = User::with(['peran', 'departemen'])->where('email', $request->email)->first();
+        $user = User::with(['peran', 'departemen', 'jabatan'])->where('email', $request->email)->first();
 
         // buat token
         $token = $user->createToken('token_login')->plainTextToken;

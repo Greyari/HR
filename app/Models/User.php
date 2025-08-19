@@ -86,12 +86,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Cuti::class);
     }
-
-    //relasi ke tabel tugas
-    public function tugas()
-    {
-        return $this->belongsToMany(Tugas::class, 'tugas_user')
-                    ->withPivot('status', 'laporan_user')
-                    ->withTimestamps();
-    }
 }
