@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Departemen;
+use App\Models\Jabatan;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Peran;
@@ -14,6 +15,8 @@ class UserSeeder extends Seeder
     {
         $peranSA = Peran::where('nama_peran', 'Super Admin')->first();
         $peranWA = Peran::where('nama_peran', 'Wakil Direktur')->first();
+        $jabatanGM = Jabatan::where('nama_jabatan', 'GM')->first();
+        $jabatanPR = Jabatan::where('nama_jabatan', 'Presiden')->first();
         $departemenIT = Departemen::where('nama_departemen', 'IT')->first();
         $departemenOffice = Departemen::where('nama_departemen', 'Office')->first();
 
@@ -22,24 +25,40 @@ class UserSeeder extends Seeder
                 'nama' => 'Grey Ari',
                 'email' => 'grey@gmail.com',
                 'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
+                'gaji_pokok' => 900,
+                'npwp' => 555,
+                'bpjs_kesehatan' => 8829,
+                'bpjs_ketenagakerjaan' => 9090
             ]);
 
             User::create([
                 'nama' => 'Haikal',
                 'email' => 'haikal@gmail.com',
                 'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranWA->id,
                 'departemen_id' => $departemenIT->id,
+                'gaji_pokok' => 100,
+                'npwp' => 545,
+                'bpjs_kesehatan' => 4321,
+                'bpjs_ketenagakerjaan' => 8080
+
             ]);
 
             User::create([
                 'nama' => 'Zidan',
                 'email' => 'zidan@gmail.com',
                 'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanPR->id,
                 'peran_id' => $peranWA->id,
                 'departemen_id' => $departemenOffice->id,
+                'gaji_pokok' => 700,
+                'npwp' => 590,
+                'bpjs_kesehatan' => 1234,
+                'bpjs_ketenagakerjaan' => 7070
             ]);
     }
 }

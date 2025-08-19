@@ -12,7 +12,7 @@ class Tugas extends Model
     protected $table = 'tugas';
 
     protected $fillable = [
-        'departemen_id',
+        'user_id',       
         'nama_tugas',
         'jam_mulai',
         'tanggal_mulai',
@@ -20,20 +20,11 @@ class Tugas extends Model
         'lokasi',
         'instruksi_tugas',
         'status',
+        'bukti_video',
     ];
 
-    // Relasi ke tabel user
-    public function users()
+    public function user()
     {
-        return $this->belongsToMany(User::class, 'tugas_user')
-                    ->withPivot('status', 'laporan_user')
-                    ->withTimestamps();
-    }
-
-
-    // Relasi ke tabel departemen
-    public function department()
-    {
-        return $this->belongsTo(Departemen::class);
+        return $this->belongsTo(User::class);
     }
 }

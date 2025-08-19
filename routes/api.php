@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
 use App\Http\Controllers\Api\PeranController;
+use App\Http\Controllers\Api\PotonganGajiController;
 use App\Http\Controllers\Api\TugasController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -61,8 +63,16 @@ Route::middleware('auth:sanctum')->group(function () {
     route::put('/user/{id}',[UserController::class, 'update']);
     route::delete('/user/{id}',[UserController::class, 'destroy']);
 
-    // Peran routes
-    route::get('/peran', [PeranController::class, 'index']);
+    // Gaji routes
+    Route::post('/gaji/generate', [GajiController::class, 'generateGaji']);
+    Route::get('/gaji/list', [GajiController::class, 'listGaji']);
+
+    // Potongan gaji
+    route::get('/potongan_gaji',[PotonganGajiController::class, 'index']);
+    route::post('/potongan_gaji',[PotonganGajiController::class, 'store']);
+    route::put('/potongan_gaji/{id}',[PotonganGajiController::class, 'update']);
+    route::delete('/potongan_gaji/{id}',[PotonganGajiController::class, 'destroy']);
+
 
 
 
