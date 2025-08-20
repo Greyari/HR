@@ -13,12 +13,29 @@ return new class extends Migration
     {
         Schema::create('cuti', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('tipe_cuti', ['Tahunan', 'Sakit', 'Cuti Bersama', 'Izin'])->default('Izin');
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
+            $table->enum('tipe_cuti', [
+                'Tahunan',
+                'Sakit',
+                'Cuti Bersama',
+                'Izin'
+                ])->default('Izin');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->string('alasan')->nullable();
-            $table->enum('status', ['Pending', 'Disetujui', 'Ditolak'])->default('pending');
+            $table->enum('status', [
+                'Pending',
+                'Proses',
+                'Disetujui',
+                'Ditolak'
+            ])->default('Pending');
+
+            // Kolom baru untuk approval bertahap
+            $table->unsignedTinyInteger('approval_step')
+                  ->default(0);
+
             $table->timestamps();
         });
     }

@@ -15,10 +15,11 @@ class LemburController extends Controller
         $user = Auth::user();
 
         if ($user->peran_id === 1) {
-            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen'])->latest()->get();
-        }
-        else {
-            $lembur = Lembur::with(['user.peran', 'user.jabatan', 'user.departemen'])
+            $lembur = Lembur::with(['user.peran'])->latest()->get();
+        } elseif ($user->peran_id === 2) {
+            $lembur = Lembur::with(['user.peran'])->latest()->get();
+        } else {
+            $lembur = Lembur::with(['user.peran'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
@@ -29,6 +30,7 @@ class LemburController extends Controller
             'data' => $lembur
         ]);
     }
+
 
     // Menyimpan pengajuan lembur
     public function store(Request $request)
@@ -46,7 +48,7 @@ class LemburController extends Controller
             'jam_mulai' => $request->jam_mulai,
             'jam_selesai' => $request->jam_selesai,
             'deskripsi' => $request->deskripsi,
-            'status' => 'pending',
+            'status' => 'Pending',
         ]);
 
         return response()->json([
@@ -64,6 +66,10 @@ class LemburController extends Controller
             return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
         }
 
+        if ($lembur->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Tidak memiliki izin untuk mengedit lembur ini'], 403);
+        }
+
         $request->validate([
             'tanggal' => 'required|date',
             'jam_mulai' => 'required',
@@ -71,11 +77,13 @@ class LemburController extends Controller
             'deskripsi' => 'nullable|string|max:255',
         ]);
 
-        $lembur->tanggal = $request->tanggal;
-        $lembur->jam_mulai = $request->jam_mulai;
-        $lembur->jam_selesai = $request->jam_selesai;
-        $lembur->deskripsi = $request->deskripsi;
-        $lembur->save();
+        $lembur->update([
+            'tanggal' => $request->tanggal,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+            'deskripsi' => $request->deskripsi,
+        ]);
+
 
         return response()->json([
             'message' => 'Lembur berhasil diperbarui',
@@ -92,6 +100,10 @@ class LemburController extends Controller
             return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
         }
 
+        if ($lembur->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Tidak memiliki izin untuk menghapus lembur ini'], 403);
+        }
+
         $lembur->delete();
 
         return response()->json([
@@ -102,37 +114,77 @@ class LemburController extends Controller
     // Approve lembur
     public function approve($id)
     {
+        $user = Auth::user();
         $lembur = Lembur::find($id);
 
         if (!$lembur) {
-            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
+            return response()->json(['message' => 'Lembur tidak ditemukan'], 404);
         }
 
-        $lembur->status = 'Disetujui';
-        $lembur->save();
+        // Jika Admin Office (peran_id = 2)
+        if ($user->peran_id === 2) {
+            if (!in_array($lembur->approval_step, [0, 3])) {
+                return response()->json(['message' => 'Lembur sudah diproses oleh Admin Office'], 400);
+            }
+            $lembur->approval_step = 1;
+            $lembur->status = 'Proses';
+            $lembur->save();
 
-        return response()->json([
-            'message' => 'Lembur berhasil disetujui',
-            'data' => $lembur
-        ]);
+            return response()->json([
+                'message' => 'Lembur disetujui Admin Office, menunggu Super Admin',
+                'step'    => $lembur->approval_step,
+                'status'  => $lembur->status,
+                'data'    => $lembur
+            ]);
+        }
+
+        // Jika Super Admin (peran_id = 1)
+        if ($user->peran_id === 1) {
+            if (!in_array($lembur->approval_step, [1, 3])) {
+                return response()->json(['message' => 'Lembur harus disetujui Admin Office dulu'], 400);
+            }
+            $lembur->approval_step = 2;
+            $lembur->status = 'Disetujui';
+            $lembur->save();
+
+            return response()->json([
+                'message' => 'Lembur disetujui final oleh Super Admin',
+                'step'    => $lembur->approval_step,
+                'status'  => $lembur->status,
+                'data'    => $lembur
+            ]);
+        }
+
+        return response()->json(['message' => 'Tidak memiliki izin'], 403);
     }
 
-    // Decline lembur
+    // Decline
     public function decline($id)
     {
-        $lembur = Lembur::find($id);
+        $user = Auth::user();
+        $lembur = lembur::find($id);
 
         if (!$lembur) {
-            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
+            return response()->json(['message' => 'Lembur tidak ditemukan'], 404);
         }
 
-        $lembur->status = 'Ditolak';
-        $lembur->save();
+        if (!in_array($user->peran_id, [1, 2])) {
+            return response()->json(['message' => 'Tidak memiliki izin'], 403);
+        }
 
-        return response()->json([
-            'message' => 'Lembur berhasil ditolak',
-            'data' => $lembur
-        ]);
+        if ($lembur->approval_step < 2) {
+            $lembur->approval_step = 3;
+            $lembur->status = 'Ditolak';
+            $lembur->save();
+
+            return response()->json([
+                'message' => 'Lembur ditolak',
+                'step'    => $lembur->approval_step,
+                'status'  => $lembur->status,
+                'data'    => $lembur
+            ]);
+        }
+
+        return response()->json(['message' => 'Lembur sudah final, tidak bisa ditolak'], 400);
     }
-
 }

@@ -17,7 +17,11 @@ class PeranSeeder extends Seeder
         ]);
 
         Peran::create([
-            'nama_peran' => 'Wakil Direktur',
+            'nama_peran' => 'Admin Office',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Technical',
         ]);
     }
 }
