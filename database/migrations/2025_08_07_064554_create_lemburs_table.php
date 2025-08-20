@@ -18,7 +18,14 @@ return new class extends Migration
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->string('deskripsi')->nullable();
-            $table->enum('status', ['Pending', 'Disetujui', 'Ditolak'])->default('pending');
+            $table->enum('status', [
+                'Pending',
+                'Proses',
+                'Disetujui',
+                'Ditolak'
+            ])->default('Pending');
+            $table->unsignedTinyInteger('approval_step')
+                  ->default(0);
             $table->timestamps();
         });
     }

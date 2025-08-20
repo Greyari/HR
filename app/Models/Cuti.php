@@ -17,11 +17,37 @@ class Cuti extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'alasan',
+        'status',
+        'approval_step',
     ];
 
+    // Supaya accessor ikut muncul di JSON
+    protected $appends = ['keterangan_status'];
 
-    // Relasi ke tabel User
-    public function user() {
-        return $this ->belongsTo(User::class);
+    /**
+     * Relasi ke User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Akses keterangan status berdasarkan approval_step
+     */
+    public function getKeteranganStatusAttribute()
+    {
+        switch ($this->approval_step) {
+            case 0:
+                return "Menunggu diproses Admin Office";
+            case 1:
+                return "Menunggu persetujuan Super Admin";
+            case 2:
+                return "Cuti disetujui, Anda dapat melakukan cuti";
+            case 3:
+                return "Cuti Anda ditolak, silahkan ajukan cuti kembali";
+            default:
+                return "Status tidak diketahui";
+        }
     }
 }

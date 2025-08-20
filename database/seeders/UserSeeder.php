@@ -14,7 +14,8 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $peranSA = Peran::where('nama_peran', 'Super Admin')->first();
-        $peranWA = Peran::where('nama_peran', 'Wakil Direktur')->first();
+        $peranAO = Peran::where('nama_peran', 'Admin Office')->first();
+        $peranT = Peran::where('nama_peran', 'Technical')->first();
         $jabatanGM = Jabatan::where('nama_jabatan', 'GM')->first();
         $jabatanPR = Jabatan::where('nama_jabatan', 'Presiden')->first();
         $departemenIT = Departemen::where('nama_departemen', 'IT')->first();
@@ -39,7 +40,7 @@ class UserSeeder extends Seeder
                 'email' => 'haikal@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
-                'peran_id' => $peranWA->id,
+                'peran_id' => $peranAO->id,
                 'departemen_id' => $departemenIT->id,
                 'gaji_pokok' => 100,
                 'npwp' => 545,
@@ -53,7 +54,7 @@ class UserSeeder extends Seeder
                 'email' => 'zidan@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanPR->id,
-                'peran_id' => $peranWA->id,
+                'peran_id' => $peranT->id,
                 'departemen_id' => $departemenOffice->id,
                 'gaji_pokok' => 700,
                 'npwp' => 590,

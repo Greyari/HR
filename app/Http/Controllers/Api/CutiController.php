@@ -15,9 +15,11 @@ class CutiController extends Controller
         $user = Auth::user();
 
         if ($user->peran_id === 1) {
-            $cuti = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen'])->latest()->get();
+            $cuti = Cuti::with(['user.peran'])->latest()->get();
+        } elseif ($user->peran_id === 2) {
+            $cuti = Cuti::with(['user.peran'])->latest()->get();
         } else {
-            $cuti = Cuti::with(['user.peran', 'user.jabatan', 'user.departemen'])
+            $cuti = Cuti::with(['user.peran'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
@@ -30,7 +32,8 @@ class CutiController extends Controller
     }
 
     // Menyimpan pengajuan cuti
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
             'tipe_cuti' => 'required|string|max:50',
             'tanggal_mulai' => 'required|date',
@@ -44,6 +47,7 @@ class CutiController extends Controller
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_selesai' => $request->tanggal_selesai,
             'alasan' => $request->alasan,
+            'status' => 'Pending'
         ]);
 
         return response()->json([
@@ -52,13 +56,18 @@ class CutiController extends Controller
         ], 201);
     }
 
-    // Update cuti
+    // Update cuti (hanya pemilik cuti)
     public function update(Request $request, $id)
     {
         $cuti = Cuti::find($id);
 
         if (!$cuti) {
             return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
+        }
+
+        // Pastikan user hanya bisa update cutinya sendiri
+        if ($cuti->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Tidak memiliki izin untuk mengedit cuti ini'], 403);
         }
 
         $request->validate([
@@ -68,11 +77,12 @@ class CutiController extends Controller
             'alasan' => 'nullable|string|max:255',
         ]);
 
-        $cuti->tipe_cuti = $request->tipe_cuti;
-        $cuti->tanggal_mulai = $request->tanggal_mulai;
-        $cuti->tanggal_selesai = $request->tanggal_selesai;
-        $cuti->alasan = $request->alasan;
-        $cuti->save();
+        $cuti->update([
+            'tipe_cuti' => $request->tipe_cuti,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'alasan' => $request->alasan,
+        ]);
 
         return response()->json([
             'message' => 'Cuti berhasil diperbarui',
@@ -80,13 +90,17 @@ class CutiController extends Controller
         ]);
     }
 
-    // Hapus cuti
+    // Hapus cuti (hanya pemilik cuti)
     public function destroy($id)
     {
         $cuti = Cuti::find($id);
 
         if (!$cuti) {
             return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
+        }
+
+        if ($cuti->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Tidak memiliki izin untuk menghapus cuti ini'], 403);
         }
 
         $cuti->delete();
@@ -96,39 +110,80 @@ class CutiController extends Controller
         ]);
     }
 
-    // Approve cuti
+    // Approve
     public function approve($id)
     {
+        $user = Auth::user();
         $cuti = Cuti::find($id);
 
         if (!$cuti) {
-            return response()->json(['message' => 'Data cuti tidak ditemukan'], 404);
+            return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
         }
 
-        $cuti->status = 'Disetujui';
-        $cuti->save();
+        // Jika Admin Office (peran_id = 2)
+        if ($user->peran_id === 2) {
+            if (!in_array($cuti->approval_step, [0, 3])) {
+                return response()->json(['message' => 'Cuti sudah diproses oleh Admin Office'], 400);
+            }
+            $cuti->approval_step = 1;
+            $cuti->status = 'Proses';
+            $cuti->save();
 
-        return response()->json([
-            'message' => 'Cuti berhasil disetujui',
-            'data' => $cuti
-        ]);
+            return response()->json([
+                'message' => 'Cuti disetujui Admin Office, menunggu Super Admin',
+                'step'    => $cuti->approval_step,
+                'status'  => $cuti->status,
+                'data'    => $cuti
+            ]);
+        }
+
+        // Jika Super Admin (peran_id = 1)
+        if ($user->peran_id === 1) {
+            if (!in_array($cuti->approval_step, [1, 3])) {
+                return response()->json(['message' => 'Cuti harus disetujui Admin Office dulu'], 400);
+            }
+            $cuti->approval_step = 2;
+            $cuti->status = 'Disetujui';
+            $cuti->save();
+
+            return response()->json([
+                'message' => 'Cuti disetujui final oleh Super Admin',
+                'step'    => $cuti->approval_step,
+                'status'  => $cuti->status,
+                'data'    => $cuti
+            ]);
+        }
+
+        return response()->json(['message' => 'Tidak memiliki izin'], 403);
     }
 
-    // Decline cuti
+    // Decline
     public function decline($id)
     {
+        $user = Auth::user();
         $cuti = Cuti::find($id);
 
         if (!$cuti) {
-            return response()->json(['message' => 'Cuti not found'], 404);
+            return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
         }
 
-        $cuti->status = 'Ditolak';
-        $cuti->save();
+        if (!in_array($user->peran_id, [1, 2])) {
+            return response()->json(['message' => 'Tidak memiliki izin'], 403);
+        }
 
-        return response()->json([
-            'message' => 'Cuti berhasil ditolak',
-            'data' => $cuti
-        ]);
+        if ($cuti->approval_step < 2) {
+            $cuti->approval_step = 3;
+            $cuti->status = 'Ditolak';
+            $cuti->save();
+
+            return response()->json([
+                'message' => 'Cuti ditolak',
+                'step'    => $cuti->approval_step,
+                'status'  => $cuti->status,
+                'data'    => $cuti
+            ]);
+        }
+
+        return response()->json(['message' => 'Cuti sudah final, tidak bisa ditolak'], 400);
     }
 }
