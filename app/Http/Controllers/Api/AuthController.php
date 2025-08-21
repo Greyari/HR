@@ -55,11 +55,10 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Verifikasi password lama
         if (!Hash::check($request->old_password, $user->password)) {
             return response()->json([
-                'message' => 'Password lama salah'
-            ], 401);
+                'message' => 'Password salah',
+            ], 422);
         }
 
         // Update email pengguna

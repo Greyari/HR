@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('tugas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nama_tugas');
             $table->time('jam_mulai');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->string('lokasi')->nullable();
             $table->text('instruksi_tugas')->nullable();
-            $table->enum('status', ['Proses', 'Selesai'])->default('Proses');
-            $table->string('bukti_video')->nullable();
+            $table->enum('status', ['Proses', 'Menunggu Admin', 'Selesai'])->default('Proses');
+            $table->string('lampiran')->nullable();
             $table->timestamps();
         });
     }
