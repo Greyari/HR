@@ -15,9 +15,18 @@ class TugasController extends Controller
     {
         $user = Auth::user();
 
-        $tugas = ($user->peran_id === 1)
+        $tugas = in_array($user->peran_id, [1, 2])
             ? Tugas::with('user')->latest()->get()
             : Tugas::with('user')->where('user_id', $user->id)->latest()->get();
+
+        $tugas->transform(function ($item) {
+            if ($item->lampiran) {
+                $item->lampiran = asset('storage/' . $item->lampiran);
+            } else {
+                $item->lampiran = null;
+            }
+            return $item;
+        });
 
         return response()->json([
             'message' => 'Data tugas berhasil diambil',
@@ -97,34 +106,38 @@ class TugasController extends Controller
     }
 
     // User upload bukti video
-    public function uploadBuktiVideo(Request $request, $id)
+    public function uploadLampiran(Request $request, $id)
     {
-        $tugas = Tugas::find($id);
-
-        if (!$tugas) {
-            return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
-        }
-
         $request->validate([
-            'bukti_video' => 'required|file|mimetypes:video/mp4,video/avi,video/mpeg|max:102400',
+            'lampiran' => 'required|file|max:204800',
         ]);
 
-        // Hapus video lama jika ada
-        if ($tugas->bukti_video && Storage::disk('public')->exists($tugas->bukti_video)) {
-            Storage::disk('public')->delete($tugas->bukti_video);
+        $tugas = Tugas::findOrFail($id);
+
+        if ($request->hasFile('lampiran')) {
+            $file = $request->file('lampiran');
+
+            // Bisa simpan di folder sesuai tipe
+            $extension = $file->getClientOriginalExtension();
+            $folder = match($extension) {
+                'mp4', 'mov', 'avi', '3gp' => 'videos',
+                'jpg', 'jpeg', 'png' => 'images',
+                default => 'files',
+            };
+
+            $path = $file->store($folder, 'public');
+
+            // Simpan path ke database (misal di kolom lampiran)
+            $tugas->lampiran = $path;
+            $tugas->status = "Menunggu Admin";
+            $tugas->save();
         }
-
-        // Simpan video baru
-        $path = $request->file('bukti_video')->store('videos', 'public');
-
-        $tugas->update([
-            'bukti_video' => $path,
-            'status'      => 'Selesai',
-        ]);
 
         return response()->json([
-            'message' => 'Bukti video berhasil diupload',
-            'data'    => $tugas->load('user')
+            'message' => 'Lampiran berhasil diupload!',
+            'data' => $tugas,
+            'file_url' => asset('storage/' . $tugas->lampiran),
         ]);
     }
+
 }

@@ -37,11 +37,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cuti/{id}', [CutiController::class, 'update']);
     Route::delete('/cuti/{id}', [CutiController::class, 'destroy']);
 
-    // Tugas Routes
+    // Tugas Routes Admin
     Route::get('/tugas', [TugasController::class, 'index']);
     Route::post('/tugas', [TugasController::class, 'store']);
     Route::put('/tugas/{id}', [TugasController::class, 'update']);
     Route::delete('/tugas/{id}', [TugasController::class, 'destroy']);
+
+    // Tugas Route Karyawan (sudah termasuk dalam upload dan edit)
+    Route::post('/tugas/{id}/upload-file', [TugasController::class, 'uploadLampiran']);
 
     // Departemen Routes
     Route::get('/departemen', [DepartemenController::class, 'index']);
@@ -76,8 +79,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/potongan_gaji',[PotonganGajiController::class, 'store']);
     Route::put('/potongan_gaji/{id}',[PotonganGajiController::class, 'update']);
     Route::delete('/potongan_gaji/{id}',[PotonganGajiController::class, 'destroy']);
-
-
-
 
 });
