@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
@@ -7,10 +8,11 @@ use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
 use App\Http\Controllers\Api\TugasController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
 use App\Http\Controllers\Api\DepartemenController;
+use App\Http\Controllers\Api\KantorController;
+use Illuminate\Support\Facades\Route;
 
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -80,4 +82,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/potongan_gaji/{id}',[PotonganGajiController::class, 'update']);
     Route::delete('/potongan_gaji/{id}',[PotonganGajiController::class, 'destroy']);
 
+    // Kantor Routes
+    Route::get('/kantor',[KantorController::class, 'index']);
+    Route::post('/kantor',[KantorController::class, 'saveProfile']);
+
+    // Absensi Route
+    Route::get('/absensi',[AbsensiController::class, 'getAbsensi']);
+    Route::post('/checkin',[AbsensiController::class, 'checkin']);
+    Route::post('/checkout',[AbsensiController::class, 'checkout']);
 });
+

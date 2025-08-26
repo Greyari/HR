@@ -15,17 +15,19 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('tugas_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('kantor_id')->nullable()->constrained('kantor')->onDelete('set null');
 
             $table->decimal('checkin_lat', 10, 7)->nullable();
             $table->decimal('checkin_lng', 10, 7)->nullable();
-            $table->timestamp('checkin_time')->nullable();
+            $table->time('checkin_time')->nullable();
+            $table->date('checkin_date')->nullable();
 
             $table->decimal('checkout_lat', 10, 7)->nullable();
             $table->decimal('checkout_lng', 10, 7)->nullable();
-            $table->timestamp('checkout_time')->nullable();
+            $table->time('checkout_time')->nullable();
+            $table->date('checkout_date')->nullable();
 
-            $table->enum('status', ['checkin', 'checkout'])->default('checkin');
+            $table->string('video_user')->nullable();
+            $table->enum('status', ['Tepat Waktu', 'Terlambat'])->nullable();
 
             $table->timestamps();
         });
@@ -37,7 +39,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('absensi');
+        Schema::dropIfExists('absensi'); 
         Schema::enableForeignKeyConstraints();
     }
 };
