@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('potongan_gaji', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_potongan');
-            $table->decimal('nominal', 15, 2)->default(0);
+            $table->string('nama_potongan'); // contoh: BPJS Kesehatan
+            $table->decimal('persen', 5, 2)->default(0);    
             $table->timestamps();
         });
     }

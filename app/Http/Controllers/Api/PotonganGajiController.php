@@ -24,10 +24,13 @@ class PotonganGajiController extends Controller
     {
         $request->validate([
             'nama_potongan' => 'required|string|max:255',
-            'nominal' => 'required|numeric|min:0',
+            'persen' => 'required|numeric|min:0|max:100', 
         ]);
 
-        $potongan = PotonganGaji::create($request->all());
+        $potongan = PotonganGaji::create([
+            'nama_potongan' => $request->nama_potongan,
+            'persen' => $request->persen,
+        ]);
 
         return response()->json([
             'message' => 'Potongan berhasil ditambahkan',
@@ -42,10 +45,10 @@ class PotonganGajiController extends Controller
 
         $request->validate([
             'nama_potongan' => 'sometimes|required|string|max:255',
-            'nominal' => 'sometimes|required|numeric|min:0',
+            'persen' => 'sometimes|required|numeric|min:0|max:100',
         ]);
 
-        $potongan->update($request->all());
+        $potongan->update($request->only(['nama_potongan', 'persen']));
 
         return response()->json([
             'message' => 'Potongan berhasil diperbarui',
@@ -59,6 +62,8 @@ class PotonganGajiController extends Controller
         $potongan = PotonganGaji::findOrFail($id);
         $potongan->delete();
 
-        return response()->json(['message' => 'Potongan berhasil dihapus']);
+        return response()->json([
+            'message' => 'Potongan berhasil dihapus'
+        ]);
     }
 }

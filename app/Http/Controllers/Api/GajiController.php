@@ -3,106 +3,64 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Gaji;
 use App\Models\PotonganGaji;
 use Illuminate\Http\Request;
 
 class GajiController extends Controller
 {
-    // Ambil semua gaji (dengan potongan)
-    public function index()
+    // Hitung gaji semua user sekaligus
+    public function calculateAll()
     {
-        $gaji = Gaji::with(['user', 'potongan'])->get();
+        $users = User::all();
+        $potonganList = PotonganGaji::all();
+        $result = [];
 
-        return response()->json($gaji);
-    }
+        foreach ($users as $user) {
+            $gajiPokok = $user->gaji_pokok ?? 0;
+            $totalLembur = 0; 
+            $totalPotongan = 0;
+            $detailPotongan = [];
 
-    // Tambah data gaji baru
-    public function store(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'bulan' => 'required|string',
-            'tahun' => 'required|string',
-            'gaji_pokok' => 'required|numeric|min:0',
-            'total_lembur' => 'nullable|numeric|min:0',
-            'potongan' => 'nullable|array', // daftar potongan
-            'potongan.*.id' => 'required|exists:potongan_gaji,id',
-            'potongan.*.nominal' => 'required|numeric|min:0',
-        ]);
-
-        // Buat gaji
-        $gaji = Gaji::create([
-            'user_id' => $request->user_id,
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun,
-            'gaji_pokok' => $request->gaji_pokok,
-            'total_lembur' => $request->total_lembur ?? 0,
-            'gaji_bersih' => 0, // dihitung setelah potongan
-        ]);
-
-        // Hitung total potongan
-        $totalPotongan = 0;
-        if ($request->has('potongan')) {
-            foreach ($request->potongan as $pot) {
-                $gaji->potongan()->attach($pot['id'], ['nominal' => $pot['nominal']]);
-                $totalPotongan += $pot['nominal'];
+            foreach ($potonganList as $potongan) {
+                $nilaiPotongan = ($gajiPokok * $potongan->persen / 100);
+                $totalPotongan += $nilaiPotongan;
+                $detailPotongan[] = [
+                    'nama' => $potongan->nama_potongan, 
+                    'persen' => $potongan->persen,
+                    'nilai' => $nilaiPotongan,
+                ];
             }
+
+            $gajiBersih = $gajiPokok + $totalLembur - $totalPotongan;
+
+                $gaji = Gaji::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'gaji_pokok' => $gajiPokok,
+                    'total_lembur' => $totalLembur,
+                    'gaji_bersih' => $gajiBersih,
+                ]
+            );
+
+            // Tambahkan ke hasil response
+            $result[] = [
+                'user' => [
+                    'id' => $user->id,
+                    'nama' => $user->nama,
+                ],
+                'gaji_pokok' => $gajiPokok,
+                'total_lembur' => $totalLembur,
+                'potongan' => $detailPotongan,
+                'total_potongan' => $totalPotongan,
+                'gaji_bersih' => $gajiBersih,
+            ];
         }
 
-        // Update gaji bersih
-        $gaji->gaji_bersih = ($gaji->gaji_pokok + $gaji->total_lembur) - $totalPotongan;
-        $gaji->save();
-
         return response()->json([
-            'message' => 'Gaji berhasil dibuat',
-            'data' => $gaji->load('potongan')
-        ], 201);
-    }
-
-    // Update data gaji
-    public function update(Request $request, $id)
-    {
-        $gaji = Gaji::findOrFail($id);
-
-        $request->validate([
-            'gaji_pokok' => 'sometimes|required|numeric|min:0',
-            'total_lembur' => 'sometimes|required|numeric|min:0',
-            'potongan' => 'nullable|array',
-            'potongan.*.id' => 'required|exists:potongan_gaji,id',
-            'potongan.*.nominal' => 'required|numeric|min:0',
+            'message' => 'Semua gaji berhasil dihitung dan disimpan',
+            'data' => $result
         ]);
-
-        $gaji->update($request->only(['gaji_pokok', 'total_lembur']));
-
-        // Reset potongan lama
-        $gaji->potongan()->detach();
-
-        // Hitung ulang potongan
-        $totalPotongan = 0;
-        if ($request->has('potongan')) {
-            foreach ($request->potongan as $pot) {
-                $gaji->potongan()->attach($pot['id'], ['nominal' => $pot['nominal']]);
-                $totalPotongan += $pot['nominal'];
-            }
-        }
-
-        // Update gaji bersih
-        $gaji->gaji_bersih = ($gaji->gaji_pokok + $gaji->total_lembur) - $totalPotongan;
-        $gaji->save();
-
-        return response()->json([
-            'message' => 'Gaji berhasil diperbarui',
-            'data' => $gaji->load('potongan')
-        ]);
-    }
-
-    // Hapus data gaji
-    public function destroy($id)
-    {
-        $gaji = Gaji::findOrFail($id);
-        $gaji->delete();
-
-        return response()->json(['message' => 'Gaji berhasil dihapus']);
     }
 }
