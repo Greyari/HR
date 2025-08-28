@@ -16,6 +16,7 @@ class Kantor extends Model
         'minimal_keterlambatan',
         'lat',
         'lng',
-        'radius_meter'
+        'radius_meter',
+        'jatah_cuti_tahunan'
     ];
 }
