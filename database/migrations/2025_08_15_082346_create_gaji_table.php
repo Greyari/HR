@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('gaji', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // relasi ke karyawan
-            $table->string('bulan'); // contoh: 08
-            $table->string('tahun'); // contoh: 2025
+            $table->unsignedBigInteger('user_id');
             $table->decimal('gaji_pokok', 15, 2);
             $table->decimal('total_lembur', 15, 2)->default(0);
             $table->decimal('gaji_bersih', 15, 2)->default(0);

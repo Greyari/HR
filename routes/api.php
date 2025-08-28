@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/lembur/{id}', [LemburController::class, 'update']);
     Route::delete('/lembur/{id}', [LemburController::class, 'destroy']);
 
+    // note besar untuk cuti :: masi bingung gimana bagusnya untuk konsep jatah cuti tahunan kemudian seharunya kalo cuti di acc dia sudah bisa ke generate ke absensi kalo hari ini dia cuti
     // Cuti Routes
     Route::get('/cuti', [CutiController::class, 'index']);
     Route::post('/cuti', [CutiController::class, 'store']);
@@ -73,8 +74,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/{id}',[UserController::class, 'destroy']);
 
     // Gaji Routes
-    Route::post('/gaji/generate', [GajiController::class, 'generateGaji']);
-    Route::get('/gaji/list', [GajiController::class, 'listGaji']);
+    // Route::get('/gaji', [GajiController::class, 'index']); // semua gaji
+    // Route::get('/gaji/{userId}', [GajiController::class, 'show']); // gaji per user
+    // Route::post('/gaji/calculate/{userId}', [GajiController::class, 'calculate']); // hitung & simpan gaji
+    Route::get('/gaji/calculate-all', [GajiController::class, 'calculateAll']);
 
     // Potongan gaji
     Route::get('/potongan_gaji',[PotonganGajiController::class, 'index']);

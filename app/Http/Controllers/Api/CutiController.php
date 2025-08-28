@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cuti;
+use App\Models\Kantor;
 use App\Models\UserJatahCuti;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,14 +51,15 @@ class CutiController extends Controller
 
         // Jika tipe cuti Tahunan, cek jatah
         if ($request->tipe_cuti === 'Tahunan') {
+            $kantor = Kantor::first();
             $jatah = UserJatahCuti::firstOrCreate(
                 ['user_id' => $user->id, 'tahun' => $tahun],
                 [
-                    'jatah' => $user->kantor->jatah_cuti_tahunan ?? 12,
+                    'jatah' => $kantor->jatah_cuti_tahunan,
                     'terpakai' => 0,
-                    'sisa' => $user->kantor->jatah_cuti_tahunan ?? 12
+                    'sisa' => $kantor->jatah_cuti_tahunan
                 ]
-            );
+            );  
 
             if ($lamaCuti > $jatah->sisa) {
                 return response()->json([
@@ -112,8 +114,6 @@ class CutiController extends Controller
         $cuti = Cuti::find($id);
         if (!$cuti) return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
         if ($cuti->user_id !== Auth::id()) return response()->json(['message' => 'Tidak memiliki izin'], 403);
-
-        // Opsional: cek jika cuti tahunan sudah disetujui, jangan hapus agar data audit tetap aman
 
         $cuti->delete();
         return response()->json(['message' => 'Cuti berhasil dihapus']);

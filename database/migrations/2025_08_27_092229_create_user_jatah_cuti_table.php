@@ -14,6 +14,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
             $table->foreignId('kantor_id')
+                ->default(1)
                 ->constrained('kantor')
                 ->onDelete('cascade');
             $table->year('tahun');
@@ -28,6 +29,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('user_cuti_tahunan');
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('user_jatah_cuti');
+        Schema::enableForeignKeyConstraints();
     }
 };

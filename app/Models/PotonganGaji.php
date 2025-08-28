@@ -13,14 +13,14 @@ class PotonganGaji extends Model
 
     protected $fillable = [
         'nama_potongan',
-        'nominal',
+        'persen',
     ];
 
     // Relasi ke Gaji
     public function gaji()
     {
         return $this->belongsToMany(Gaji::class, 'gaji_potongan', 'potongan_gaji_id', 'gaji_id')
-                    ->withPivot('nominal')
+                    ->withPivot('persen')
                     ->withTimestamps();
     }
 }
