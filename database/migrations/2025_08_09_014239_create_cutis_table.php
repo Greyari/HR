@@ -19,11 +19,12 @@ return new class extends Migration
             $table->enum('tipe_cuti', [
                 'Tahunan',
                 'Sakit',
-                'Cuti Bersama',
+                'Unpaid',
                 'Izin'
                 ])->default('Izin');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
+            $table->boolean('potong_gaji')->default(false);
             $table->string('alasan')->nullable();
             $table->enum('status', [
                 'Pending',

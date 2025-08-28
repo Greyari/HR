@@ -18,7 +18,6 @@ class KantorController extends Controller
         if ($kantor) {
             // format biar hanya HH:mm
             $kantor->jam_masuk = substr($kantor->jam_masuk, 0, 5);
-            $kantor->minimal_keterlambatan = substr($kantor->minimal_keterlambatan, 0, 5);
         }
 
         return response()->json([
@@ -34,10 +33,11 @@ class KantorController extends Controller
     {
         $request->validate([
             'jam_masuk' => 'required|date_format:H:i',
-            'minimal_keterlambatan' => 'required|date_format:H:i',
+            'minimal_keterlambatan' => 'required|integer|min:0',
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
             'radius_meter' => 'required|integer',
+            'jatah_cuti_tahunan' => 'required|integer|min:0'
         ]);
 
         $kantor = Kantor::first();
@@ -48,7 +48,8 @@ class KantorController extends Controller
                 'minimal_keterlambatan',
                 'lat',
                 'lng',
-                'radius_meter'
+                'radius_meter',
+                'jatah_cuti_tahunan'
             ]));
             $message = 'Data kantor berhasil diperbarui';
             $status = 200;
@@ -58,7 +59,8 @@ class KantorController extends Controller
                 'minimal_keterlambatan',
                 'lat',
                 'lng',
-                'radius_meter'
+                'radius_meter',
+                'jatah_cuti_tahunan'
             ]));
             $message = 'Data kantor berhasil ditambahkan';
             $status = 201;
@@ -66,7 +68,6 @@ class KantorController extends Controller
 
         // format biar hanya HH:mm saat dikirim
         $kantor->jam_masuk = substr($kantor->jam_masuk, 0, 5);
-        $kantor->minimal_keterlambatan = substr($kantor->minimal_keterlambatan, 0, 5);
 
         return response()->json([
             'message' => $message,

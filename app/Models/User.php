@@ -57,33 +57,43 @@ class User extends Authenticatable
         ];
     }
 
-    //relasi ke tabel peran
+    // relasi ke tabel peran
     public function peran()
     {
         return $this->belongsTo(Peran::class, 'peran_id');
     }
 
-    //relasi ke tabel jabatan
+    // relasi ke tabel jabatan
     public function jabatan()
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id');
     }
 
-    //relasi ke tabel departemen
+    // relasi ke tabel departemen
     public function departemen()
     {
         return $this->belongsTo(Departemen::class, 'departemen_id');
     }
 
-    //relasi ke tabel lembur
+    // relasi ke tabel lembur
     public function lembur()
     {
         return $this->hasMany(Lembur::class);
     }
 
-    //relasi ke tabel cuti
+    // relasi ke tabel cuti
     public function cuti()
     {
         return $this->hasMany(Cuti::class);
+    }
+    // relasi kantor
+    public function kantor()
+    {
+        return $this->belongsTo(Kantor::class, 'kantor_id');
+    }
+    // relasi jatah cuti tahunan
+    public function jatahCutiTahunan()
+    {
+        return $this->hasMany(UserJatahCuti::class);
     }
 }
