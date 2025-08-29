@@ -15,11 +15,10 @@ class GajiController extends Controller
     {
         $users = User::all();
         $potonganList = PotonganGaji::all();
-        $result = [];
 
         foreach ($users as $user) {
             $gajiPokok = $user->gaji_pokok ?? 0;
-            $totalLembur = 0; 
+            $totalLembur = 0;
             $totalPotongan = 0;
             $detailPotongan = [];
 
@@ -27,7 +26,7 @@ class GajiController extends Controller
                 $nilaiPotongan = ($gajiPokok * $potongan->persen / 100);
                 $totalPotongan += $nilaiPotongan;
                 $detailPotongan[] = [
-                    'nama' => $potongan->nama_potongan, 
+                    'nama_potongan' => $potongan->nama_potongan,
                     'persen' => $potongan->persen,
                     'nilai' => $nilaiPotongan,
                 ];
@@ -55,6 +54,7 @@ class GajiController extends Controller
                 'potongan' => $detailPotongan,
                 'total_potongan' => $totalPotongan,
                 'gaji_bersih' => $gajiBersih,
+                'status' => $gaji->status
             ];
         }
 
@@ -63,4 +63,22 @@ class GajiController extends Controller
             'data' => $result
         ]);
     }
+
+    // update status
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Sudah Dibayar,Belum Dibayar',
+        ]);
+
+        $gaji = Gaji::findOrFail($id);
+        $gaji->status = $request->status;
+        $gaji->save();
+
+        return response()->json([
+            'message' => 'Status gaji berhasil diperbarui',
+            'data' => $gaji
+        ]);
+    }
+
 }
