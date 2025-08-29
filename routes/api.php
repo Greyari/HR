@@ -74,10 +74,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/{id}',[UserController::class, 'destroy']);
 
     // Gaji Routes
-    // Route::get('/gaji', [GajiController::class, 'index']); // semua gaji
-    // Route::get('/gaji/{userId}', [GajiController::class, 'show']); // gaji per user
-    // Route::post('/gaji/calculate/{userId}', [GajiController::class, 'calculate']); // hitung & simpan gaji
-    Route::get('/gaji/calculate-all', [GajiController::class, 'calculateAll']);
+    Route::get('/gaji', [GajiController::class, 'calculateAll']);
+    Route::put('/gaji/{id}/status', [GajiController::class, 'updateStatus']);
 
     // Potongan gaji
     Route::get('/potongan_gaji',[PotonganGajiController::class, 'index']);
