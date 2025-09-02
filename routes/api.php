@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AbsensiController;
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
@@ -91,5 +92,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/absensi',[AbsensiController::class, 'getAbsensi']);
     Route::post('/checkin',[AbsensiController::class, 'checkin']);
     Route::post('/checkout',[AbsensiController::class, 'checkout']);
+
+    // Log Activity
+    Route::get('/log', [ActivityLogController::class, 'index']);
+
 });
 
