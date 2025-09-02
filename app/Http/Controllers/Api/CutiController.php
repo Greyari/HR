@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
+// note cuti semisal nilai id data cuti bukan 1 akan ada erro next gimana misal kalo gak 1 pun id dadatanya gak usa muncul error
 class CutiController extends Controller
 {
     // Menampilkan daftar cuti
@@ -59,7 +60,7 @@ class CutiController extends Controller
                     'terpakai' => 0,
                     'sisa' => $kantor->jatah_cuti_tahunan
                 ]
-            );  
+            );
 
             if ($lamaCuti > $jatah->sisa) {
                 return response()->json([

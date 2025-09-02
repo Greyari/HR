@@ -18,6 +18,7 @@ class Gaji extends Model
         'gaji_pokok',
         'total_lembur',
         'gaji_bersih',
+        'status'
     ];
 
     // Relasi ke User (karyawan)

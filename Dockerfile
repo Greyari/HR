@@ -13,12 +13,10 @@ RUN apt-get update && apt-get install -y \
     git \
     libzip-dev \
     libpq-dev \
-    libmcrypt-dev \
-    libssl-dev \
-    libcurl4-openssl-dev \
     mariadb-client \
-    npm \
-    nodejs
+    nodejs \
+    npm && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install ekstensi PHP
 RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath
@@ -35,7 +33,10 @@ COPY . .
 # Install dependencies Laravel
 RUN composer install --no-interaction --optimize-autoloader
 
-# Set permission
+# Build frontend sekali di build stage
+RUN npm install && npm run build
+
+# Set permission storage & cache
 RUN chmod -R 777 storage bootstrap/cache
 
 # Copy entrypoint
@@ -45,8 +46,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # Gunakan entrypoint
 ENTRYPOINT ["entrypoint.sh"]
 
-# Laravel pakai port 8080 di Railway
+# Railway pakai port 8080
 EXPOSE 8080
 
-# Ini perintah terakhir yang dijalankan setelah entrypoint
+# Default command → serve Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
