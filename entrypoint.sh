@@ -28,6 +28,10 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Install composer dependencies (pastikan helper dikenali)
+composer install --no-interaction --optimize-autoloader
+composer dump-autoload -o
+
 # Bersihkan cache
 php artisan config:clear
 php artisan cache:clear
@@ -42,13 +46,8 @@ php artisan db:seed --force
 
 # Jalankan scheduler dan queue worker secara background
 echo "🚀 Menjalankan scheduler dan queue worker..."
-
-# Scheduler: panggil schedule tiap menit
 php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
-
-# Queue worker: jalankan terus menerus
 php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
-
 
 echo "🎉 Aplikasi siap dijalankan!"
 
