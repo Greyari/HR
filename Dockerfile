@@ -30,14 +30,11 @@ WORKDIR /var/www
 # Copy semua file ke container
 COPY . .
 
-# Install dependencies Laravel
-RUN composer install --no-interaction --optimize-autoloader
-
-# Build frontend sekali di build stage
-RUN npm install && npm run build
-
 # Set permission storage & cache
 RUN chmod -R 777 storage bootstrap/cache
+
+# Build frontend (npm)
+RUN npm install && npm run build
 
 # Copy entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
