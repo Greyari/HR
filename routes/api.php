@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
+use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
 use App\Http\Controllers\Api\TugasController;
@@ -93,8 +94,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/checkin',[AbsensiController::class, 'checkin']);
     Route::post('/checkout',[AbsensiController::class, 'checkout']);
 
-    // Log Activity
+    // Log Activity Route
     Route::get('/log', [ActivityLogController::class, 'index']);
 
+    // Pengingat Route
+    Route::get('/pengingat', [PengingatController::class, 'index']);
+    Route::post('/pengingat', [PengingatController::class, 'store']);
+    Route::put('/pengingat/{id}', [PengingatController::class, 'update']);
+    Route::delete('/pengingat/{id}', [PengingatController::class, 'destroy']);
 });
-
