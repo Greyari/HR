@@ -1,7 +1,5 @@
 <?php
 
-// ganti folder helper jadi Helper
-
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 
