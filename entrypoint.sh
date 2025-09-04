@@ -40,6 +40,16 @@ echo "⚡ Jalankan migrate & seed..."
 php artisan migrate:fresh --force
 php artisan db:seed --force
 
+# Jalankan scheduler dan queue worker secara background
+echo "🚀 Menjalankan scheduler dan queue worker..."
+
+# Scheduler: panggil schedule tiap menit
+php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
+
+# Queue worker: jalankan terus menerus
+php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
+
+
 echo "🎉 Aplikasi siap dijalankan!"
 
 # Jalankan perintah dari CMD di Dockerfile

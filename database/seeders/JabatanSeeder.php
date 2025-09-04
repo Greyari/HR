@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Jabatan;
 use Illuminate\Database\Seeder;
 
-class Jabatanseeder extends Seeder
+class JabatanSeeder extends Seeder
 {
     /**
      * Run the database seeds.

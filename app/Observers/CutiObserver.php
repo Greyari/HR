@@ -60,9 +60,12 @@ class CutiObserver
      */
     public function deleted(Cuti $cuti): void
     {
-        //
-    }
+        $original = $cuti->getOriginal();
+        $nama = $original['nama'];
 
+        activity_log('Menghapus', 'Cuti', "Menghapus data cuti {$nama}");
+    }
+    
     /**
      * Handle the Cuti "restored" event.
      */

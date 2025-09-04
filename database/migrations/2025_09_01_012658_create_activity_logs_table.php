@@ -31,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('activity_logs');
+        Schema::dropIfExists('activity_log');
         Schema::enableForeignKeyConstraints();
     }
 };

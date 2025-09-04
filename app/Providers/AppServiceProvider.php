@@ -9,6 +9,7 @@ use App\Models\Gaji;
 use App\Models\Jabatan;
 use App\Models\Kantor;
 use App\Models\Lembur;
+use App\Models\Pengingat;
 use App\Models\PotonganGaji;
 use App\Models\Tugas;
 use App\Models\User;
@@ -20,8 +21,10 @@ use App\Observers\JabatanObserver;
 use App\Observers\KantorObserver;
 use App\Observers\KaryawanObserver;
 use App\Observers\LemburObserver;
+use App\Observers\PengingatObservers;
 use App\Observers\PotonganGajiObserver;
 use App\Observers\TugasObserver;
+use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -39,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Carbon::setLocale('id');
         User::observe(KaryawanObserver::class);
         Departemen::observe(DepartemenObserver::class);
         Jabatan::observe(JabatanObserver::class);
@@ -49,5 +53,6 @@ class AppServiceProvider extends ServiceProvider
         Tugas::observe(TugasObserver::class);
         Lembur::observe(LemburObserver::class);
         Cuti::observe(CutiObserver::class);
+        Pengingat::observe(PengingatObservers::class);
     }
 }
