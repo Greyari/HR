@@ -61,8 +61,7 @@ echo "🚀 Menjalankan scheduler & queue worker..."
 php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
 
 # Queue worker jalan di background (background supaya Laravel server tetap listen)
-# php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
-php artisan queue:work --tries=3 --sleep=3
+php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
 
 # -----------------------------
 # Jalankan Laravel HTTP server di foreground
