@@ -58,7 +58,9 @@ php artisan migrate --force
 echo "🚀 Menjalankan scheduler & queue worker..."
 
 # Scheduler jalan di background
-php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
+# php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
+php artisan schedule:work --verbose &
+
 
 # Queue worker jalan di background (background supaya Laravel server tetap listen)
 # php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
