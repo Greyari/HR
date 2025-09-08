@@ -2,6 +2,10 @@
 set -e
 
 echo "🚀 Starting Laravel container..."
+
+# -----------------------------
+# Tunggu sampai database siap
+# -----------------------------
 echo "📡 Menunggu database MySQL..."
 
 DB_HOST=${DB_HOST:-$MYSQLHOST}
@@ -20,36 +24,48 @@ done
 
 echo "✅ MySQL siap, lanjut proses Laravel..."
 
+# -----------------------------
+# Generate .env jika belum ada
+# -----------------------------
 if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# -----------------------------
+# Install dependencies
+# -----------------------------
 composer install --no-interaction --optimize-autoloader
 composer dump-autoload -o
 
+# Bersihkan cache dan cache ulang config
 php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
 
 # -----------------------------
-# Untuk Production → Hanya migrate tanpa hapus data
+# Migration
+# -----------------------------
+# Production → hanya migrate tanpa hapus data
 php artisan migrate --force
 
-# -----------------------------
-# Reset database & seed ulang → **Hanya untuk testing**
+# Uncomment baris berikut **hanya untuk testing/reset database**
 # php artisan migrate:fresh --force
 # php artisan db:seed --force
-# -----------------------------
 
+# -----------------------------
+# Jalankan scheduler & queue worker
+# -----------------------------
 echo "🚀 Menjalankan scheduler & queue worker..."
 
-# Scheduler berjalan background
+# Scheduler jalan di background
 php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
 
-# Queue worker foreground untuk debug email
-php artisan queue:work --sleep=3 --tries=3
+# Queue worker jalan di background (background supaya Laravel server tetap listen)
+php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
 
-# Supaya container tetap hidup
-wait
-
-exec "$@"
+# -----------------------------
+# Jalankan Laravel HTTP server di foreground
+# Supaya Railway bisa detect container "up"
+# -----------------------------
+echo "🎉 Menjalankan Laravel server di port 8080..."
+exec php artisan serve --host=0.0.0.0 --port=8080
