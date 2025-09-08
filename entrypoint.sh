@@ -37,7 +37,6 @@ fi
 composer install --no-interaction --optimize-autoloader
 composer dump-autoload -o
 
-# Bersihkan cache dan cache ulang config
 php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
@@ -45,31 +44,17 @@ php artisan config:cache
 # -----------------------------
 # Migration
 # -----------------------------
-# Production → hanya migrate tanpa hapus data
 php artisan migrate --force
 
-# Uncomment baris berikut **hanya untuk testing/reset database**
-# php artisan migrate:fresh --force
-# php artisan db:seed --force
-
 # -----------------------------
-# Jalankan scheduler & queue worker
+# Jalankan scheduler & Laravel server di background
 # -----------------------------
-echo "🚀 Menjalankan scheduler & queue worker..."
-
-# Scheduler jalan di background
-# php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
+echo "🚀 Menjalankan scheduler & Laravel server..."
 php artisan schedule:work --verbose &
-
-
-# Queue worker jalan di background (background supaya Laravel server tetap listen)
-# php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
-php artisan queue:work --tries=3 --sleep=3 --verbose &
-
+php artisan serve --host=0.0.0.0 --port=8080 &
 
 # -----------------------------
-# Jalankan Laravel HTTP server di foreground
-# Supaya Railway bisa detect container "up"
+# Jalankan queue worker di foreground supaya log muncul
 # -----------------------------
-echo "🎉 Menjalankan Laravel server di port 8080..."
-exec php artisan serve --host=0.0.0.0 --port=8080
+echo "🚀 Menjalankan queue worker..."
+exec php artisan queue:work --tries=3 --sleep=3 --verbose
