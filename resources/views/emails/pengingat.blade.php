@@ -4,88 +4,165 @@
     <meta charset="UTF-8">
     <title>Pengingat: {{ $pengingat->judul }}</title>
     <style>
-        /* Reset basic style */
-        body, p, h1, h2, h3, a {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
         body {
-            background-color: #f5f5f5;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f3f4f6;
             color: #333;
-            line-height: 1.6;
-            padding: 20px;
+            margin: 0;
+            padding: 20px 0;
         }
-
-        .container {
-            max-width: 600px;
-            background-color: #ffffff;
+        .email-container {
+            max-width: 650px;
             margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border-radius: 12px;
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
-
+        /* Header */
         .header {
-            background-color: #4CAF50;
-            color: #fff;
-            padding: 20px;
+            background: #667eea;
+            padding: 30px 20px;
             text-align: center;
+            color: white;
         }
-
-        .header h2 {
+        .header h1 {
             font-size: 24px;
+            margin-bottom: 5px;
         }
-
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        /* Content */
         .content {
-            padding: 20px;
+            padding: 30px 25px;
         }
-
-        .content p {
-            margin-bottom: 15px;
-            font-size: 16px;
+        .reminder-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3748;
         }
-
-        .footer {
-            background-color: #f0f0f0;
+        .reminder-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+        /* Info Table */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 40%;
+            color: #4a5568;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background: #ffeeba;
+            color: #856404;
+        }
+        .status-selesai {
+            background: #c3e6cb;
+            color: #155724;
+        }
+        .status-terlambat {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+        /* Highlight Box */
+        .due-date {
+            background: #ff6b6b;
+            color: white;
             text-align: center;
             padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        /* Alert */
+        .alert {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        /* Footer */
+        .footer {
+            background: #f7fafc;
+            text-align: center;
+            padding: 20px;
             font-size: 12px;
-            color: #555;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: #fff !important;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        @media only screen and (max-width: 600px) {
-            .container {
-                width: 100% !important;
-                padding: 0;
-            }
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="email-container">
+        <!-- Header -->
         <div class="header">
-            <h2>Pengingat: {{ $pengingat->judul }}</h2>
+            <h1>Reminder</h1>
+            <p>Jangan lewatkan jadwal Anda</p>
         </div>
+
+        <!-- Content -->
         <div class="content">
-            <p>{{ $pengingat->deskripsi }}</p>
-            <p><strong>Tanggal Jatuh Tempo:</strong> {{ $pengingat->tanggal_jatuh_tempo->format('d-m-Y H:i') }}</p>
-            <p><strong>Reminder ini dikirim H-7 sebelum jatuh tempo.</strong></p>
-            <a href="#" class="button">Lihat Detail</a>
+            <div class="reminder-title">{{ $pengingat->judul }}</div>
+            <div class="reminder-desc">{{ $pengingat->deskripsi }}</div>
+
+            <table class="info-table">
+                <tr>
+                    <td class="info-label">Tanggal Jatuh Tempo</td>
+                    <td>{{ $pengingat->tanggal_jatuh_tempo->format('d F Y, H:i') }} WIB</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Status</td>
+                    <td>
+                        <span class="status-badge status-{{ strtolower($pengingat->status) }}">
+                            {{ $pengingat->status }}
+                        </span>
+                    </td>
+                </tr>
+                @if($pengingat->peran)
+                <tr>
+                    <td class="info-label">PIC</td>
+                    <td>{{ $pengingat->peran->nama_peran }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td class="info-label">Sisa Waktu</td>
+                    <td>{{ $pengingat->sisa_waktu }}</td>
+                </tr>
+            </table>
+
+            <div class="alert">
+                Email ini dikirim otomatis H-7 sebelum tanggal jatuh tempo.
+                Jika sudah selesai, ubah status menjadi <b>"Selesai"</b> agar email tidak terkirim lagi.
+            </div>
         </div>
+
+        <!-- Footer -->
         <div class="footer">
-            &copy; {{ date('Y') }} PT Kreatif Sistem Indonesia. Semua hak cipta dilindungi.
+            <strong>PT Kreatif Sistem Indonesia</strong><br>
         </div>
     </div>
 </body>

@@ -20,7 +20,7 @@ class PengingatEmail extends Mailable implements ShouldQueue
 
     public function build()
     {
-        return $this->subject('Pengingat: ' . $this->pengingat->judul)
+        return $this->subject('Reminder System HRIS')
                     ->view('emails.pengingat');
     }
 }
