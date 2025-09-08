@@ -11,13 +11,13 @@ class PengingatObservers
         activity_log('Menambahkan', 'Pengingat', "{$pengingat->peran->nama_peran}  melakukan penambahan pengingat");
 
     }
-    
+
     public function updated(Pengingat $pengingat): void
     {
         $changes = $pengingat->getDirty();
         $original = $pengingat->getOriginal();
 
-        $ignore = ['updated_at', 'created_at'];
+        $ignore = ['updated_at', 'created_at', 'last_notified_at'];
 
         $detailChanges = [];
         foreach ($changes as $field => $newValue) {
