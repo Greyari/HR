@@ -2,7 +2,6 @@
 set -e
 
 echo "🚀 Starting Laravel container..."
-
 echo "📡 Menunggu database MySQL..."
 
 # Fallback ke env dari Railway
@@ -39,17 +38,22 @@ php artisan cache:clear
 # Cache ulang config
 php artisan config:cache
 
-# Migrasi dan seed ulang
-echo "⚡ Jalankan migrate & seed..."
-php artisan migrate:fresh --force
-php artisan db:seed --force
+# -----------------------------
+# Untuk Production → Hanya migrate tanpa hapus data
+php artisan migrate --force
 
-# Jalankan scheduler dan queue worker secara background
-echo "🚀 Menjalankan scheduler dan queue worker..."
+# -----------------------------
+# Reset database & seed ulang → **Hanya untuk testing**
+# php artisan migrate:fresh --force
+# php artisan db:seed --force
+# -----------------------------
+
+echo "🚀 Menjalankan scheduler & queue worker..."
 php artisan schedule:work > /proc/1/fd/1 2>/proc/1/fd/2 &
 php artisan queue:work --sleep=3 --tries=3 > /proc/1/fd/1 2>/proc/1/fd/2 &
 
-echo "🎉 Aplikasi siap dijalankan!"
+# Supaya container tetap hidup
+wait
 
 # Jalankan perintah dari CMD di Dockerfile
 exec "$@"
