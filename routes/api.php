@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\DepartemenController;
 use App\Http\Controllers\Api\KantorController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/scheduler-log', function () {
+    return nl2br(file_get_contents(storage_path('logs/scheduler_output.log')));
+});
 
 Route::post('/login', [AuthController::class, 'login']);
 
