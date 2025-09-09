@@ -127,6 +127,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'scheduler' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/scheduler_output.log'),
+            'level' => 'debug',
+        ],
+
     ],
 
 ];
