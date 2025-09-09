@@ -23,7 +23,7 @@ class Kernel extends ConsoleKernel
                 $jamMasuk = Carbon::createFromFormat('H:i:s', $kantor->jam_masuk)->format('H:i');
 
                 $schedule->command('pengingat:kirim')
-                    ->dailyAt($jamMasuk) 
+                    ->dailyAt($jamMasuk)
                     ->before(function () use ($jamMasuk) {
                         Log::info("[Scheduler][PRODUCTION] pengingat:kirim akan dijalankan jam {$jamMasuk}");
                     })
@@ -42,7 +42,8 @@ class Kernel extends ConsoleKernel
                 })
                 ->after(function () {
                     Log::info('[Scheduler][LOCAL] pengingat:kirim selesai dijalankan');
-                });
+                })
+                ->appendOutputTo(storage_path('logs/scheduler_output.log'));
         }
     }
 
