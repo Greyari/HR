@@ -26,6 +26,9 @@ use App\Observers\PotonganGajiObserver;
 use App\Observers\TugasObserver;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Mail\MailManager;
+use App\Mail\Transport\BrevoTransport;
+use GuzzleHttp\Client;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // untuk log aktifitas
         Carbon::setLocale('id');
         User::observe(KaryawanObserver::class);
         Departemen::observe(DepartemenObserver::class);
@@ -54,5 +58,10 @@ class AppServiceProvider extends ServiceProvider
         Lembur::observe(LemburObserver::class);
         Cuti::observe(CutiObserver::class);
         Pengingat::observe(PengingatObservers::class);
+
+        // untuk api email bravo
+        $this->app->make(MailManager::class)->extend('brevo', function ($app) {
+            return new BrevoTransport(new Client(), env('BREVO_API_KEY'));
+        });
     }
 }
