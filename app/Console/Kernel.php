@@ -41,9 +41,9 @@ class Kernel extends ConsoleKernel
                     Log::info('[Scheduler][LOCAL] pengingat:kirim akan dijalankan');
                 })
                 ->after(function () {
-                    Log::info('[Scheduler][LOCAL] pengingat:kirim selesai dijalankan');
+                    Log::info('[Scheduler][LOCAL] pengingat:kirim selesai dijalankan' . now());
                 })
-                ->appendOutputTo(storage_path('logs/scheduler_output.log'));
+                ->appendOutputTo("php://stdout");
         }
     }
 
