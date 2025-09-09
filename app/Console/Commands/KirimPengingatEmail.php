@@ -17,13 +17,13 @@ class KirimPengingatEmail extends Command implements ShouldQueue
 
     public function handle()
     {
-        Log::info('[Command] KirimPengingatEmail dijalankan');
+        Log::channel('scheduler')->info('[Command] KirimPengingatEmail dijalankan');
 
         $now = Carbon::now();
 
         // Ambil pengingat
         if ($this->option('test')) {
-            Log::info('[Command] Mode TEST aktif, ambil pengingat hari ini.');
+            Log::channel('scheduler')->info('[Command] Mode TEST aktif, ambil pengingat hari ini.');
             $pengingats = Pengingat::with('peran.users')
                 ->where('status', 'Pending')
                 ->whereDate('tanggal_jatuh_tempo', $now->startOfDay())
@@ -38,13 +38,13 @@ class KirimPengingatEmail extends Command implements ShouldQueue
                 });
         }
 
-        Log::info('[Command] Jumlah pengingat ditemukan: ' . $pengingats->count());
+        Log::channel('scheduler')->info('[Command] Jumlah pengingat ditemukan: ' . $pengingats->count());
 
         foreach ($pengingats as $pengingat) {
             $now = Carbon::now();
 
             if (!$pengingat->peran || $pengingat->peran->users->isEmpty()) {
-                Log::info("[Command] Pengingat ID {$pengingat->id} dilewati, peran atau user kosong.");
+                Log::channel('scheduler')->info("[Command] Pengingat ID {$pengingat->id} dilewati, peran atau user kosong.");
                 continue;
             }
 
@@ -52,20 +52,20 @@ class KirimPengingatEmail extends Command implements ShouldQueue
             if (app()->environment('production')) {
                 // Di production: jangan kirim lebih dari sekali dalam 24 jam
                 if ($pengingat->last_notified_at && $pengingat->last_notified_at->diffInHours($now) < 24) {
-                    Log::info("[Command] Pengingat ID {$pengingat->id} dilewati (sudah dikirim < 24 jam).");
+                    Log::channel('scheduler')->info("[Command] Pengingat ID {$pengingat->id} dilewati (sudah dikirim < 24 jam).");
                     continue;
                 }
             } else {
                 // Di local/dev: bebas (supaya bisa test tiap menit)
-                Log::info("[Command] Mode LOCAL: skip cek 24 jam untuk pengingat ID {$pengingat->id}");
+                Log::channel('scheduler')->info("[Command] Mode LOCAL: skip cek 24 jam untuk pengingat ID {$pengingat->id}");
             }
 
             foreach ($pengingat->peran->users as $user) {
                 try {
                     Mail::to($user->email)->queue(new PengingatEmail($pengingat));
-                    Log::info("[Command] Email queued ke: {$user->email} untuk pengingat ID {$pengingat->id}");
+                    Log::channel('scheduler')->info("[Command] Email queued ke: {$user->email} untuk pengingat ID {$pengingat->id}");
                 } catch (\Exception $e) {
-                    Log::error("[Command] Gagal mengirim email ke {$user->email}: " . $e->getMessage());
+                    Log::channel('scheduler')->error("[Command] Gagal mengirim email ke {$user->email}: " . $e->getMessage());
                 }
             }
 
@@ -74,6 +74,6 @@ class KirimPengingatEmail extends Command implements ShouldQueue
         }
 
         $this->info('Pengingat email berhasil diproses.');
-        Log::info('[Command] Pengingat email selesai diproses.');
+        Log::channel('scheduler')->info('[Command] Pengingat email selesai diproses.');
     }
 }
