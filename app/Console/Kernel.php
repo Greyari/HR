@@ -12,11 +12,9 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        echo "[DEBUG] schedule() terpanggil\n";
-        Log::info('[Scheduler] schedule() dipanggil');
+        Log::channel('scheduler')->info('[Scheduler] schedule() dipanggil');
 
         if (app()->environment('production')) {
-            // Ambil jam masuk dari tabel kantor
             $kantor = DB::table('kantor')->first();
 
             if ($kantor && $kantor->jam_masuk) {
@@ -25,25 +23,23 @@ class Kernel extends ConsoleKernel
                 $schedule->command('pengingat:kirim')
                     ->dailyAt($jamMasuk)
                     ->before(function () use ($jamMasuk) {
-                        Log::info("[Scheduler][PRODUCTION] pengingat:kirim akan dijalankan jam {$jamMasuk}");
+                        Log::channel('scheduler')->info("[PRODUCTION] pengingat:kirim akan dijalankan jam {$jamMasuk}");
                     })
                     ->after(function () {
-                        Log::info('[Scheduler][PRODUCTION] pengingat:kirim selesai dijalankan');
+                        Log::channel('scheduler')->info('[PRODUCTION] pengingat:kirim selesai dijalankan pada ' . now());
                     });
             } else {
-                Log::warning('[Scheduler] Data kantor tidak ditemukan atau jam_masuk kosong');
+                Log::channel('scheduler')->warning('[Scheduler] Data kantor tidak ditemukan atau jam_masuk kosong');
             }
         } else {
-            // Local / development → tiap menit biar cepat testing
             $schedule->command('pengingat:kirim')
                 ->everyMinute()
                 ->before(function () {
                     Log::channel('scheduler')->info('[LOCAL] pengingat:kirim akan dijalankan');
                 })
                 ->after(function () {
-                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim selesai dijalankan ' . now());
-                })
-                ->appendOutputTo(storage_path('logs/scheduler_output.log'));
+                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim selesai dijalankan pada ' . now());
+                });
         }
     }
 
