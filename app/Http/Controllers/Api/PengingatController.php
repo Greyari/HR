@@ -83,6 +83,9 @@ class PengingatController extends Controller
             'status' => 'in:Pending,Selesai,Terlambat',
         ]);
 
+        $validated['tanggal_jatuh_tempo'] = \Carbon\Carbon::parse($validated['tanggal_jatuh_tempo'])
+            ->setTime(23, 59, 59);
+            
         $pengingat = Pengingat::create($validated);
 
         return response()->json([
