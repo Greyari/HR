@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class PengingatEmail extends Mailable implements ShouldQueue
 {
@@ -22,5 +23,16 @@ class PengingatEmail extends Mailable implements ShouldQueue
     {
         return $this->subject('Reminder System HRIS')
                     ->view('emails.pengingat');
+    }
+
+    /**
+     * Akan otomatis dipanggil kalau job ini gagal dijalankan oleh queue worker
+     */
+    public function failed(\Throwable $exception)
+    {
+        Log::channel('scheduler')->error('[Job Failed] PengingatEmail gagal dikirim: ' . $exception->getMessage(), [
+            'pengingat_id' => $this->pengingat->id ?? null,
+            'trace' => $exception->getTraceAsString(),
+        ]);
     }
 }
