@@ -38,12 +38,12 @@ class Kernel extends ConsoleKernel
             $schedule->command('pengingat:kirim')
                 ->everyMinute()
                 ->before(function () {
-                    Log::info('[Scheduler][LOCAL] pengingat:kirim akan dijalankan');
+                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim akan dijalankan');
                 })
                 ->after(function () {
-                    Log::info('[Scheduler][LOCAL] pengingat:kirim selesai dijalankan' . now());
+                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim selesai dijalankan ' . now());
                 })
-                ->appendOutputTo("php://stdout");
+                ->appendOutputTo(storage_path('logs/scheduler_output.log'));
         }
     }
 
