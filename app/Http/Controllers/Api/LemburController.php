@@ -14,15 +14,23 @@ class LemburController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->peran_id === 1) {
+        // Ambil fitur yang dimiliki user
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+
+        // Cek fitur
+        if (in_array('lihat_semua_lembur', $fiturUser)) {
             $lembur = Lembur::with(['user.peran'])->latest()->get();
-        } elseif ($user->peran_id === 2) {
-            $lembur = Lembur::with(['user.peran'])->latest()->get();
-        } else {
+        } elseif (in_array('lihat_lembur_sendiri', $fiturUser)) {
+            // User biasa hanya melihat cuti miliknya
             $lembur = Lembur::with(['user.peran'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
+        } else {
+            return response()->json([
+                'message' => 'Anda belum diberikan akses untuk melihat lembur. Hubungi admin.',
+                'data' => [],
+            ], 403);
         }
 
         return response()->json([
@@ -121,42 +129,47 @@ class LemburController extends Controller
             return response()->json(['message' => 'Lembur tidak ditemukan'], 404);
         }
 
-        // Jika Admin Office (peran_id = 2)
-        if ($user->peran_id === 2) {
+        // Ambil fitur approve yang dimiliki user
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+
+        // Step 1 approve
+        if (in_array('approve_lembur_step1', $fiturUser)) {
             if (!in_array($lembur->approval_step, [0, 3])) {
-                return response()->json(['message' => 'Lembur sudah diproses oleh Admin Office'], 400);
+                return response()->json(['message' => 'Lembur sudah diproses tahap awal'], 400);
             }
             $lembur->approval_step = 1;
             $lembur->status = 'Proses';
             $lembur->save();
 
             return response()->json([
-                'message' => 'Lembur disetujui Admin Office, menunggu Super Admin',
+                'message' => 'Lembur disetujui tahap awal',
                 'step'    => $lembur->approval_step,
                 'status'  => $lembur->status,
                 'data'    => $lembur
             ]);
         }
 
-        // Jika Super Admin (peran_id = 1)
-        if ($user->peran_id === 1) {
-            if (!in_array($lembur->approval_step, [1, 3])) {
-                return response()->json(['message' => 'Lembur harus disetujui Admin Office dulu'], 400);
+        // Step 2 approve (misal untuk Super Admin)
+        if (in_array('approve_lembur_step2', $fiturUser)) {
+            if ($lembur->approval_step !== 1) {
+                return response()->json(['message' => 'Lembur harus disetujui tahap awal dulu'], 400);
             }
+
             $lembur->approval_step = 2;
             $lembur->status = 'Disetujui';
             $lembur->save();
 
             return response()->json([
-                'message' => 'Lembur disetujui final oleh Super Admin',
+                'message' => 'Lembur disetujui final',
                 'step'    => $lembur->approval_step,
                 'status'  => $lembur->status,
                 'data'    => $lembur
             ]);
         }
 
-        return response()->json(['message' => 'Tidak memiliki izin'], 403);
+        return response()->json(['message' => 'Tidak memiliki izin approve'], 403);
     }
+
 
     // Decline
     public function decline($id)

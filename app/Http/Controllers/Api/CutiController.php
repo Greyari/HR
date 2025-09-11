@@ -18,15 +18,24 @@ class CutiController extends Controller
     {
         $user = Auth::user();
 
-        if (in_array($user->peran_id, [1, 2])) {
+        // Ambil fitur yang dimiliki user
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+
+        // Cek fitur
+        if (in_array('lihat_semua_cuti', $fiturUser)) {
             // Super Admin & Admin Office melihat semua cuti
             $cuti = Cuti::with(['user.peran'])->latest()->get();
-        } else {
+        } else if (in_array('lihat_cuti_sendiri', $fiturUser)) {
             // User biasa hanya melihat cuti miliknya
             $cuti = Cuti::with(['user.peran'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->get();
+        } else {
+            return response()->json([
+                'message' => 'Anda belum diberikan akses untuk melihat cuti. Hubungi admin.',
+                'data' => [],
+            ], 403);
         }
 
         return response()->json([
@@ -127,33 +136,36 @@ class CutiController extends Controller
         $cuti = Cuti::find($id);
         if (!$cuti) return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
 
-        $lamaCuti = Carbon::parse($cuti->tanggal_mulai)->diffInDays(Carbon::parse($cuti->tanggal_selesai)) + 1;
-        $tahun = Carbon::parse($cuti->tanggal_mulai)->year;
+        // Ambil fitur approve yang dimiliki user
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        // Jika Admin Office (peran_id = 2)
-        if ($user->peran_id === 2) {
+        if (in_array('approve_cuti_step1', $fiturUser)) {
+            // hanya bisa approve step 1
             if (!in_array($cuti->approval_step, [0, 3])) {
-                return response()->json(['message' => 'Cuti sudah diproses Admin Office'], 400);
+                return response()->json(['message' => 'Cuti sudah diproses tahap awal'], 400);
             }
             $cuti->approval_step = 1;
             $cuti->status = 'Proses';
             $cuti->save();
 
             return response()->json([
-                'message' => 'Cuti disetujui Admin Office, menunggu Super Admin',
+                'message' => 'Cuti disetujui tahap awal',
                 'step' => $cuti->approval_step,
                 'status' => $cuti->status,
                 'data' => $cuti
             ]);
         }
 
-        // Jika Super Admin (peran_id = 1)
-        if ($user->peran_id === 1) {
-            if (!in_array($cuti->approval_step, [1, 3])) {
-                return response()->json(['message' => 'Cuti harus disetujui Admin Office dulu'], 400);
+        if (in_array('approve_cuti_step2', $fiturUser)) {
+            // hanya bisa approve step 2
+            if ($cuti->approval_step !== 1) {
+                return response()->json(['message' => 'Cuti harus disetujui tahap awal dulu'], 400);
             }
 
-            // Jika cuti tahunan, update sisa & terpakai
+            $lamaCuti = Carbon::parse($cuti->tanggal_mulai)
+                ->diffInDays(Carbon::parse($cuti->tanggal_selesai)) + 1;
+            $tahun = Carbon::parse($cuti->tanggal_mulai)->year;
+
             if ($cuti->tipe_cuti === 'Tahunan') {
                 $jatah = UserJatahCuti::firstOrCreate(
                     ['user_id' => $cuti->user_id, 'tahun' => $tahun],
@@ -163,8 +175,6 @@ class CutiController extends Controller
                         'sisa' => $cuti->user->kantor->jatah_cuti_tahunan ?? 12
                     ]
                 );
-
-                // Update jatah cuti
                 $jatah->terpakai += $lamaCuti;
                 $jatah->sisa -= $lamaCuti;
                 $jatah->save();
@@ -175,15 +185,16 @@ class CutiController extends Controller
             $cuti->save();
 
             return response()->json([
-                'message' => 'Cuti disetujui final oleh Super Admin',
+                'message' => 'Cuti disetujui final',
                 'step' => $cuti->approval_step,
                 'status' => $cuti->status,
                 'data' => $cuti
             ]);
         }
 
-        return response()->json(['message' => 'Tidak memiliki izin'], 403);
+        return response()->json(['message' => 'Tidak memiliki izin approve'], 403);
     }
+
 
     // Decline cuti
     public function decline($id)

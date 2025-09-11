@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\ActivityLogController;
+use App\Http\Controllers\Api\FiturController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
@@ -14,8 +15,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
 use App\Http\Controllers\Api\DepartemenController;
 use App\Http\Controllers\Api\KantorController;
+use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 
+// ini untuk debug email di hostingan
 Route::get('/scheduler-log', function () {
     $file = storage_path('logs/scheduler_output.log');
     if (!file_exists($file)) {
@@ -30,83 +33,115 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Profile Route
     Route::put('/email',[AuthController::class, 'updateEmail']);
-    // nenti buat route untuk ubah password dari email yang terdaftar (ubah paswordnya ada di kirim link ke email)
+    // nanti buat route untuk ubah password dari email yang terdaftar (ubah passwordnya ada di kirim link ke email)
 
     // Lembur Routes
-    Route::get('/lembur', [LemburController::class, 'index']);
-    Route::post('/lembur', [LemburController::class, 'store']);
-    Route::put('/lembur/{id}/approve', [LemburController::class, 'approve']);
-    Route::put('/lembur/{id}/decline', [LemburController::class, 'decline']);
-    Route::put('/lembur/{id}', [LemburController::class, 'update']);
-    Route::delete('/lembur/{id}', [LemburController::class, 'destroy']);
+    Route::prefix('lembur')->group(function () {
+        Route::get('', [LemburController::class, 'index'])->middleware(CheckFitur::class . ':lihat_lembur');
+        Route::post('', [LemburController::class, 'store'])->middleware(CheckFitur::class . ':tambah_lembur');
+        Route::put('{id}/approve', [LemburController::class, 'approve'])->middleware(CheckFitur::class . ':approve_lembur');
+        Route::put('{id}/decline', [LemburController::class, 'decline'])->middleware(CheckFitur::class . ':decline_lembur');
+        Route::put('{id}', [LemburController::class, 'update'])->middleware(CheckFitur::class . ':edit_lembur');
+        Route::delete('{id}', [LemburController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_lembur');
+    });
 
-    // note besar untuk cuti :: masi bingung gimana bagusnya untuk konsep jatah cuti tahunan kemudian seharunya kalo cuti di acc dia sudah bisa ke generate ke absensi kalo hari ini dia cuti
+    // note besar untuk cuti :: masih bingung gimana bagusnya untuk konsep jatah cuti tahunan
+    // kemudian seharusnya kalau cuti di acc dia sudah bisa ke generate ke absensi kalau hari ini dia cuti
     // Cuti Routes
-    Route::get('/cuti', [CutiController::class, 'index']);
-    Route::post('/cuti', [CutiController::class, 'store']);
-    Route::put('/cuti/{id}/approve', [CutiController::class, 'approve']);
-    Route::put('/cuti/{id}/decline', [CutiController::class, 'decline']);
-    Route::put('/cuti/{id}', [CutiController::class, 'update']);
-    Route::delete('/cuti/{id}', [CutiController::class, 'destroy']);
+    Route::prefix('cuti')->group(function () {
+        Route::get('', [CutiController::class, 'index'])->middleware(CheckFitur::class . ':lihat_cuti');
+        Route::post('', [CutiController::class, 'store'])->middleware(CheckFitur::class . ':tambah_cuti');
+        Route::put('{id}/approve', [CutiController::class, 'approve'])->middleware(CheckFitur::class . ':approve_cuti');
+        Route::put('{id}/decline', [CutiController::class, 'decline'])->middleware(CheckFitur::class . ':decline_cuti');
+        Route::put('{id}', [CutiController::class, 'update'])->middleware(CheckFitur::class . ':edit_cuti');
+        Route::delete('{id}', [CutiController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_cuti');
+    });
 
-    // Tugas Routes Admin
-    Route::get('/tugas', [TugasController::class, 'index']);
-    Route::post('/tugas', [TugasController::class, 'store']);
-    Route::put('/tugas/{id}', [TugasController::class, 'update']);
-    Route::delete('/tugas/{id}', [TugasController::class, 'destroy']);
+    // Tugas Routes
+    Route::prefix('tugas')->group(function () {
+        Route::get('', [TugasController::class, 'index'])->middleware(CheckFitur::class . ':lihat_tugas');
+        Route::post('', [TugasController::class, 'store'])->middleware(CheckFitur::class . ':tambah_tugas');
+        Route::put('{id}', [TugasController::class, 'update'])->middleware(CheckFitur::class . ':edit_tugas');
+        Route::delete('{id}', [TugasController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_tugas');
 
-    // Tugas Route Karyawan (sudah termasuk dalam upload dan edit)
-    Route::post('/tugas/{id}/upload-file', [TugasController::class, 'uploadLampiran']);
+        // Tugas Route Karyawan (sudah termasuk dalam upload dan edit)
+        Route::post('{id}/upload-file', [TugasController::class, 'uploadLampiran'])->middleware(CheckFitur::class . ':tambah_lampiran_tugas');
+    });
 
     // Departemen Routes
-    Route::get('/departemen', [DepartemenController::class, 'index']);
-    Route::post('/departemen', [DepartemenController::class, 'store']);
-    Route::put('/departemen/{id}', [DepartemenController::class, 'update']);
-    Route::delete('/departemen/{id}', [DepartemenController::class, 'destroy']);
+    Route::prefix('departemen')->middleware(CheckFitur::class . ':departemen')->group(function() {
+        Route::get('', [DepartemenController::class, 'index']);
+        Route::post('', [DepartemenController::class, 'store']);
+        Route::put('{id}', [DepartemenController::class, 'update']);
+        Route::delete('{id}', [DepartemenController::class, 'destroy']);
+    });
 
-    // Peran Routes //note mungkin belum bisa di kerjakan sekedar membuat controler dan Route nunggu  perancangan fitur dan izin fitur
-    Route::get('/peran', [PeranController::class, 'index']);
-    Route::post('/peran', [PeranController::class, 'store']);
-    Route::put('/peran/{id}', [PeranController::class, 'update']);
-    Route::delete('/peran/{id}', [PeranController::class, 'destroy']);
+    // Peran Routes
+    Route::prefix('peran')->middleware(CheckFitur::class . ':peran')->group(function() {
+        // note mungkin belum bisa di kerjakan sekedar membuat controller dan route
+        // nunggu perancangan fitur dan izin fitur
+        Route::get('', [PeranController::class, 'index']);
+        Route::post('', [PeranController::class, 'store']);
+        Route::put('{id}', [PeranController::class, 'update']);
+        Route::delete('{id}', [PeranController::class, 'destroy']);
+    });
 
     // Jabatan Routes
-    Route::get('/jabatan', [JabatanController::class, 'index']);
-    Route::post('/jabatan', [JabatanController::class, 'store']);
-    Route::put('/jabatan/{id}', [JabatanController::class, 'update']);
-    Route::delete('/jabatan/{id}', [JabatanController::class, 'destroy']);
+    Route::prefix('jabatan')->middleware(CheckFitur::class . ':jabatan')->group(function() {
+        Route::get('', [JabatanController::class, 'index']);
+        Route::post('', [JabatanController::class, 'store']);
+        Route::put('{id}', [JabatanController::class, 'update']);
+        Route::delete('{id}', [JabatanController::class, 'destroy']);
+    });
 
     // User Routes
-    Route::get('/user', [UserController::class, 'index']);
-    Route::post('/user', [UserController::class, 'store']);
-    Route::put('/user/{id}',[UserController::class, 'update']);
-    Route::delete('/user/{id}',[UserController::class, 'destroy']);
+    Route::prefix('user')->middleware(CheckFitur::class . ':karyawan')->group(function() {
+        Route::get('', [UserController::class, 'index']);
+        Route::post('', [UserController::class, 'store']);
+        Route::put('{id}',[UserController::class, 'update']);
+        Route::delete('{id}',[UserController::class, 'destroy']);
+    });
 
     // Gaji Routes
-    Route::get('/gaji', [GajiController::class, 'calculateAll']);
-    Route::put('/gaji/{id}/status', [GajiController::class, 'updateStatus']);
+    Route::prefix('gaji')->middleware(CheckFitur::class . ':gaji')->group(function() {
+        Route::get('', [GajiController::class, 'calculateAll']);
+        Route::put('{id}/status', [GajiController::class, 'updateStatus']);
+    });
 
     // Potongan gaji
-    Route::get('/potongan_gaji',[PotonganGajiController::class, 'index']);
-    Route::post('/potongan_gaji',[PotonganGajiController::class, 'store']);
-    Route::put('/potongan_gaji/{id}',[PotonganGajiController::class, 'update']);
-    Route::delete('/potongan_gaji/{id}',[PotonganGajiController::class, 'destroy']);
+    Route::prefix('potongan_gaji')->middleware(CheckFitur::class . ':potongan_gaji')->group(function() {
+        Route::get('',[PotonganGajiController::class, 'index']);
+        Route::post('',[PotonganGajiController::class, 'store']);
+        Route::put('{id}',[PotonganGajiController::class, 'update']);
+        Route::delete('{id}',[PotonganGajiController::class, 'destroy']);
+    });
 
     // Kantor Routes
-    Route::get('/kantor',[KantorController::class, 'index']);
-    Route::post('/kantor',[KantorController::class, 'saveProfile']);
+    Route::prefix('kantor')->middleware(CheckFitur::class . ':kantor')->group(function() {
+        Route::get('',[KantorController::class, 'index']);
+        Route::post('',[KantorController::class, 'saveProfile']);
+    });
 
     // Absensi Route
-    Route::get('/absensi',[AbsensiController::class, 'getAbsensi']);
-    Route::post('/checkin',[AbsensiController::class, 'checkin']);
-    Route::post('/checkout',[AbsensiController::class, 'checkout']);
+    Route::prefix('absensi')->middleware(CheckFitur::class . ':absensi')->group(function() {
+        Route::get('',[AbsensiController::class, 'getAbsensi']);
+        Route::post('checkin',[AbsensiController::class, 'checkin']);
+        Route::post('checkout',[AbsensiController::class, 'checkout']);
+    });
 
     // Log Activity Route
-    Route::get('/log', [ActivityLogController::class, 'index']);
+    Route::prefix('log')->middleware(CheckFitur::class . ':log_aktifitas')->group(function() {
+        Route::get('', [ActivityLogController::class, 'index']);
+    });
 
     // Pengingat Route
-    Route::get('/pengingat', [PengingatController::class, 'index']);
-    Route::post('/pengingat', [PengingatController::class, 'store']);
-    Route::put('/pengingat/{id}', [PengingatController::class, 'update']);
-    Route::delete('/pengingat/{id}', [PengingatController::class, 'destroy']);
+    Route::prefix('pengingat')->middleware(CheckFitur::class . ':pengingat')->group(function() {
+        Route::get('', [PengingatController::class, 'index']);
+        Route::post('', [PengingatController::class, 'store']);
+        Route::put('{id}', [PengingatController::class, 'update']);
+        Route::delete('{id}', [PengingatController::class, 'destroy']);
+    });
+
+    // Route untuk ambil semua fitur yang ada
+    Route::get('/fitur', [FiturController::class, 'index']);
 });

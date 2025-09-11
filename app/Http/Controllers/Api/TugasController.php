@@ -15,16 +15,27 @@ class TugasController extends Controller
     {
         $user = Auth::user();
 
-        $tugas = in_array($user->peran_id, [1, 2])
-            ? Tugas::with('user')->latest()->get()
-            : Tugas::with('user')->where('user_id', $user->id)->latest()->get();
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur');
+
+        if ($fiturUser->contains('lihat_semua_tugas')) {
+            // bisa lihat semua tugas
+            $tugas = Tugas::with('user')->latest()->get();
+        } elseif ($fiturUser->contains('lihat_tugas_sendiri')) {
+            // hanya bisa lihat miliknya
+            $tugas = Tugas::with('user')
+                ->where('user_id', $user->id)
+                ->latest()
+                ->get();
+        } else {
+            return response()->json([
+                'message' => 'Anda tidak punya akses untuk melihat tugas',
+            ], 403);
+        }
 
         $tugas->transform(function ($item) {
-            if ($item->lampiran) {
-                $item->lampiran = asset('storage/' . $item->lampiran);
-            } else {
-                $item->lampiran = null;
-            }
+            $item->lampiran = $item->lampiran
+                ? asset('storage/' . $item->lampiran)
+                : null;
             return $item;
         });
 
@@ -105,7 +116,7 @@ class TugasController extends Controller
         return response()->json(['message' => 'Tugas berhasil dihapus']);
     }
 
-    // User upload bukti video
+    // User upload bukti lampiran
     public function uploadLampiran(Request $request, $id)
     {
         $request->validate([
@@ -127,7 +138,7 @@ class TugasController extends Controller
 
             $path = $file->store($folder, 'public');
 
-            // Simpan path ke database (misal di kolom lampiran)
+            // Simpan path ke database
             $tugas->lampiran = $path;
             $tugas->status = "Menunggu Admin";
             $tugas->save();

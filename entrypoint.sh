@@ -42,9 +42,17 @@ php artisan cache:clear
 php artisan config:cache
 
 # -----------------------------
-# Migration
+# Migration & Seed
 # -----------------------------
-php artisan migrate --force
+RESET_DB=true   # ganti ke true kalau mau fresh + seed
+
+if [ "$RESET_DB" = "true" ]; then
+  echo "⚠️ Jalankan migrate:fresh --seed (semua data akan direset)"
+  php artisan migrate:fresh --seed --force
+else
+  echo "✅ Jalankan migrate --force (aman, tanpa reset data)"
+  php artisan migrate --force
+fi
 
 # -----------------------------
 # Jalankan scheduler & Laravel server di background
