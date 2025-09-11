@@ -8,7 +8,6 @@ use App\Models\Absensi;
 use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AbsensiController extends Controller
@@ -19,23 +18,30 @@ class AbsensiController extends Controller
     public function getAbsensi()
     {
         $user = Auth::user();
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur');
 
-        if (in_array($user->peran_id, [1, 2])) {
-            // Admin / Manager bisa lihat semua
+        if ($fiturUser->contains('lihat_semua_absensi')) {
+            // Bisa lihat semua absensi
             $absensiList = Absensi::with('user')
                 ->orderBy('checkin_time', 'desc')
                 ->get();
-        } else {
-            // Pegawai hanya lihat absensi sendiri
-            $absensiList = Absensi::where('user_id', $user->id)
+        } elseif ($fiturUser->contains('lihat_absensi_sendiri')) {
+            // Hanya bisa lihat absensi miliknya sendiri
+            $absensiList = Absensi::with('user')
+                ->where('user_id', $user->id)
                 ->orderBy('checkin_time', 'desc')
                 ->get();
+        } else {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Anda tidak punya akses untuk melihat absensi'
+            ], 403);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Data absensi berhasil diambil',
-            'data' => $absensiList
+            'data'    => $absensiList
         ]);
     }
 

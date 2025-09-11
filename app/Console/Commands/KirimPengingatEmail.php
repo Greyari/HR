@@ -50,15 +50,16 @@ class KirimPengingatEmail extends Command implements ShouldQueue
 
             // Aturan beda sesuai environment
             if (app()->environment('production')) {
-                // Di production: jangan kirim lebih dari sekali dalam 24 jam
-                if ($pengingat->last_notified_at && $pengingat->last_notified_at->diffInHours($now) < 24) {
-                    Log::channel('scheduler')->info("[Command] Pengingat ID {$pengingat->id} dilewati (sudah dikirim < 24 jam).");
+                if ($pengingat->last_notified_at
+                    && $pengingat->last_notified_at->isSameDay($now)) {
+                    // Sudah dikirim hari ini
+                    Log::channel('scheduler')->info("[Command] Pengingat ID {$pengingat->id} dilewati (sudah dikirim hari ini).");
                     continue;
                 }
             } else {
-                // Di local/dev: bebas (supaya bisa test tiap menit)
-                Log::channel('scheduler')->info("[Command] Mode LOCAL: skip cek 24 jam untuk pengingat ID {$pengingat->id}");
+                Log::channel('scheduler')->info("[Command] Mode LOCAL: skip cek harian untuk pengingat ID {$pengingat->id}");
             }
+
 
             foreach ($pengingat->peran->users as $user) {
                 try {

@@ -18,4 +18,10 @@ class Peran extends Model
     {
         return $this->hasMany(User::class, 'peran_id');
     }
+
+    // Relasi many-to-many dengan fitur
+    public function fitur()
+    {
+        return $this->belongsToMany(Fitur::class, 'izin_fitur', 'peran_id', 'fitur_id');
+    }
 }
