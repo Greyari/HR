@@ -40,7 +40,7 @@ class Lembur extends Model
             case 1:
                 return "Menunggu persetujuan final";
             case 2:
-                return "Lembur disetujui, Anda dapat melakukan lembur";
+                return "Lembur anda telah disetujui";
             case 3:
                 return "Lembur Anda ditolak, silahkan ajukan lembur kembali";
             default:
