@@ -43,7 +43,7 @@ class Cuti extends Model
             case 1:
                 return "Menunggu persetujuan final";
             case 2:
-                return "Cuti disetujui, Anda dapat melakukan cuti";
+                return "Cuti disetujui telah disetujui";
             case 3:
                 return "Cuti Anda ditolak, silahkan ajukan cuti kembali";
             default:
