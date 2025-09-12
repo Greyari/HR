@@ -69,7 +69,6 @@ class FiturSeeder extends Seeder
             ['lihat_absensi_sendiri', 'Karyawan hanya dapat melihat daftar absen-nya sendiri'],
             ['lihat_semua_absensi', 'Karyawan dapat melihat semua daftar absen'],
 
-
             // ---------------------- Log ----------------------
             ['log_aktifitas', 'Melihat log aktivitas'],
 

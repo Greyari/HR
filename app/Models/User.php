@@ -32,6 +32,7 @@ class User extends Authenticatable
         'bpjs_ketenagakerjaan',
         'jenis_kelamin',
         'status_pernikahan',
+        'onboarding'
     ];
 
     /**
@@ -86,14 +87,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Cuti::class);
     }
+
     // relasi kantor
     public function kantor()
     {
         return $this->belongsTo(Kantor::class, 'kantor_id');
     }
+
     // relasi jatah cuti tahunan
     public function jatahCutiTahunan()
     {
         return $this->hasMany(UserJatahCuti::class);
+    }
+
+    // relasi ke device
+    public function device()
+    {
+        return $this->hasOne(Device::class);
     }
 }

@@ -149,7 +149,6 @@ class LemburController extends Controller
             ]);
         }
 
-        // Step 2 approve (misal untuk Super Admin)
         if (in_array('approve_lembur_step2', $fiturUser)) {
             if ($lembur->approval_step !== 1) {
                 return response()->json(['message' => 'Lembur harus disetujui tahap awal dulu'], 400);

@@ -44,7 +44,7 @@ php artisan config:cache
 # -----------------------------
 # Migration & Seed
 # -----------------------------
-RESET_DB=true   # ganti ke true kalau mau fresh + seed
+RESET_DB = true   # ganti ke true kalau mau fresh + seed
 
 if [ "$RESET_DB" = "true" ]; then
   echo "⚠️ Jalankan migrate:fresh --seed (semua data akan direset)"

@@ -36,9 +36,9 @@ class Lembur extends Model
     {
         switch ($this->approval_step) {
             case 0:
-                return "Menunggu diproses Admin Office";
+                return "Menunggu diproses tahap awal";
             case 1:
-                return "Menunggu persetujuan Super Admin";
+                return "Menunggu persetujuan final";
             case 2:
                 return "Lembur disetujui, Anda dapat melakukan lembur";
             case 3:
