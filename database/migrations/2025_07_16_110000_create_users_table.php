@@ -26,6 +26,7 @@ return new class extends Migration
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->default('Laki-laki');
             $table->enum('status_pernikahan', ['Menikah', 'Belum Menikah'])->default('Belum Menikah');
             $table->string('password');
+            $table->boolean('onboarding')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

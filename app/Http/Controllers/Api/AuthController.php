@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    // Fitur login
     public function login(Request $request)
     {
         $request->validate([
@@ -17,21 +18,20 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // cek kredensial
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Email atau password salah'], 401);
         }
 
-        // ambil user
-        $user = User::with(['peran', 'departemen', 'jabatan'])->where('email', $request->email)->first();
+        $user = User::with(['peran.fitur', 'departemen', 'jabatan'])
+            ->where('email', $request->email)
+            ->first();
 
-        // buat token
         $token = $user->createToken('token_login')->plainTextToken;
 
         return response()->json([
             'message' => 'Login berhasil',
             'token'   => $token,
-            'data' => $user,
+            'data'    => $user, // cukup kirim user dengan relasi
         ]);
     }
 
@@ -39,7 +39,8 @@ class AuthController extends Controller
     public function updateEmail(Request $request)
     {
         // Dapatkan pengguna yang sedang login
-        $user = Auth::user();
+        // $user = Auth::user();
+        $user = User::find(Auth::id());
 
         // Validasi input
         $validator = Validator::make($request->all(), [

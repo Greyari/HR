@@ -23,7 +23,6 @@ class CutiController extends Controller
 
         // Cek fitur
         if (in_array('lihat_semua_cuti', $fiturUser)) {
-            // Super Admin & Admin Office melihat semua cuti
             $cuti = Cuti::with(['user.peran'])->latest()->get();
         } else if (in_array('lihat_cuti_sendiri', $fiturUser)) {
             // User biasa hanya melihat cuti miliknya
