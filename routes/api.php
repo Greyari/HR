@@ -18,18 +18,15 @@ use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 
-// ini untuk debug email di hostingan
-Route::get('/scheduler-log', function () {
-    $file = storage_path('logs/scheduler_output.log');
-    if (!file_exists($file)) {
-        return "Belum ada log scheduler.";
-    }
-    return nl2br(file_get_contents($file));
-});
 
+// publik route
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    // route untuk logout dan token user
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     // Profile Route
     Route::put('/email',[AuthController::class, 'updateEmail']);
@@ -144,4 +141,31 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route untuk ambil semua fitur yang ada
     Route::get('/fitur', [FiturController::class, 'index']);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ini untuk debug email di hostingan
+Route::get('/scheduler-log', function () {
+    $file = storage_path('logs/scheduler_output.log');
+    if (!file_exists($file)) {
+        return "Belum ada log scheduler.";
+    }
+    return nl2br(file_get_contents($file));
 });

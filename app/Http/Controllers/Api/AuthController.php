@@ -95,6 +95,9 @@ class AuthController extends Controller
         // -----------------------------
         $token = $user->createToken('token_login')->plainTextToken;
 
+        // Catat log login
+        activity_log('Login', 'User', "{$user->nama} ({$user->email}) berhasil login");
+
         // -----------------------------
         // Onboarding
         // -----------------------------
@@ -151,9 +154,26 @@ class AuthController extends Controller
         ], 200);
     }
 
+    // Ambil data user dari token
+    public function me(Request $request)
+    {
+        $user = $request->user()->load(['peran.fitur', 'departemen', 'jabatan']);
+
+        return response()->json([
+            'message' => 'User ditemukan',
+            'data'    => $user,
+        ]);
+    }
+
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        // Catat log logout
+        activity_log('Logout', 'User', "{$user->nama} ({$user->email}) berhasil logout");
+
+        // Hapus token
+        $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout berhasil']);
     }

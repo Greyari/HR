@@ -13,6 +13,7 @@ class Kantor extends Model
 
     protected $fillable = [
         'jam_masuk',
+        'jam_keluar',
         'minimal_keterlambatan',
         'lat',
         'lng',
