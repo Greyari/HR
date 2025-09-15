@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kantor', function (Blueprint $table) {
             $table->id();
             $table->time('jam_masuk');
+            $table->time('jam_keluar');
             $table->integer('minimal_keterlambatan');
             $table->decimal('lat', 10, 7);
             $table->decimal('lng', 10, 7);
