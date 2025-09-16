@@ -82,7 +82,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [PeranController::class, 'store']);
         Route::put('{id}', [PeranController::class, 'update']);
         Route::delete('{id}', [PeranController::class, 'destroy']);
-    }); 
+    });
+
     // Jabatan Routes
     Route::prefix('jabatan')->middleware(CheckFitur::class . ':jabatan')->group(function() {
         Route::get('', [JabatanController::class, 'index']);
@@ -150,6 +151,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/lembur/reset', [LemburController::class, 'resetByYearRequest']);
     Route::post('/log-aktivitas/reset', [LogAktivitasController::class, 'resetByMonth']);
 
+    // ambil data tampa midlaware
+    Route::get('user/tugas', [UserController::class, 'index']);
+    Route::get('kantor/jam',[KantorController::class, 'index']);
 });
 
 
