@@ -219,4 +219,20 @@ class CutiController extends Controller
 
         return response()->json(['message' => 'Cuti sudah final, tidak bisa ditolak'], 400);
     }
+
+    // Reset semua data cuti
+    public function resetByYearRequest(Request $request)
+    {
+        $request->validate([
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $tahun = $request->tahun;
+
+        Cuti::whereYear('tanggal_mulai', $tahun)->delete();
+
+        return response()->json([
+            'message' => "Data cuti tahun $tahun berhasil direset"
+        ]);
+    }
 }
