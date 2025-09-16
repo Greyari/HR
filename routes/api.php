@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FiturController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
+use App\Http\Controllers\Api\LogAktivitasController;
 use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
@@ -81,8 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [PeranController::class, 'store']);
         Route::put('{id}', [PeranController::class, 'update']);
         Route::delete('{id}', [PeranController::class, 'destroy']);
-    });
-
+    }); 
     // Jabatan Routes
     Route::prefix('jabatan')->middleware(CheckFitur::class . ':jabatan')->group(function() {
         Route::get('', [JabatanController::class, 'index']);
@@ -141,6 +141,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route untuk ambil semua fitur yang ada
     Route::get('/fitur', [FiturController::class, 'index']);
+
+    // route untuk ambil log berdasarkan bulan yang ada isinya
+    Route::get('/log/months', [LogAktivitasController::class, 'availableMonths']);
+
+    // Route untuk hapus data
+    Route::post('/cuti/reset', [CutiController::class, 'resetByYearRequest']);
+    Route::post('/lembur/reset', [LemburController::class, 'resetByYearRequest']);
+    Route::post('/log-aktivitas/reset', [LogAktivitasController::class, 'resetByMonth']);
+
 });
 
 

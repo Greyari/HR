@@ -21,7 +21,7 @@ class LemburController extends Controller
         if (in_array('lihat_semua_lembur', $fiturUser)) {
             $lembur = Lembur::with(['user.peran'])->latest()->get();
         } elseif (in_array('lihat_lembur_sendiri', $fiturUser)) {
-            // User biasa hanya melihat cuti miliknya
+            // User biasa hanya melihat lembur miliknya
             $lembur = Lembur::with(['user.peran'])
                 ->where('user_id', $user->id)
                 ->latest()
@@ -198,5 +198,19 @@ class LemburController extends Controller
         }
 
         return response()->json(['message' => 'Lembur sudah final, tidak bisa ditolak'], 400);
+    }
+    public function resetByYearRequest(Request $request)
+    {
+        $request->validate([
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ]);
+
+        $tahun = $request->tahun;
+
+        Lembur::whereYear('tanggal', $tahun)->delete();
+
+        return response()->json([
+            'message' => "Data lembur tahun $tahun berhasil direset"
+        ]);
     }
 }
