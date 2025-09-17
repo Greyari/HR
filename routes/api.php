@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\ActivityLogController;
+use App\Http\Controllers\Api\DengerController;
 use App\Http\Controllers\Api\FiturController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
-use App\Http\Controllers\Api\LogAktivitasController;
 use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
@@ -39,8 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [LemburController::class, 'store'])->middleware(CheckFitur::class . ':tambah_lembur');
         Route::put('{id}/approve', [LemburController::class, 'approve'])->middleware(CheckFitur::class . ':approve_lembur');
         Route::put('{id}/decline', [LemburController::class, 'decline'])->middleware(CheckFitur::class . ':decline_lembur');
-        Route::put('{id}', [LemburController::class, 'update'])->middleware(CheckFitur::class . ':edit_lembur');
-        Route::delete('{id}', [LemburController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_lembur');
     });
 
     // note besar untuk cuti :: masih bingung gimana bagusnya untuk konsep jatah cuti tahunan
@@ -51,8 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [CutiController::class, 'store'])->middleware(CheckFitur::class . ':tambah_cuti');
         Route::put('{id}/approve', [CutiController::class, 'approve'])->middleware(CheckFitur::class . ':approve_cuti');
         Route::put('{id}/decline', [CutiController::class, 'decline'])->middleware(CheckFitur::class . ':decline_cuti');
-        Route::put('{id}', [CutiController::class, 'update'])->middleware(CheckFitur::class . ':edit_cuti');
-        Route::delete('{id}', [CutiController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_cuti');
     });
 
     // Tugas Routes
@@ -140,20 +136,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{id}', [PengingatController::class, 'destroy']);
     });
 
-    // Route untuk ambil semua fitur yang ada
-    Route::get('/fitur', [FiturController::class, 'index']);
+    // Route denger
+    Route::prefix('danger')->group(function () {
+        Route::post('cuti/reset', [DengerController::class, 'resetCutiByMonth']);
+        Route::get('cuti/months', [DengerController::class, 'availableCutiMonths']);
 
-    // route untuk ambil log berdasarkan bulan yang ada isinya
-    Route::get('/log/months', [LogAktivitasController::class, 'availableMonths']);
+        Route::post('lembur/reset', [DengerController::class, 'resetLemburByMonth']);
+        Route::get('lembur/months', [DengerController::class, 'availableLemburMonths']);
 
-    // Route untuk hapus data
-    Route::post('/cuti/reset', [CutiController::class, 'resetByYearRequest']);
-    Route::post('/lembur/reset', [LemburController::class, 'resetByYearRequest']);
-    Route::post('/log-aktivitas/reset', [LogAktivitasController::class, 'resetByMonth']);
+        // Route::post('gaji/reset', [DengerController::class, 'resetGajiByMonth']);
+        // Route::get('gaji/months', [DengerController::class, 'availableGajiMonths']);
+
+        Route::post('tugas/reset', [DengerController::class, 'resetTugasByMonth']);
+        Route::get('tugas/months', [DengerController::class, 'availableTugasMonths']);
+
+        Route::post('log/reset', [DengerController::class, 'resetLogByMonth']);
+        Route::get('log/months', [DengerController::class, 'availableLogMonths']);
+
+
+        Route::post('absensi/reset', [DengerController::class, 'resetAbsenByMonth']);
+        Route::get('absensi/months', [DengerController::class, 'availableAbsenMonths']);
+    });
 
     // ambil data tampa midlaware
     Route::get('user/tugas', [UserController::class, 'index']);
     Route::get('kantor/jam',[KantorController::class, 'index']);
+    Route::get('/fitur', [FiturController::class, 'index']);
 });
 
 

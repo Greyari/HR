@@ -18,6 +18,7 @@ return new class extends Migration
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->string('deskripsi')->nullable();
+            $table->string('catatan_penolakan')->nullable();
             $table->enum('status', [
                 'Pending',
                 'Proses',

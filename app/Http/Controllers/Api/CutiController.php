@@ -17,25 +17,37 @@ class CutiController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // Ambil fitur yang dimiliki user
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        // Cek fitur
+        // base query
+        $query = Cuti::with(['user.peran'])->latest();
+
         if (in_array('lihat_semua_cuti', $fiturUser)) {
-            $cuti = Cuti::with(['user.peran'])->latest()->get();
-        } else if (in_array('lihat_cuti_sendiri', $fiturUser)) {
-            // User biasa hanya melihat cuti miliknya
-            $cuti = Cuti::with(['user.peran'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
-        } else {
+            if (in_array('approve_cuti_step2', $fiturUser)) {
+                // ✅ Pengecualian:
+                // kalau punya kedua fitur, batasi hanya cuti yg sudah step1 ke atas
+                $query->whereIn('approval_step', [1, 2, 3]);
+            }
+            // kalau hanya punya lihat_semua_cuti (tanpa approve step2) → semua cuti
+        }
+        else if (in_array('lihat_cuti_sendiri', $fiturUser)) {
+            $query->where('user_id', $user->id);
+        }
+        else if (in_array('approve_cuti_step1', $fiturUser)) {
+            // Step1 bisa lihat SEMUA cuti (tanpa filter approval_step)
+        }
+        else if (in_array('approve_cuti_step2', $fiturUser)) {
+            // Step2 hanya lihat cuti yg sudah lolos step1, final, atau ditolak
+            $query->whereIn('approval_step', [1, 2, 3]);
+        }
+        else {
             return response()->json([
                 'message' => 'Anda belum diberikan akses untuk melihat cuti. Hubungi admin.',
                 'data' => [],
             ], 403);
         }
+
+        $cuti = $query->get();
 
         return response()->json([
             'message' => 'Data cuti berhasil diambil',
@@ -54,13 +66,32 @@ class CutiController extends Controller
         ]);
 
         $user = Auth::user();
+
+        // ✅ Cek apakah user masih ada cuti yg belum selesai
+        $masihAdaCuti = Cuti::where('user_id', $user->id)
+            ->whereIn('status', ['Pending', 'Proses']) // cuti yg belum final
+            ->exists();
+
+        if ($masihAdaCuti) {
+            return response()->json([
+                'message' => 'Anda masih memiliki pengajuan cuti yang belum diproses. Selesaikan dulu sebelum mengajukan cuti baru.'
+            ], 400);
+        }
+
         $lamaCuti = Carbon::parse($request->tanggal_mulai)
-                     ->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
+                    ->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
         $tahun = Carbon::parse($request->tanggal_mulai)->year;
 
         // Jika tipe cuti Tahunan, cek jatah
         if ($request->tipe_cuti === 'Tahunan') {
             $kantor = Kantor::first();
+
+            if (!$kantor || is_null($kantor->jatah_cuti_tahunan)) {
+                return response()->json([
+                    'message' => 'Jatah cuti tahunan belum di-setting admin, silakan hubungi admin.'
+                ], 400);
+            }
+
             $jatah = UserJatahCuti::firstOrCreate(
                 ['user_id' => $user->id, 'tahun' => $tahun],
                 [
@@ -93,40 +124,6 @@ class CutiController extends Controller
         ], 201);
     }
 
-    // Update cuti (hanya pemilik cuti)
-    public function update(Request $request, $id)
-    {
-        $cuti = Cuti::find($id);
-        if (!$cuti) return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
-        if ($cuti->user_id !== Auth::id()) return response()->json(['message' => 'Tidak memiliki izin'], 403);
-
-        $request->validate([
-            'tipe_cuti' => 'required|string|max:50',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'alasan' => 'nullable|string|max:255',
-        ]);
-
-        $cuti->update([
-            'tipe_cuti' => $request->tipe_cuti,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            'alasan' => $request->alasan,
-        ]);
-
-        return response()->json(['message' => 'Cuti berhasil diperbarui', 'data' => $cuti]);
-    }
-
-    // Hapus cuti (hanya pemilik cuti)
-    public function destroy($id)
-    {
-        $cuti = Cuti::find($id);
-        if (!$cuti) return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
-        if ($cuti->user_id !== Auth::id()) return response()->json(['message' => 'Tidak memiliki izin'], 403);
-
-        $cuti->delete();
-        return response()->json(['message' => 'Cuti berhasil dihapus']);
-    }
 
     // Approve cuti
     public function approve($id)
@@ -196,43 +193,43 @@ class CutiController extends Controller
 
 
     // Decline cuti
-    public function decline($id)
+    public function decline(Request $request, $id)
     {
         $user = Auth::user();
         $cuti = Cuti::find($id);
-        if (!$cuti) return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
-        if (!in_array($user->peran_id, [1, 2])) return response()->json(['message' => 'Tidak memiliki izin'], 403);
+
+        if (!$cuti) {
+            return response()->json(['message' => 'Cuti tidak ditemukan'], 404);
+        }
+
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+
+        // cek apakah user punya fitur menolak cuti
+        if (!in_array('decline_cuti', $fiturUser)) {
+            return response()->json(['message' => 'Tidak memiliki izin menolak cuti'], 403);
+        }
+
+        // Validasi catatan revisi wajib diisi
+        $request->validate([
+            'catatan_penolakan' => 'required|string|max:255',
+        ]);
 
         // Hanya bisa ditolak sebelum final approval
         if ($cuti->approval_step < 2) {
             $cuti->approval_step = 3;
             $cuti->status = 'Ditolak';
+            $cuti->catatan_penolakan = $request->catatan_penolakan;
             $cuti->save();
 
             return response()->json([
-                'message' => 'Cuti ditolak',
+                'message' => 'Cuti ditolak dengan catatan revisi',
                 'step' => $cuti->approval_step,
                 'status' => $cuti->status,
+                'catatan_penolakan' => $cuti->catatan_penolakan,
                 'data' => $cuti
             ]);
         }
 
         return response()->json(['message' => 'Cuti sudah final, tidak bisa ditolak'], 400);
-    }
-
-    // Reset semua data cuti
-    public function resetByYearRequest(Request $request)
-    {
-        $request->validate([
-            'tahun' => 'required|integer|min:2000|max:2100',
-        ]);
-
-        $tahun = $request->tahun;
-
-        Cuti::whereYear('tanggal_mulai', $tahun)->delete();
-
-        return response()->json([
-            'message' => "Data cuti tahun $tahun berhasil direset"
-        ]);
     }
 }

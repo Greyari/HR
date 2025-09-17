@@ -13,45 +13,70 @@ class LemburController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // Ambil fitur yang dimiliki user
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        // Cek fitur
+        // base query
+        $query = Lembur::with(['user.peran'])->latest();
+
         if (in_array('lihat_semua_lembur', $fiturUser)) {
-            $lembur = Lembur::with(['user.peran'])->latest()->get();
-        } elseif (in_array('lihat_lembur_sendiri', $fiturUser)) {
-            // User biasa hanya melihat lembur miliknya
-            $lembur = Lembur::with(['user.peran'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
-        } else {
+            if (in_array('approve_lembur_step2', $fiturUser)) {
+                // ✅ Pengecualian:
+                // kalau punya lihat_semua_lembur + approve_step2 → hanya lembur yg sudah lolos step1 ke atas
+                $query->whereIn('approval_step', [1, 2, 3]);
+            }
+            // kalau cuma punya lihat_semua_lembur → semua lembur
+        }
+        else if (in_array('lihat_lembur_sendiri', $fiturUser)) {
+            $query->where('user_id', $user->id);
+        }
+        else if (in_array('approve_lembur_step1', $fiturUser)) {
+            // Step1 bisa lihat semua lembur (tanpa filter approval_step)
+        }
+        else if (in_array('approve_lembur_step2', $fiturUser)) {
+            // Step2 hanya lembur yg sudah step1 ke atas
+            $query->whereIn('approval_step', [1, 2, 3]);
+        }
+        else {
             return response()->json([
                 'message' => 'Anda belum diberikan akses untuk melihat lembur. Hubungi admin.',
                 'data' => [],
             ], 403);
         }
 
+        $lembur = $query->get();
+
         return response()->json([
             'message' => 'Data lembur berhasil diambil',
-            'data' => $lembur
+            'data' => $lembur,
         ]);
     }
-
 
     // Menyimpan pengajuan lembur
     public function store(Request $request)
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'jam_mulai' => 'required',
-            'jam_selesai' => 'required',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'deskripsi' => 'nullable|string|max:255',
         ]);
 
+        $user = Auth::user();
+
+        // ✅ Cek apakah user masih ada lembur yg belum diproses
+        $masihAdaLembur = Lembur::where('user_id', $user->id)
+            ->whereIn('status', ['Pending', 'Proses'])
+            ->exists();
+
+        if ($masihAdaLembur) {
+            return response()->json([
+                'message' => 'Anda masih memiliki pengajuan lembur yang belum diproses. Selesaikan dulu sebelum mengajukan lembur baru.'
+            ], 400);
+        }
+
+        // ✅ Buat lembur baru
         $lembur = Lembur::create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'tanggal' => $request->tanggal,
             'jam_mulai' => $request->jam_mulai,
             'jam_selesai' => $request->jam_selesai,
@@ -63,60 +88,6 @@ class LemburController extends Controller
             'message' => 'Pengajuan lembur berhasil dikirim',
             'data' => $lembur
         ], 201);
-    }
-
-    // Update lembur
-    public function update(Request $request, $id)
-    {
-        $lembur = Lembur::find($id);
-
-        if (!$lembur) {
-            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
-        }
-
-        if ($lembur->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Tidak memiliki izin untuk mengedit lembur ini'], 403);
-        }
-
-        $request->validate([
-            'tanggal' => 'required|date',
-            'jam_mulai' => 'required',
-            'jam_selesai' => 'required',
-            'deskripsi' => 'nullable|string|max:255',
-        ]);
-
-        $lembur->update([
-            'tanggal' => $request->tanggal,
-            'jam_mulai' => $request->jam_mulai,
-            'jam_selesai' => $request->jam_selesai,
-            'deskripsi' => $request->deskripsi,
-        ]);
-
-
-        return response()->json([
-            'message' => 'Lembur berhasil diperbarui',
-            'data' => $lembur
-        ]);
-    }
-
-    // Hapus lembur
-    public function destroy($id)
-    {
-        $lembur = Lembur::find($id);
-
-        if (!$lembur) {
-            return response()->json(['message' => 'Data lembur tidak ditemukan'], 404);
-        }
-
-        if ($lembur->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Tidak memiliki izin untuk menghapus lembur ini'], 403);
-        }
-
-        $lembur->delete();
-
-        return response()->json([
-            'message' => 'Lembur berhasil dihapus'
-        ]);
     }
 
     // Approve lembur
@@ -169,48 +140,44 @@ class LemburController extends Controller
         return response()->json(['message' => 'Tidak memiliki izin approve'], 403);
     }
 
-
-    // Decline
-    public function decline($id)
+    // Decline lembur
+    public function decline(Request $request, $id)
     {
         $user = Auth::user();
-        $lembur = lembur::find($id);
+        $lembur = Lembur::find($id);
 
         if (!$lembur) {
             return response()->json(['message' => 'Lembur tidak ditemukan'], 404);
         }
 
-        if (!in_array($user->peran_id, [1, 2])) {
-            return response()->json(['message' => 'Tidak memiliki izin'], 403);
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+
+        // cek apakah user punya fitur menolak lembur
+        if (!in_array('decline_lembur', $fiturUser)) {
+            return response()->json(['message' => 'Tidak memiliki izin menolak lembur'], 403);
         }
 
+        // Validasi catatan penolakan wajib diisi
+        $request->validate([
+            'catatan_penolakan' => 'required|string|max:255',
+        ]);
+
+        // Hanya bisa ditolak sebelum final approval
         if ($lembur->approval_step < 2) {
             $lembur->approval_step = 3;
             $lembur->status = 'Ditolak';
+            $lembur->catatan_penolakan = $request->catatan_penolakan;
             $lembur->save();
 
             return response()->json([
-                'message' => 'Lembur ditolak',
-                'step'    => $lembur->approval_step,
-                'status'  => $lembur->status,
-                'data'    => $lembur
+                'message'            => 'Lembur ditolak dengan catatan revisi',
+                'step'               => $lembur->approval_step,
+                'status'             => $lembur->status,
+                'catatan_penolakan'  => $lembur->catatan_penolakan,
+                'data'               => $lembur
             ]);
         }
 
         return response()->json(['message' => 'Lembur sudah final, tidak bisa ditolak'], 400);
-    }
-    public function resetByYearRequest(Request $request)
-    {
-        $request->validate([
-            'tahun' => 'required|integer|min:2000|max:2100',
-        ]);
-
-        $tahun = $request->tahun;
-
-        Lembur::whereYear('tanggal', $tahun)->delete();
-
-        return response()->json([
-            'message' => "Data lembur tahun $tahun berhasil direset"
-        ]);
     }
 }

@@ -19,8 +19,6 @@ class FiturSeeder extends Seeder
             ['approve_lembur_step1', 'Melakukan persetujuan lembur pada tahap awal'],
             ['approve_lembur_step2', 'Melakukan persetujuan lembur final'],
             ['decline_lembur', 'Menolak lembur'],
-            ['edit_lembur', 'Mengedit lembur'],
-            ['hapus_lembur', 'Menghapus lembur'],
 
             // ---------------------- Cuti ----------------------
             ['lihat_cuti', 'Melihat daftar cuti'],
@@ -31,8 +29,6 @@ class FiturSeeder extends Seeder
             ['approve_cuti_step1', 'Melakukan persetujuan cuti pada tahap awal'],
             ['approve_cuti_step2', 'Melakukan persetujuan cuti final'],
             ['decline_cuti', 'Menolak cuti'],
-            ['edit_cuti', 'Mengedit cuti'],
-            ['hapus_cuti', 'Menghapus cuti'],
 
             // ---------------------- Tugas ----------------------
             ['lihat_tugas', 'Melihat daftar tugas'],
@@ -74,6 +70,9 @@ class FiturSeeder extends Seeder
 
             // ---------------------- Pengingat ----------------------
             ['pengingat', 'Mengelola pengingat'],
+
+            // ---------------------- Denger ----------------------
+            ['denger', 'Menghapus data secara massal'],
         ];
 
         foreach ($fiturs as [$nama, $deskripsi]) {
