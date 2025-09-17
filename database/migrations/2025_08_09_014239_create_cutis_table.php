@@ -32,7 +32,7 @@ return new class extends Migration
                 'Disetujui',
                 'Ditolak'
             ])->default('Pending');
-
+            $table->string('catatan_penolakan')->nullable();
             // Kolom baru untuk approval bertahap
             $table->unsignedTinyInteger('approval_step')
                   ->default(0);
