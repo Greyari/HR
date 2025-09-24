@@ -100,6 +100,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('gaji')->middleware(CheckFitur::class . ':gaji')->group(function() {
         Route::get('', [GajiController::class, 'calculateAll']);
         Route::put('{id}/status', [GajiController::class, 'updateStatus']);
+        Route::get('/export', [GajiController::class, 'export']);
+
     });
 
     // Potongan gaji

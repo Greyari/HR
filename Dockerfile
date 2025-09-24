@@ -3,8 +3,9 @@ FROM php:8.2-fpm
 # Install dependencies sistem
 RUN apt-get update && apt-get install -y \
     build-essential \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
     libpng-dev \
-    libjpeg-dev \
     libonig-dev \
     libxml2-dev \
     zip \
@@ -18,7 +19,11 @@ RUN apt-get update && apt-get install -y \
     npm && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ekstensi PHP
+# Install ekstensi GD (untuk PhpSpreadsheet)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) gd
+
+# Install ekstensi PHP lain
 RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath
 
 # Install Composer

@@ -18,7 +18,7 @@ class HakAksesSeeder extends Seeder
         // Ambil peran Super Admin
         $superAdmin = Peran::where('nama_peran', 'Super Admin')->first();
 
-        // Ambil semua fitur kecuali approve step 1
+        // Ambil semua fitur kecuali
         $fiturList = Fitur::whereNotIn('nama_fitur', [
             'approve_cuti_step1',
             'approve_lembur_step1',
@@ -26,6 +26,7 @@ class HakAksesSeeder extends Seeder
             'lihat_cuti_sendiri',
             'lihat_tugas_sendiri',
             'tambah_lampiran_tugas',
+            'apk'
         ])->get();
 
         foreach ($fiturList as $fitur) {

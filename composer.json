@@ -10,6 +10,7 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
         "laravel/tinker": "^2.10.1",
+        "phpoffice/phpspreadsheet": "^5.1",
         "sendinblue/api-v3-sdk": "^8.4"
     },
     "require-dev": {
