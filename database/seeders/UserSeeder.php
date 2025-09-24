@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
-                'gaji_pokok' => 900,
+                'gaji_per_hari' => 250,
                 'npwp' => 555,
                 'bpjs_kesehatan' => 8829,
                 'bpjs_ketenagakerjaan' => 9090
@@ -42,7 +42,7 @@ class UserSeeder extends Seeder
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranAO->id,
                 'departemen_id' => $departemenIT->id,
-                'gaji_pokok' => 100,
+                'gaji_per_hari' => 100,
                 'npwp' => 545,
                 'bpjs_kesehatan' => 4321,
                 'bpjs_ketenagakerjaan' => 8080
@@ -56,7 +56,7 @@ class UserSeeder extends Seeder
                 'jabatan_id' => $jabatanPR->id,
                 'peran_id' => $peranT->id,
                 'departemen_id' => $departemenOffice->id,
-                'gaji_pokok' => 700,
+                'gaji_per_hari' => 700,
                 'npwp' => 590,
                 'bpjs_kesehatan' => 1234,
                 'bpjs_ketenagakerjaan' => 7070

@@ -15,10 +15,18 @@ class Gaji extends Model
         'user_id',
         'bulan',
         'tahun',
-        'gaji_pokok',
+        'gaji_per_hari',
         'total_lembur',
+        'gaji_kotor',
+        'total_kehadiran',
+        'total_potongan',
+        'detail_potongan',
         'gaji_bersih',
         'status'
+    ];
+
+    protected $casts = [
+        'detail_potongan' => 'array',
     ];
 
     // Relasi ke User (karyawan)

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('jabatan_id')->nullable()->constrained('jabatan')->nullOnDelete();
             $table->foreignId('departemen_id')->nullable()->constrained('departemen')->nullOnDelete()   ;
             $table->string('nama');
-            $table->decimal('gaji_pokok', 15, 2)->nullable();
+            $table->decimal('gaji_per_hari', 15, 2)->nullable();
             $table->string('npwp')->unique()->nullable();
             $table->string('bpjs_kesehatan')->unique()->nullable();
             $table->string('bpjs_ketenagakerjaan')->unique()->nullable();

@@ -18,14 +18,19 @@ class GajiObserver
 
         $detailChanges = [];
         foreach ($changes as $field => $newValue) {
-            if (in_array($field, $ignore)) {
-                continue;
-            }
+            if (in_array($field, $ignore)) continue;
 
             $oldValue = $original[$field];
-            if ($oldValue == $newValue) {
-                continue;
+
+            // Jika array, ubah jadi string
+            if (is_array($oldValue)) {
+                $oldValue = json_encode($oldValue);
             }
+            if (is_array($newValue)) {
+                $newValue = json_encode($newValue);
+            }
+
+            if ($oldValue == $newValue) continue;
 
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }

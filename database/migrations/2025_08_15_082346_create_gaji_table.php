@@ -14,14 +14,20 @@ return new class extends Migration
         Schema::create('gaji', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->decimal('gaji_pokok', 15, 2);
-            $table->decimal('total_lembur', 15, 2)->default(0);
+            $table->unsignedTinyInteger('bulan'); // 1-12
+            $table->unsignedSmallInteger('tahun'); // ex: 2025
+            $table->integer('total_kehadiran')->default(0);
+            $table->decimal('gaji_kotor', 15, 2)->default(0);
+            $table->decimal('total_potongan', 15, 2)->default(0);
+            $table->json('detail_potongan')->nullable();
             $table->decimal('gaji_bersih', 15, 2)->default(0);
-            $table->enum('status', ['Sudah Dibayar', 'Belum Dibayar'])->default('Belum Dibayar') ;
+            $table->enum('status', ['Sudah Dibayar', 'Belum Dibayar'])->default('Belum Dibayar');
             $table->timestamps();
 
-            // foreign key (opsional)
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            // Supaya tiap user hanya punya 1 data gaji per bulan + tahun
+            $table->unique(['user_id', 'bulan', 'tahun']);
         });
     }
 

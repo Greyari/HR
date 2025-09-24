@@ -10,6 +10,10 @@ class FiturSeeder extends Seeder
     public function run(): void
     {
         $fiturs = [
+            // ---------------------- Auth ----------------------
+            ['web dan apk', 'User dapat login melalui web dan aplikasi mobile'],
+            ['apk', 'User hanya dapat login melalui aplikasi mobile'],
+
             // ---------------------- Lembur ----------------------
             ['lihat_lembur', 'Melihat daftar lembur'],
             ['lihat_semua_lembur', 'Karyawan dapat melihat semua lembur yang tercatat'],

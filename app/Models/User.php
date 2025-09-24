@@ -26,7 +26,7 @@ class User extends Authenticatable
         'peran_id',
         'jabatan_id',
         'departemen_id',
-        'gaji_pokok',
+        'gaji_per_hari',
         'npwp',
         'bpjs_kesehatan',
         'bpjs_ketenagakerjaan',
@@ -104,5 +104,17 @@ class User extends Authenticatable
     public function device()
     {
         return $this->hasOne(Device::class);
+    }
+
+    // relasi ke absensi
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+    // relasi ke gaji
+    public function gaji()
+    {
+        return $this->hasMany(Gaji::class);
     }
 }

@@ -41,27 +41,39 @@ class AuthController extends Controller
         Log::info('User ditemukan', ['id' => $user->id]);
 
         // -----------------------------
-        // Cek akses browser untuk non-superadmin
+        // Cek fitur login user (web/apk)
         // -----------------------------
-        if ($user->peran->nama_peran !== 'Super Admin') {
-            // Jika User-Agent mengindikasikan browser → blok login
-            $userAgent = $request->header('User-Agent', '');
-            if (str_contains($userAgent, 'Mozilla') || str_contains($userAgent, 'Chrome') || str_contains($userAgent, 'Safari') || str_contains($userAgent, 'Firefox')) {
-                return response()->json([
-                    'message' => 'Login via browser/web tidak diperbolehkan kecuali Super Admin.'
-                ], 403);
-            }
+        $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
+        $userAgent = strtolower($request->header('User-Agent', ''));
+
+        // Deteksi tipe akses
+        $isBrowser = str_contains($userAgent, 'mozilla')
+                  || str_contains($userAgent, 'chrome')
+                  || str_contains($userAgent, 'safari')
+                  || str_contains($userAgent, 'firefox');
+
+        $isMobile  = str_contains($userAgent, 'okhttp')
+                  || str_contains($userAgent, 'android')
+                  || str_contains($userAgent, 'iphone');
+
+        // -----------------------------
+        // Validasi akses sesuai fitur
+        // -----------------------------
+        if (in_array('apk', $fiturUser) && $isBrowser) {
+            return response()->json([
+                'message' => 'Login via web tidak diperbolehkan untuk akun ini.'
+            ], 403);
         }
 
         // -----------------------------
-        // Validasi device untuk non-superadmin
+        // Validasi device (hanya untuk akses mobile)
         // -----------------------------
-        if ($user->peran->nama_peran !== 'Super Admin') {
+        if ($isMobile && (in_array('apk', $fiturUser) || in_array('web dan apk', $fiturUser))) {
             $request->validate([
                 'device_id'           => 'required|string',
-                // 'device_model'        => 'required|string',
-                // 'device_manufacturer' => 'required|string',
-                // 'device_version'      => 'nullable|string',
+                'device_model'        => 'nullable|string',
+                'device_manufacturer' => 'nullable|string',
+                'device_version'      => 'nullable|string',
             ]);
 
             $existingDevice = Device::where('device_id', $request->device_id)->first();
@@ -74,6 +86,7 @@ class AuthController extends Controller
             $device = $user->device()->first();
 
             if (!$device) {
+                // pertama kali login → simpan device baru
                 $user->device()->create([
                     'device_id'           => $request->device_id,
                     'device_model'        => $request->device_model,
@@ -82,10 +95,12 @@ class AuthController extends Controller
                     'last_login'          => now()
                 ]);
             } elseif ($device->device_id !== $request->device_id) {
+                // device berbeda → tolak login
                 return response()->json([
                     'message' => 'Akun anda sudah terhubung dengan device lain. Silakan gunakan device pertama atau hubungi admin.'
                 ], 403);
             } else {
+                // device sama → update last_login
                 $device->update(['last_login' => now()]);
             }
         }

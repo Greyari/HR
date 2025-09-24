@@ -27,7 +27,7 @@ class UserController extends Controller
             'peran_id' => 'required|exists:peran,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
             'departemen_id' => 'nullable|exists:departemen,id',
-            'gaji_pokok' => 'required|numeric|min:0',
+            'gaji_per_hari' => 'required|numeric|min:0',
             'npwp' => 'required|string|unique:users,npwp',
             'bpjs_kesehatan' => 'required|string|unique:users,bpjs_kesehatan',
             'bpjs_ketenagakerjaan' => 'required|string|unique:users,bpjs_ketenagakerjaan',
@@ -51,7 +51,7 @@ class UserController extends Controller
             'peran_id' => $request->peran_id,
             'jabatan_id' => $request->jabatan_id,
             'departemen_id' => $request->departemen_id,
-            'gaji_pokok' => $request->gaji_pokok,
+            'gaji_per_hari' => $request->gaji_per_hari,
             'npwp' => $request->npwp,
             'bpjs_kesehatan' => $request->bpjs_kesehatan,
             'bpjs_ketenagakerjaan' => $request->bpjs_ketenagakerjaan,
@@ -80,7 +80,7 @@ class UserController extends Controller
             'peran_id' => 'nullable|exists:peran,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
             'departemen_id' => 'nullable|exists:departemen,id',
-            'gaji_pokok' => 'numeric|min:0',
+            'gaji_per_hari' => 'numeric|min:0',
             'npwp' => ['nullable', 'string', Rule::unique('users','npwp')->ignore($user->id)],
             'bpjs_kesehatan' => ['nullable', 'string', Rule::unique('users','bpjs_kesehatan')->ignore($user->id)],
             'bpjs_ketenagakerjaan' => ['nullable', 'string', Rule::unique('users','bpjs_ketenagakerjaan')->ignore($user->id)],
@@ -93,7 +93,7 @@ class UserController extends Controller
             'peran_id',
             'jabatan_id',
             'departemen_id',
-            'gaji_pokok',
+            'gaji_per_hari',
             'npwp',
             'bpjs_kesehatan',
             'bpjs_ketenagakerjaan',
@@ -106,7 +106,7 @@ class UserController extends Controller
             'data' => $user
         ]);
     }
-    
+
     // Hapus user
     public function destroy ($id)
     {
