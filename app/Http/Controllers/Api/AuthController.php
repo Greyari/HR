@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
 
 class AuthController extends Controller
 {
@@ -41,34 +42,49 @@ class AuthController extends Controller
         Log::info('User ditemukan', ['id' => $user->id]);
 
         // -----------------------------
-        // Cek fitur login user (web/apk)
+        // Deteksi device menggunakan Agent
         // -----------------------------
+        $agent = new Agent();
+
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
-        $userAgent = strtolower($request->header('User-Agent', ''));
 
-        // Deteksi tipe akses
-        $isBrowser = str_contains($userAgent, 'mozilla')
-                  || str_contains($userAgent, 'chrome')
-                  || str_contains($userAgent, 'safari')
-                  || str_contains($userAgent, 'firefox');
-
-        $isMobile  = str_contains($userAgent, 'okhttp')
-                  || str_contains($userAgent, 'android')
-                  || str_contains($userAgent, 'iphone');
+        Log::info('Deteksi akses', [
+            'userAgent' => $request->header('User-Agent'),
+            'isDesktop' => $agent->isDesktop(),
+            'isMobile'  => $agent->isMobile(),
+            'fiturUser' => $fiturUser
+        ]);
 
         // -----------------------------
-        // Validasi akses sesuai fitur
+        // Deteksi platform (web / apk)
         // -----------------------------
-        if (in_array('apk', $fiturUser) && $isBrowser) {
+        $platform = $request->input('platform'); // dari request
+
+        if (!$platform) {
+            // fallback ke Agent kalau frontend tidak kirim platform
+            if ($agent->isDesktop()) {
+                $platform = 'web';
+            } elseif ($agent->isMobile()) {
+                $platform = 'apk';
+            }
+        }
+
+        if ($platform === 'web' && !in_array('web', $fiturUser)) {
             return response()->json([
                 'message' => 'Login via web tidak diperbolehkan untuk akun ini.'
+            ], 403);
+        }
+
+        if ($platform === 'apk' && !in_array('apk', $fiturUser)) {
+            return response()->json([
+                'message' => 'Login via apk tidak diperbolehkan untuk akun ini.'
             ], 403);
         }
 
         // -----------------------------
         // Validasi device (hanya untuk akses mobile)
         // -----------------------------
-        if ($isMobile && (in_array('apk', $fiturUser) || in_array('web dan apk', $fiturUser))) {
+        if ($agent->isMobile()) {
             $request->validate([
                 'device_id'           => 'required|string',
                 'device_model'        => 'nullable|string',
@@ -95,12 +111,10 @@ class AuthController extends Controller
                     'last_login'          => now()
                 ]);
             } elseif ($device->device_id !== $request->device_id) {
-                // device berbeda → tolak login
                 return response()->json([
                     'message' => 'Akun anda sudah terhubung dengan device lain. Silakan gunakan device pertama atau hubungi admin.'
                 ], 403);
             } else {
-                // device sama → update last_login
                 $device->update(['last_login' => now()]);
             }
         }
@@ -130,7 +144,6 @@ class AuthController extends Controller
             'onboarding' => $onboarding,
         ]);
     }
-
 
     // ganti email
     public function updateEmail(Request $request)

@@ -15,6 +15,19 @@ use Carbon\Carbon;
 
 class GajiController extends Controller
 {
+
+    public function availablePeriods()
+    {
+        $periods = DB::table('gaji')
+            ->select('bulan', 'tahun')
+            ->distinct()
+            ->orderByDesc('tahun')
+            ->orderByDesc('bulan')
+            ->get();
+
+        return response()->json($periods);
+    }
+
     /**
      * Menghitung dan menyimpan data gaji untuk semua pengguna pada bulan dan tahun berjalan.
      *
@@ -151,7 +164,7 @@ class GajiController extends Controller
             })->orderBy('tanggal_mulai'),
             'lembur' => fn($q) => $q->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)->orderBy('tanggal')
         ])->orderBy('nama')->get();
-        
+
         // Ambil data gaji dalam satu query
         $gajiData = Gaji::where('bulan', $bulan)->where('tahun', $tahun)->get()->keyBy('user_id');
 
@@ -218,7 +231,7 @@ class GajiController extends Controller
         // Top 5 Kehadiran
         $sheet->setCellValue('D8', 'TOP 5 KEHADIRAN TERBAIK');
         $this->applyCellStyle($sheet->getStyle('D8'), ['font' => ['bold' => true, 'size' => 14], 'fill' => $this->getFillStyle('E8F5E8')]);
-        
+
         $topKehadiran = $users->map(fn($u) => ['nama' => $u->nama, 'total_absensi' => $u->absensi->count()])
                              ->sortByDesc('total_absensi')->take(5)->values()->toArray();
         array_unshift($topKehadiran, ['Nama', 'Total Hadir']);
@@ -277,17 +290,17 @@ class GajiController extends Controller
         $startRowDetail = ($lastRow ?? 1) + 3;
         $sheet->setCellValue("A{$startRowDetail}", "DETAIL POTONGAN");
         $this->applyCellStyle($sheet->getStyle("A{$startRowDetail}"), ['font' => ['bold' => true, 'size' => 14]]);
-        
+
         $headerDetail = ["Nama Karyawan", "Nama Potongan", "Persen", "Nilai"];
         $sheet->fromArray([$headerDetail], null, 'A' . ($startRowDetail + 1));
         $this->applyHeaderStyle($sheet->getStyle('A'.($startRowDetail + 1).':D'.($startRowDetail + 1)), 'FDEBD0', '000000');
-        
+
         if(!empty($detailPotonganData)) {
             $sheet->fromArray($detailPotonganData, null, 'A' . ($startRowDetail + 2));
             $lastRowDetail = ($startRowDetail + 1) + count($detailPotonganData);
             $this->applyTableStyle($sheet, "A".($startRowDetail + 1).":D{$lastRowDetail}", "D".($startRowDetail + 2).":D{$lastRowDetail}");
         }
-        
+
         $sheet->freezePane('A2');
     }
 
@@ -297,7 +310,7 @@ class GajiController extends Controller
         $header = ['No', 'Nama', 'Tanggal', 'Hari', 'Check In', 'Check Out', 'Durasi Kerja', 'Status'];
         $sheet->fromArray([$header], null, 'A1');
         $this->applyHeaderStyle($sheet->getStyle('A1:H1'), '28A745');
-        
+
         $rowData = [];
         $no = 1;
         $dayMap = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -309,7 +322,7 @@ class GajiController extends Controller
                 $durasi = ($absensi->checkin_time && $absensi->checkout_time)
                     ? $checkin->diff($checkout)->format('%hj %im')
                     : '-';
-                
+
                 $rowData[] = [
                     $no++,
                     $user->nama,
@@ -322,7 +335,7 @@ class GajiController extends Controller
                 ];
             }
         }
-        
+
         if (!empty($rowData)) {
             $sheet->fromArray($rowData, null, 'A2');
             $this->applyTableStyle($sheet, "A1:H" . (count($rowData) + 1));
@@ -336,7 +349,7 @@ class GajiController extends Controller
         $header = ['No', 'Nama', 'Tipe Cuti', 'Tanggal Mulai', 'Tanggal Selesai', 'Durasi (Hari)', 'Alasan', 'Status'];
         $sheet->fromArray([$header], null, 'A1');
         $this->applyHeaderStyle($sheet->getStyle('A1:H1'), 'FFC107');
-        
+
         $rowData = [];
         $no = 1;
         foreach ($users as $user) {
@@ -396,7 +409,7 @@ class GajiController extends Controller
     {
         $style->applyFromArray($rules);
     }
-    
+
     private function getFillStyle($color)
     {
         return ['fillType' => 'solid', 'startColor' => ['rgb' => $color]];
