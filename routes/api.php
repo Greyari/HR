@@ -148,15 +148,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('lembur/reset', [DengerController::class, 'resetLemburByMonth']);
         Route::get('lembur/months', [DengerController::class, 'availableLemburMonths']);
 
-        // Route::post('gaji/reset', [DengerController::class, 'resetGajiByMonth']);
-        // Route::get('gaji/months', [DengerController::class, 'availableGajiMonths']);
+        Route::post('gaji/reset', [DengerController::class, 'resetGajiByMonth']);
+        Route::get('gaji/months', [DengerController::class, 'availableGajiMonths']);
 
         Route::post('tugas/reset', [DengerController::class, 'resetTugasByMonth']);
         Route::get('tugas/months', [DengerController::class, 'availableTugasMonths']);
 
         Route::post('log/reset', [DengerController::class, 'resetLogByMonth']);
         Route::get('log/months', [DengerController::class, 'availableLogMonths']);
-
 
         Route::post('absensi/reset', [DengerController::class, 'resetAbsenByMonth']);
         Route::get('absensi/months', [DengerController::class, 'availableAbsenMonths']);
