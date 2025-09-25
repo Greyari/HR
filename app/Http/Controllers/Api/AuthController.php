@@ -82,9 +82,9 @@ class AuthController extends Controller
         }
 
         // -----------------------------
-        // Validasi device (hanya untuk akses mobile)
+        // Validasi device (hanya untuk akses mobile / apk)
         // -----------------------------
-        if ($agent->isMobile()) {
+        if ($platform === 'apk') {
             $request->validate([
                 'device_id'           => 'required|string',
                 'device_model'        => 'nullable|string',
@@ -102,20 +102,29 @@ class AuthController extends Controller
             $device = $user->device()->first();
 
             if (!$device) {
-                // pertama kali login → simpan device baru
-                $user->device()->create([
-                    'device_id'           => $request->device_id,
-                    'device_model'        => $request->device_model,
-                    'device_manufacturer' => $request->device_manufacturer,
-                    'device_version'      => $request->device_version,
-                    'last_login'          => now()
-                ]);
+                try {
+                    $newDevice = $user->device()->create([
+                        'device_id'           => $request->device_id,
+                        'device_model'        => $request->device_model,
+                        'device_manufacturer' => $request->device_manufacturer,
+                        'device_version'      => $request->device_version,
+                        'last_login'          => now()
+                    ]);
+
+                    Log::info('Device baru berhasil dibuat', ['device' => $newDevice->toArray()]);
+                } catch (\Exception $e) {
+                    Log::error('Gagal insert device', ['error' => $e->getMessage()]);
+                    return response()->json([
+                        'message' => 'Gagal menyimpan device. Silakan hubungi admin.'
+                    ], 500);
+                }
             } elseif ($device->device_id !== $request->device_id) {
                 return response()->json([
                     'message' => 'Akun anda sudah terhubung dengan device lain. Silakan gunakan device pertama atau hubungi admin.'
                 ], 403);
             } else {
                 $device->update(['last_login' => now()]);
+                Log::info('Device terakhir login diperbarui', ['device_id' => $device->device_id]);
             }
         }
 
@@ -193,6 +202,41 @@ class AuthController extends Controller
         ]);
     }
 
+    // Ganti password
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Cek password lama
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'message' => 'Password lama salah',
+            ], 422);
+        }
+
+        // Update password baru
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password berhasil diperbarui'
+        ], 200);
+    }
+
+    // Fitur logout
     public function logout(Request $request)
     {
         $user = $request->user();
