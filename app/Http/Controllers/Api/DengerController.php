@@ -116,10 +116,10 @@ class DengerController extends Controller
     public function availableGajiMonths()
     {
         $data = Gaji::selectRaw('YEAR(created_at) as tahun, MONTH(created_at) as bulan, COUNT(*) as jumlah')
-            ->groupBy('tahun', 'bulan')
-            ->orderBy('tahun', 'desc')
-            ->orderBy('bulan', 'desc')
-            ->get();
+                    ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+                    ->orderByDesc('tahun')
+                    ->orderByDesc('bulan')
+                    ->get();
 
         return response()->json($data);
     }
@@ -234,4 +234,5 @@ class DengerController extends Controller
 
         return response()->json($data);
     }
+
 }
