@@ -97,6 +97,24 @@ class TugasController extends Controller
         ]);
     }
 
+    // Update status tugas (khusus ganti status)
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:Selesai,Menunggu Admin,Proses,Ditolak'
+        ]);
+
+        $tugas = Tugas::findOrFail($id);
+        $tugas->status = $request->status;
+        $tugas->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status tugas berhasil diperbarui',
+            'data' => $tugas
+        ]);
+    }
+
     // Hapus tugas
     public function destroy($id)
     {

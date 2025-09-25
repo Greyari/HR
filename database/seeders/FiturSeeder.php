@@ -11,7 +11,7 @@ class FiturSeeder extends Seeder
     {
         $fiturs = [
             // ---------------------- Auth ----------------------
-            ['web dan apk', 'User dapat login melalui web dan aplikasi mobile'],
+            ['web', 'User hanya dapat login melalui aplikasi web'],
             ['apk', 'User hanya dapat login melalui aplikasi mobile'],
 
             // ---------------------- Lembur ----------------------
@@ -42,6 +42,7 @@ class FiturSeeder extends Seeder
             ['edit_tugas', 'Mengedit tugas'],
             ['hapus_tugas', 'Menghapus tugas'],
             ['tambah_lampiran_tugas', 'Menambahkan lampiran tugas'],
+            ['ubah_status_tugas', 'Mengupbah status tugas'],
 
             // ---------------------- Departemen ----------------------
             ['departemen', 'Manajemen Departemen'],

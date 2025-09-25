@@ -55,11 +55,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tugas')->group(function () {
         Route::get('', [TugasController::class, 'index'])->middleware(CheckFitur::class . ':lihat_tugas');
         Route::post('', [TugasController::class, 'store'])->middleware(CheckFitur::class . ':tambah_tugas');
+
+        // ⬅️ taruh upload-file dulu
+        Route::post('{id}/upload-file', [TugasController::class, 'uploadLampiran'])->middleware(CheckFitur::class . ':tambah_lampiran_tugas');
+        Route::put('{id}/status', [TugasController::class, 'updateStatus'])->middleware(CheckFitur::class . ':ubah_status_tugas');
+        // baru route yang generik {id}
         Route::put('{id}', [TugasController::class, 'update'])->middleware(CheckFitur::class . ':edit_tugas');
         Route::delete('{id}', [TugasController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_tugas');
-
-        // Tugas Route Karyawan (sudah termasuk dalam upload dan edit)
-        Route::post('{id}/upload-file', [TugasController::class, 'uploadLampiran'])->middleware(CheckFitur::class . ':tambah_lampiran_tugas');
     });
 
     // Departemen Routes
@@ -99,9 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gaji Routes
     Route::prefix('gaji')->middleware(CheckFitur::class . ':gaji')->group(function() {
         Route::get('', [GajiController::class, 'calculateAll']);
+        Route::get('/periods', [GajiController::class, 'availablePeriods']);
         Route::put('{id}/status', [GajiController::class, 'updateStatus']);
         Route::get('/export', [GajiController::class, 'export']);
-
     });
 
     // Potongan gaji
