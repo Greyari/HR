@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Api\Admin\AdminApi;
+
 
 class TugasController extends Controller
 {
@@ -33,9 +35,7 @@ class TugasController extends Controller
         }
 
         $tugas->transform(function ($item) {
-            $item->lampiran = $item->lampiran
-                ? asset('storage/' . $item->lampiran)
-                : null;
+            $item->lampiran = $item->lampiran ?: null;
             return $item;
         });
 
@@ -124,9 +124,14 @@ class TugasController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
-        // Hapus video jika ada
-        if ($tugas->bukti_video && Storage::disk('public')->exists($tugas->bukti_video)) {
-            Storage::disk('public')->delete($tugas->bukti_video);
+        // Opsional: hapus file di Cloudinary
+        if ($tugas->lampiran) {
+            try {
+                $publicId = pathinfo(parse_url($tugas->lampiran)['path'], PATHINFO_FILENAME);
+                (new AdminApi())->deleteAssets([$publicId]);
+            } catch (\Exception $e) {
+                // kalau gagal hapus, abaikan aja
+            }
         }
 
         $tugas->delete();
@@ -138,26 +143,37 @@ class TugasController extends Controller
     public function uploadLampiran(Request $request, $id)
     {
         $request->validate([
-            'lampiran' => 'required|file|max:204800',
+            'lampiran' => 'required|file|max:204800', // 200 MB max
         ]);
 
         $tugas = Tugas::findOrFail($id);
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
+            $extension = strtolower($file->getClientOriginalExtension());
 
-            // Bisa simpan di folder sesuai tipe
-            $extension = $file->getClientOriginalExtension();
+            // Tentukan folder
             $folder = match($extension) {
-                'mp4', 'mov', 'avi', '3gp' => 'videos',
-                'jpg', 'jpeg', 'png' => 'images',
-                default => 'files',
+                'mp4', 'mov', 'avi', '3gp' => 'tugas/videos',
+                'jpg', 'jpeg', 'png' => 'tugas/images',
+                default => 'tugas/files',
             };
 
-            $path = $file->store($folder, 'public');
+            // Upload ke Cloudinary
+            if (in_array($extension, ['mp4', 'mov', 'avi', '3gp'])) {
+                $uploadedUrl = Cloudinary::uploadVideo(
+                    $file->getRealPath(),
+                    ['folder' => $folder]
+                )->getSecurePath();
+            } else {
+                $uploadedUrl = Cloudinary::upload(
+                    $file->getRealPath(),
+                    ['folder' => $folder]
+                )->getSecurePath();
+            }
 
-            // Simpan path ke database
-            $tugas->lampiran = $path;
+            // Simpan URL ke DB
+            $tugas->lampiran = $uploadedUrl;
             $tugas->status = "Menunggu Admin";
             $tugas->save();
         }
@@ -165,8 +181,7 @@ class TugasController extends Controller
         return response()->json([
             'message' => 'Lampiran berhasil diupload!',
             'data' => $tugas,
-            'file_url' => asset('storage/' . $tugas->lampiran),
+            'file_url' => $tugas->lampiran, // langsung URL Cloudinary
         ]);
     }
-
 }

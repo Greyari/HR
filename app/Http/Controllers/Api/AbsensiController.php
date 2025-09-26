@@ -9,6 +9,8 @@ use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class AbsensiController extends Controller
 {
@@ -95,23 +97,32 @@ class AbsensiController extends Controller
 
         $status = $checkinDateTime->lte($toleransi) ? 'Tepat Waktu' : 'Terlambat';
 
-        // simpan video (file / base64)
-        $videoPath = null;
+        // simpan video ke Cloudinary
+        $videoUrl = null;
+
         if ($request->hasFile('video_user')) {
-            $videoPath = $request->file('video_user')->store('videos', 'public');
+            $videoUrl = Cloudinary::uploadVideo(
+                $request->file('video_user')->getRealPath(),
+                ['folder' => 'absensi/video']
+            )->getSecurePath();
         } elseif ($request->filled('video_base64')) {
             try {
                 $videoData = base64_decode($request->video_base64);
-                $fileName = 'videos/' . uniqid() . '.mp4';
-                Storage::disk('public')->put($fileName, $videoData);
-                $videoPath = $fileName;
+                $tmpPath = sys_get_temp_dir() . '/' . uniqid() . '.mp4';
+                file_put_contents($tmpPath, $videoData);
+
+                $videoUrl = Cloudinary::uploadVideo(
+                    $tmpPath,
+                    ['folder' => 'absensi/video']
+                )->getSecurePath();
             } catch (\Exception $e) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Gagal menyimpan video base64: '.$e->getMessage(),
+                    'message' => 'Gagal menyimpan video base64: ' . $e->getMessage(),
                 ], 500);
             }
         }
+
 
         // Simpan absensi baru
         $absensi = Absensi::create([
@@ -120,7 +131,7 @@ class AbsensiController extends Controller
             'checkin_lng'  => $request->lng,
             'checkin_date' => $checkinDate,
             'checkin_time' => $checkinTime,
-            'video_user'   => $videoPath,
+            'video_user'   => $videoUrl, // sekarang URL Cloudinary
             'status'       => $status,
         ]);
 
@@ -128,7 +139,7 @@ class AbsensiController extends Controller
             'status' => true,
             'message' => 'Check-in berhasil',
             'data' => $absensi,
-            'video_url' => $videoPath ? asset('storage/'.$videoPath) : null,
+            'video_url' => $videoUrl,
         ]);
     }
 
