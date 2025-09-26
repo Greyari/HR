@@ -43,7 +43,7 @@ class GajiController extends Controller
         $bulan = $now->month;
         $tahun = $now->year;
 
-        // Optimasi: Ambil total kehadiran semua user dalam satu query
+        // Ambil total absensi bulan & tahun sekarang
         $absensiCounts = Absensi::select('user_id', DB::raw('count(*) as total'))
             ->whereNotNull('checkin_date')
             ->whereMonth('checkin_date', $bulan)
@@ -55,13 +55,13 @@ class GajiController extends Controller
             $gajiPerHari = $user->gaji_per_hari ?? 0;
             $jumlahHariHadir = $absensiCounts->get($user->id, 0);
 
-            // Gaji kotor = hadir × gaji per hari
+            // Gaji kotor
             $gajiPokok = $jumlahHariHadir * $gajiPerHari;
 
-            // Inisialisasi lembur (dapat dikembangkan lebih lanjut)
+            // Lembur (sementara 0)
             $totalLembur = 0;
 
-            // Hitung total potongan gaji
+            // Hitung potongan
             $totalPotongan = 0;
             $detailPotongan = [];
             foreach ($potonganList as $potongan) {
@@ -74,10 +74,10 @@ class GajiController extends Controller
                 ];
             }
 
-            // Gaji bersih = (gaji pokok + lembur) - potongan
+            // Gaji bersih
             $gajiBersih = $gajiPokok + $totalLembur - $totalPotongan;
 
-            // Simpan atau perbarui data gaji
+            // Simpan / update data gaji bulan ini
             $gaji = Gaji::updateOrCreate(
                 [
                     'user_id' => $user->id,
@@ -88,12 +88,11 @@ class GajiController extends Controller
                     'total_kehadiran' => $jumlahHariHadir,
                     'gaji_kotor'      => $gajiPokok,
                     'total_potongan'  => $totalPotongan,
-                    'detail_potongan' => $detailPotongan, // Model harus memiliki casts to array/json
+                    'detail_potongan' => $detailPotongan,
                     'gaji_bersih'     => $gajiBersih,
                 ]
             );
 
-            // Siapkan data untuk respons JSON
             $result[] = [
                 'id'              => $gaji->id,
                 'user'            => ['id' => $user->id, 'nama' => $user->nama],
@@ -104,13 +103,18 @@ class GajiController extends Controller
                 'potongan'        => $detailPotongan,
                 'total_potongan'  => $totalPotongan,
                 'gaji_bersih'     => $gajiBersih,
-                'status'          => $gaji->status
+                'status'          => $gaji->status,
+                'bulan'           => $bulan,
+                'tahun'           => $tahun,
             ];
         }
 
+        // 🔑 Tambahkan filter supaya response hanya bulan & tahun sekarang
+        $filtered = collect($result)->where('bulan', $bulan)->where('tahun', $tahun)->values();
+
         return response()->json([
-            'message' => 'Semua gaji berhasil dihitung dan disimpan',
-            'data'    => $result
+            'message' => 'Data gaji bulan ini berhasil dihitung',
+            'data'    => $filtered
         ]);
     }
 
