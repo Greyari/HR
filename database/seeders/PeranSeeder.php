@@ -13,15 +13,39 @@ class PeranSeeder extends Seeder
     public function run()
     {
         Peran::create([
-            'nama_peran' => 'Super Admin',
+            'nama_peran' => 'Admin Super',
         ]);
 
         Peran::create([
-            'nama_peran' => 'Admin Office',
+            'nama_peran' => 'Admin Office Website',
         ]);
 
         Peran::create([
-            'nama_peran' => 'Technical',
+            'nama_peran' => 'Admin Office Aplikasi',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Teknisi Website',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Teknisi Aplikasi',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Marketing Website',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Marketing Aplikasi',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Magang Aplikasi',
+        ]);
+
+        Peran::create([
+            'nama_peran' => 'Magang Website',
         ]);
     }
 }

@@ -4,42 +4,186 @@ namespace Database\Seeders;
 
 use App\Models\Fitur;
 use App\Models\Peran;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class HakAksesSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Ambil peran Super Admin
-        $superAdmin = Peran::where('nama_peran', 'Super Admin')->first();
+        // Ambil semua fitur (keyBy supaya gampang dipanggil pakai nama)
+        $allFitur = Fitur::all()->keyBy('nama_fitur');
 
-        // Ambil semua fitur kecuali
-        $fiturList = Fitur::whereNotIn('nama_fitur', [
-            'approve_cuti_step1',
-            'approve_lembur_step1',
-            'lihat_lembur_sendiri',
-            'lihat_cuti_sendiri',
-            'lihat_tugas_sendiri',
-            'tambah_lampiran_tugas',
-            'apk'
-        ])->get();
+        // ========================
+        // Mapping peran => fitur yang diizinkan
+        // ========================
+        $roleAccess = [
+            // Admin Super (semua kecuali blacklist)
+            'Admin Super' => Fitur::whereNotIn('nama_fitur', [
+                'approve_cuti_step1',
+                'approve_lembur_step1',
+                'lihat_lembur_sendiri',
+                'lihat_cuti_sendiri',
+                'lihat_tugas_sendiri',
+                'tambah_lampiran_tugas',
+            ])->pluck('nama_fitur')->toArray(),
 
-        foreach ($fiturList as $fitur) {
-            DB::table('izin_fitur')->updateOrInsert(
-                [
-                    'peran_id' => $superAdmin->id,
-                    'fitur_id' => $fitur->id,
-                ],
-                [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+            // Admin Office Website
+            'Admin Office Website' => [
+                'web',
+                'approve_cuti_step1',
+                'approve_lembur_step1',
+                'approve_cuti',
+                'approve_lembur',
+                'decline_cuti',
+                'decline_lembur',
+                'lihat_semua_lembur',
+                'lihat_lembur',
+                'lihat_cuti',
+                'lihat_semua_cuti',
+                'karyawan',
+                'ubah_status_tugas',
+                'tambah_tugas',
+                'edit_tugas',
+                'hapus_tugas',
+                'lihat_semua_tugas',
+                'lihat_tugas',
+                'gaji',
+                'potongan_gaji',
+                'lihat_semua_absensi',
+            ],
+
+            // Admin Office Aplikasi
+            'Admin Office Aplikasi' => [
+                'apk',
+                'approve_cuti_step1',
+                'approve_lembur_step1',
+                'approve_cuti',
+                'approve_lembur',
+                'decline_cuti',
+                'decline_lembur',
+                'lihat_semua_lembur',
+                'lihat_lembur',
+                'lihat_cuti',
+                'lihat_semua_cuti',
+                'karyawan',
+                'ubah_status_tugas',
+                'tambah_tugas',
+                'edit_tugas',
+                'hapus_tugas',
+                'lihat_semua_tugas',
+                'lihat_tugas',
+                'gaji',
+                'potongan_gaji',
+                'lihat_semua_absensi',
+            ],
+
+            // Teknisi Website
+            'Teknisi Website' => [
+                'web',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_lembur',
+                'lihat_lembur_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_lembur',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+
+            // Teknisi Aplikasi
+            'Teknisi Aplikasi' => [
+                'apk',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_lembur',
+                'lihat_lembur_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_lembur',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+
+            // Marketing Website
+            'Marketing Website' => [
+                'web',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_lembur',
+                'lihat_lembur_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_lembur',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+
+            // Marketing Aplikasi
+            'Marketing Aplikasi' => [
+                'apk',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_lembur',
+                'lihat_lembur_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_lembur',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+
+            // Magang Website
+            'Magang Website' => [
+                'web',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+
+            // Magang Aplikasi
+            'Magang Aplikasi' => [
+                'apk',
+                'lihat_tugas',
+                'lihat_tugas_sendiri',
+                'lihat_cuti',
+                'lihat_cuti_sendiri',
+                'tambah_cuti',
+                'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
+            ],
+        ];
+
+        // ========================
+        // Proses insert izin_fitur
+        // ========================
+        foreach ($roleAccess as $roleName => $fiturList) {
+            $peran = Peran::where('nama_peran', $roleName)->first();
+            if (!$peran) continue;
+
+            foreach ($fiturList as $namaFitur) {
+                if (isset($allFitur[$namaFitur])) {
+                    DB::table('izin_fitur')->updateOrInsert(
+                        ['peran_id' => $peran->id, 'fitur_id' => $allFitur[$namaFitur]->id],
+                        ['created_at' => now(), 'updated_at' => now()]
+                    );
+                }
+            }
         }
     }
 }

@@ -13,53 +13,248 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $peranSA = Peran::where('nama_peran', 'Super Admin')->first();
-        $peranAO = Peran::where('nama_peran', 'Admin Office')->first();
-        $peranT = Peran::where('nama_peran', 'Technical')->first();
-        $jabatanGM = Jabatan::where('nama_jabatan', 'GM')->first();
-        $jabatanPR = Jabatan::where('nama_jabatan', 'Presiden')->first();
+        // Peran
+        $peranSA = Peran::where('nama_peran', 'Admin Super')->first();
+        $peranAoApk = Peran::where('nama_peran', 'Admin Office Aplikasi')->first();
+        $peranAoWeb = Peran::where('nama_peran', 'Admin Office Website')->first();
+        $peranTnApk = Peran::where('nama_peran', 'Teknisi Aplikasi')->first();
+        $peranTnWeb = Peran::where('nama_peran', 'Teknisi Website')->first();
+        $peranMgApk = Peran::where('nama_peran', 'Magang Aplikasi')->first();
+        $peranMgWeb = Peran::where('nama_peran', 'Magang Website')->first();
+        $peranMkApk = Peran::where('nama_peran', 'Marketing Aplikasi')->first();
+        $peranMkWeb = Peran::where('nama_peran', 'Marketing Website')->first();
+
+        // Jabatan
+        $jabatanGM = Jabatan::where('nama_jabatan', 'General Manager')->first();
+        $jabatanSe = Jabatan::where('nama_jabatan', 'Sales Executive')->first();
+        $jabatanTm = Jabatan::where('nama_jabatan', 'Telemarketing')->first();
+        $jabatanAs = Jabatan::where('nama_jabatan', 'Admin Sales')->first();
+        $jabatanAos = Jabatan::where('nama_jabatan', 'Admin Office Senior')->first();
+        $jabatanMi = Jabatan::where('nama_jabatan', 'Marketing Intern')->first();
+        $jabatanIi = Jabatan::where('nama_jabatan', 'IT Intern')->first();
+        $jabatanTs = Jabatan::where('nama_jabatan', 'Teknisi Senior')->first();
+        $jabatanTi = Jabatan::where('nama_jabatan', 'Teknisi Intern')->first();
+
+        // Departemen
         $departemenIT = Departemen::where('nama_departemen', 'IT')->first();
         $departemenOffice = Departemen::where('nama_departemen', 'Office')->first();
+        $departemenMarketing = Departemen::where('nama_departemen', 'Marketing')->first();
+        $departemenMaintenance = Departemen::where('nama_departemen', 'Maintenance')->first();
 
 
+            //////////////// Super admin ////////////////
             User::create([
-                'nama' => 'Grey Ari',
-                'email' => 'grey@gmail.com',
+                'nama' => 'Admin Super',
+                'email' => 'adminsuperr@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
-                'gaji_per_hari' => 250,
-                'npwp' => 555,
-                'bpjs_kesehatan' => 8829,
-                'bpjs_ketenagakerjaan' => 9090
+                'gaji_per_hari' => 500000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            //////////////// Admin  Office ////////////////
+            User::create([
+                'nama' => 'Desy',
+                'email' => 'desy@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanAos->id,
+                'peran_id' => $peranAoWeb->id,
+                'departemen_id' => $departemenOffice->id,
+                'gaji_per_hari' => 200000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Perempuan'
             ]);
 
             User::create([
-                'nama' => 'Haikal',
-                'email' => 'haikal@gmail.com',
+                'nama' => 'Nata',
+                'email' => 'nata@gmail.com',
                 'password' => Hash::make('123'),
-                'jabatan_id' => $jabatanGM->id,
-                'peran_id' => $peranAO->id,
-                'departemen_id' => $departemenIT->id,
-                'gaji_per_hari' => 100,
-                'npwp' => 545,
-                'bpjs_kesehatan' => 4321,
-                'bpjs_ketenagakerjaan' => 8080
+                'jabatan_id' => $jabatanAos->id,
+                'peran_id' => $peranAoWeb->id,
+                'departemen_id' => $departemenOffice->id,
+                'gaji_per_hari' => 200000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Perempuan'
+            ]);
 
+            //////////////// marketing ////////////////
+            User::create([
+                'nama' => 'Afi Oktiani',
+                'email' => 'afioktiani0610@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanAs->id,
+                'peran_id' => $peranAoWeb->id,
+                'departemen_id' => $departemenMarketing->id,
+                'gaji_per_hari' => 250000,
+                'npwp' => "73.259.731.5-215.000",
+                'bpjs_kesehatan' => "0000365489638",
+                'bpjs_ketenagakerjaan' => "2171 0246 1096 9002",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Perempuan'
+            ]);
+
+            User::create([
+                'nama' => 'Eka Paksi Ramadhani',
+                'email' => 'ekapaksir@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanSe->id,
+                'peran_id' => $peranAoWeb->id,
+                'departemen_id' => $departemenMarketing->id,
+                'gaji_per_hari' => 250000,
+                'npwp' => "39.716.935.0-225.000",
+                'bpjs_kesehatan' => "0003510022364",
+                'bpjs_ketenagakerjaan' => "2171 1063 1299 9001",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Perempuan'
+            ]);
+
+            User::create([
+                'nama' => 'Desta Ayu Pusaprini',
+                'email' => 'official.destaayu@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanTm->id,
+                'peran_id' => $peranAoWeb->id,
+                'departemen_id' => $departemenMarketing->id,
+                'gaji_per_hari' => 250000,
+                'npwp' => "64.365.608.5-215.000",
+                'bpjs_kesehatan' => "0000022899453",
+                'bpjs_ketenagakerjaan' => "21.710.458.1-293.004",
+                'status_pernikahan' => 'Menikah',
+                'jenis_kelamin' => 'Perempuan'
+            ]);
+
+            //////////////// magang ////////////////
+            User::create([
+                'nama' => 'Grey Ari Daniel Simatupang',
+                'email' => 'tupang1017@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanIi->id,
+                'peran_id' => $peranMgApk->id,
+                'departemen_id' => $departemenIT->id,
+                'gaji_per_hari' => 50000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            User::create([
+                'nama' => 'M Taufiq karim Haikal',
+                'email' => 'haikaltaufiq4@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanIi->id,
+                'peran_id' => $peranMgApk->id,
+                'departemen_id' => $departemenIT->id,
+                'gaji_per_hari' => 50000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
             ]);
 
             User::create([
                 'nama' => 'Zidan',
                 'email' => 'zidan@gmail.com',
                 'password' => Hash::make('123'),
-                'jabatan_id' => $jabatanPR->id,
-                'peran_id' => $peranT->id,
-                'departemen_id' => $departemenOffice->id,
-                'gaji_per_hari' => 700,
-                'npwp' => 590,
-                'bpjs_kesehatan' => 1234,
-                'bpjs_ketenagakerjaan' => 7070
+                'jabatan_id' => $jabatanMi->id,
+                'peran_id' => $peranMgApk->id,
+                'departemen_id' => $departemenMarketing->id,
+                'gaji_per_hari' => 50000,
+                'npwp' => "-",
+                'bpjs_kesehatan' => "-",
+                'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            User::create([
+                'nama' => 'calvin',
+                'email' => 'calvin@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanMi->id,
+                'peran_id' => $peranMgApk->id,
+                'departemen_id' => $departemenMarketing->id,
+                'gaji_per_hari' => 50000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            //////////////// teknisi ////////////////
+            User::create([
+                'nama' => 'Budi',
+                'email' => 'budi@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanTs->id,
+                'peran_id' => $peranTnApk->id,
+                'departemen_id' => $departemenMaintenance->id,
+                'gaji_per_hari' => 250000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            User::create([
+                'nama' => 'Louis',
+                'email' => 'louis@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanTs->id,
+                'peran_id' => $peranTnApk->id,
+                'departemen_id' => $departemenMaintenance->id,
+                'gaji_per_hari' => 250000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            User::create([
+                'nama' => 'Siddiq',
+                'email' => 'siddiq@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanTs->id,
+                'peran_id' => $peranTnApk->id,
+                'departemen_id' => $departemenMaintenance->id,
+                'gaji_per_hari' => 250000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
+            User::create([
+                'nama' => 'Ridwan',
+                'email' => 'ridwan@gmail.com',
+                'password' => Hash::make('123'),
+                'jabatan_id' => $jabatanTs->id,
+                'peran_id' => $peranMgApk->id,
+                'departemen_id' => $departemenMaintenance->id,
+                'gaji_per_hari' => 250000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Belum Menikah',
+                'jenis_kelamin' => 'Laki-laki'
             ]);
     }
 }
