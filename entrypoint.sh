@@ -42,6 +42,14 @@ php artisan cache:clear
 php artisan config:cache
 
 # -----------------------------
+# Buat tabel cache kalau driver pakai database
+# -----------------------------
+if [ "$CACHE_DRIVER" = "database" ]; then
+  echo "🗄 Membuat tabel cache untuk database..."
+  php artisan cache:table
+fi
+
+# -----------------------------
 # Migration & Seed
 # -----------------------------
 RESET_DB=true   # ganti ke true kalau mau fresh + seed
