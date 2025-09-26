@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
         $this->call(FiturSeeder::class);
         $this->call(HakAksesSeeder::class);
         $this->call(UserSeeder::class);
+        $this->call(KantorSeeder::class);
     }
 }
