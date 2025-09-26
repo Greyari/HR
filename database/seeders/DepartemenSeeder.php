@@ -15,9 +15,17 @@ class DepartemenSeeder extends Seeder
         Departemen::create([
             'nama_departemen' => 'IT',
         ]);
-        
+
         Departemen::create([
             'nama_departemen' => 'Office',
+        ]);
+
+        Departemen::create([
+            'nama_departemen' => 'Maintenance',
+        ]);
+
+        Departemen::create([
+            'nama_departemen' => 'Marketing',
         ]);
     }
 }
