@@ -18,6 +18,35 @@ use App\Http\Controllers\Api\DepartemenController;
 use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
+use Cloudinary\Cloudinary;
+
+Route::get('/test-upload', function () {
+    // Buat instance Cloudinary langsung
+    $cloudinary = new Cloudinary([
+        'cloud' => [
+            'cloud_name' => config('cloudinary.cloud.cloud_name'),
+            'api_key'    => config('cloudinary.cloud.api_key'),
+            'api_secret' => config('cloudinary.cloud.api_secret'),
+        ],
+        'url' => [
+            'secure' => true,
+        ],
+    ]);
+
+    // Path file lokal
+    $path = storage_path('app/public/videos/tes.mp4');
+
+    // Upload video
+    $result = $cloudinary->uploadApi()->upload($path, [
+        'resource_type' => 'video',
+        'folder'        => 'tugas/videos',
+    ]);
+
+    return response()->json([
+        'message' => 'Upload berhasil!',
+        'result'  => $result,
+    ]);
+});
 
 
 // publik route
