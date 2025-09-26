@@ -37,17 +37,12 @@ fi
 composer install --no-interaction --optimize-autoloader
 composer dump-autoload -o
 
+# 🚑 Jalankan migrate dulu biar tabel cache ada
+php artisan migrate --force || true
+
 php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
-
-# -----------------------------
-# Buat tabel cache kalau driver pakai database
-# -----------------------------
-if [ "$CACHE_DRIVER" = "database" ]; then
-  echo "🗄 Membuat tabel cache untuk database..."
-  php artisan cache:table
-fi
 
 # -----------------------------
 # Migration & Seed
