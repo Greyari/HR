@@ -32,13 +32,6 @@ if [ -f .env ]; then
 fi
 
 # -----------------------------
-# Bersihkan tanda kutip otomatis Railway dari env vars
-# -----------------------------
-export CLOUDINARY_API_KEY=$(echo $CLOUDINARY_API_KEY | sed 's/^"\(.*\)"$/\1/')
-export CLOUDINARY_API_SECRET=$(echo $CLOUDINARY_API_SECRET | sed 's/^"\(.*\)"$/\1/')
-export CLOUDINARY_CLOUD_NAME=$(echo $CLOUDINARY_CLOUD_NAME | sed 's/^"\(.*\)"$/\1/')
-
-# -----------------------------
 # Buat file .env dari Railway vars
 # -----------------------------
 cat > .env <<EOL
@@ -70,14 +63,16 @@ CLOUDINARY_API_SECRET="${CLOUDINARY_API_SECRET}"
 EOL
 
 # -----------------------------
-# Install dependencies
+# Hapus tanda kutip ekstra jika ada
+# -----------------------------
+sed -i 's/^"\(.*\)"$/\1/' .env
+
+# -----------------------------
+# Install dependencies & cache config
 # -----------------------------
 composer install --no-interaction --optimize-autoloader
 composer dump-autoload -o
 
-# -----------------------------
-# Clear config cache supaya env baru terbaca
-# -----------------------------
 php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
