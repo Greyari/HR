@@ -52,6 +52,12 @@ class AbsensiController extends Controller
      */
     public function checkin(Request $request)
     {
+        Log::info('🔥 RAW Request masuk ke checkin', [
+            'all'   => $request->all(),
+            'files' => $request->allFiles(),
+            'headers' => $request->headers->all(),
+        ]);
+
         $user = Auth::user();
 
         $request->validate([
