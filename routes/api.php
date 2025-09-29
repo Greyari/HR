@@ -24,17 +24,19 @@ use Cloudinary\Cloudinary;
 Route::get('/debug-env', function () {
     return [
         'env_func' => [
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
+            // Ambil dari env() tapi fallback ke $_ENV kalau env() null
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null),
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null),
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null),
         ],
         'trimmed' => [
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY') ? trim(env('CLOUDINARY_API_KEY'), '"') : null,
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET') ? trim(env('CLOUDINARY_API_SECRET'), '"') : null,
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME') ? trim(env('CLOUDINARY_CLOUD_NAME'), '"') : null,
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null) ? trim(env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null), '"') : null,
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null) ? trim(env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null), '"') : null,
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null) ? trim(env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null), '"') : null,
         ],
     ];
 });
+
 
 Route::get('/tes-env', function () {
     return [
