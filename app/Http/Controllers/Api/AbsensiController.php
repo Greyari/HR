@@ -8,7 +8,7 @@ use App\Models\Absensi;
 use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Cloudinary\Api\Upload\UploadApi;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
@@ -59,7 +59,7 @@ class AbsensiController extends Controller
             'lng'          => 'required|numeric',
             'checkin_date' => 'required|string',
             'checkin_time' => 'required|string',
-            'video_user' => 'nullable|mimes:mp4,avi,mpeg,mov|max:51200',
+            'video_user'   => 'nullable|mimes:mp4,avi,mpeg,mov|max:51200',
             'video_base64' => 'nullable|string',
         ]);
 
@@ -73,7 +73,7 @@ class AbsensiController extends Controller
         $jarak = $this->hitungJarak($request->lat, $request->lng, $kantor->lat, $kantor->lng);
         if ($jarak > $kantor->radius_meter) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Anda berada di luar radius kantor!'
             ], 403);
         }
@@ -85,7 +85,7 @@ class AbsensiController extends Controller
 
         if ($absensi) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Anda sudah melakukan check-in pada tanggal ini.'
             ], 400);
         }
@@ -97,32 +97,43 @@ class AbsensiController extends Controller
 
         $status = $checkinDateTime->lte($toleransi) ? 'Tepat Waktu' : 'Terlambat';
 
-        // simpan video ke Cloudinary
+        // ================================
+        // Upload video ke Cloudinary
+        // ================================
         $videoUrl = null;
 
         if ($request->hasFile('video_user')) {
-            $videoUrl = Cloudinary::uploadVideo(
+            $result = (new UploadApi())->upload(
                 $request->file('video_user')->getRealPath(),
-                ['folder' => 'absensi/video']
-            )->getSecurePath();
+                [
+                    'resource_type' => 'video',
+                    'folder'        => 'absensi/video',
+                ]
+            );
+            $videoUrl = $result['secure_url'];
+
         } elseif ($request->filled('video_base64')) {
             try {
                 $videoData = base64_decode($request->video_base64);
                 $tmpPath = sys_get_temp_dir() . '/' . uniqid() . '.mp4';
                 file_put_contents($tmpPath, $videoData);
 
-                $videoUrl = Cloudinary::uploadVideo(
+                $result = (new UploadApi())->upload(
                     $tmpPath,
-                    ['folder' => 'absensi/video']
-                )->getSecurePath();
+                    [
+                        'resource_type' => 'video',
+                        'folder'        => 'absensi/video',
+                    ]
+                );
+                $videoUrl = $result['secure_url'];
+
             } catch (\Exception $e) {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Gagal menyimpan video base64: ' . $e->getMessage(),
                 ], 500);
             }
         }
-
 
         // Simpan absensi baru
         $absensi = Absensi::create([
@@ -136,9 +147,9 @@ class AbsensiController extends Controller
         ]);
 
         return response()->json([
-            'status' => true,
-            'message' => 'Check-in berhasil',
-            'data' => $absensi,
+            'status'    => true,
+            'message'   => 'Check-in berhasil',
+            'data'      => $absensi,
             'video_url' => $videoUrl,
         ]);
     }

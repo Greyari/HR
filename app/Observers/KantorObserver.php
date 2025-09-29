@@ -11,6 +11,10 @@ class KantorObserver
      */
     public function created(Kantor $kantor): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         activity_log('Menambahkan', 'Kantor', "Menambahkan data kantor");
     }
 
@@ -19,6 +23,10 @@ class KantorObserver
      */
     public function updated(Kantor $kantor): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         $changes = $kantor->getDirty();
         $original = $kantor->getOriginal();
 
@@ -29,7 +37,7 @@ class KantorObserver
             if (in_array($field, $ignore)) {
                 continue;
             }
-            $oldValue = $original[$field];
+            $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 

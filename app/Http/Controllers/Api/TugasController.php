@@ -8,8 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Cloudinary\Api\Admin\AdminApi;
-
-
+use Cloudinary\Api\Upload\UploadApi; 
 class TugasController extends Controller
 {
     // List semua tugas
@@ -152,36 +151,56 @@ class TugasController extends Controller
             $file = $request->file('lampiran');
             $extension = strtolower($file->getClientOriginalExtension());
 
-            // Tentukan folder
-            $folder = match($extension) {
+            // Tentukan folder berdasarkan ekstensi
+            $folder = match ($extension) {
                 'mp4', 'mov', 'avi', '3gp' => 'tugas/videos',
-                'jpg', 'jpeg', 'png' => 'tugas/images',
-                default => 'tugas/files',
+                'jpg', 'jpeg', 'png'       => 'tugas/images',
+                default                    => 'tugas/files',
             };
 
             // Upload ke Cloudinary
             if (in_array($extension, ['mp4', 'mov', 'avi', '3gp'])) {
-                $uploadedUrl = Cloudinary::uploadVideo(
+                // Video
+                $result = (new UploadApi())->upload(
                     $file->getRealPath(),
-                    ['folder' => $folder]
-                )->getSecurePath();
+                    [
+                        'resource_type' => 'video',
+                        'folder'        => $folder,
+                    ]
+                );
+            } elseif (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+                // Gambar
+                $result = (new UploadApi())->upload(
+                    $file->getRealPath(),
+                    [
+                        'resource_type' => 'image',
+                        'folder'        => $folder,
+                    ]
+                );
             } else {
-                $uploadedUrl = Cloudinary::upload(
+                // File lain (pdf, docx, dll)
+                $result = (new UploadApi())->upload(
                     $file->getRealPath(),
-                    ['folder' => $folder]
-                )->getSecurePath();
+                    [
+                        'resource_type' => 'raw',
+                        'folder'        => $folder,
+                    ]
+                );
             }
+
+            // Ambil URL dari hasil upload
+            $uploadedUrl = $result['secure_url'];
 
             // Simpan URL ke DB
             $tugas->lampiran = $uploadedUrl;
-            $tugas->status = "Menunggu Admin";
+            $tugas->status   = "Menunggu Admin";
             $tugas->save();
         }
 
         return response()->json([
-            'message' => 'Lampiran berhasil diupload!',
-            'data' => $tugas,
-            'file_url' => $tugas->lampiran, // langsung URL Cloudinary
+            'message'   => 'Lampiran berhasil diupload!',
+            'data'      => $tugas,
+            'file_url'  => $tugas->lampiran, // langsung URL Cloudinary
         ]);
     }
 }

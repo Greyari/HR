@@ -11,6 +11,10 @@ class JabatanObserver
      */
     public function created(Jabatan $jabatan): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         activity_log('Menambahkan', 'Jabatan', "Menambahkan data jabatan {$jabatan->nama_jabatan}");
     }
 
@@ -19,6 +23,10 @@ class JabatanObserver
      */
     public function updated(Jabatan $jabatan): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         $changes = $jabatan->getDirty();
         $original = $jabatan->getOriginal();
 
@@ -29,7 +37,7 @@ class JabatanObserver
             if (in_array($field, $ignore)) {
                 continue;
             }
-            $oldValue = $original[$field];
+            $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 
@@ -44,6 +52,10 @@ class JabatanObserver
      */
     public function deleted(Jabatan $jabatan): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         $original = $jabatan->getOriginal();
         $nama_jabatan = $original['nama_jabatan'];
 
