@@ -8,11 +8,19 @@ class PeranObserver
 {
     public function created(Peran $peran): void
     {
-        activity_log('Menambahkan', 'Peran', "{$peran->nama_peran}  melakukan penambahan peran");
+        if (app()->runningInConsole()) {
+            return; // skip log kalau seeding atau migrate
+        }
+
+        activity_log('Menambahkan', 'Peran', "{$peran->nama_peran} melakukan penambahan peran");
     }
 
     public function updated(Peran $peran): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log kalau seeding atau migrate
+        }
+
         $changes = $peran->getDirty();
         $original = $peran->getOriginal();
 
@@ -23,7 +31,7 @@ class PeranObserver
             if (in_array($field, $ignore)) {
                 continue;
             }
-            $oldValue = $original[$field];
+            $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 
@@ -35,6 +43,10 @@ class PeranObserver
 
     public function deleted(Peran $peran): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log kalau seeding atau migrate
+        }
+
         $original = $peran->getOriginal();
         $nama_peran = $original['nama_peran'];
 

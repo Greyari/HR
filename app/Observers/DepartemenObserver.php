@@ -11,6 +11,10 @@ class DepartemenObserver
      */
     public function created(Departemen $departemen): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log kalau sedang seeding/migrate
+        }
+
         activity_log('Menambahkan', 'Departemen', "Menambahkan data departemen {$departemen->nama_departemen}");
     }
 
@@ -19,6 +23,10 @@ class DepartemenObserver
      */
     public function updated(Departemen $departemen): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log kalau sedang seeding/migrate
+        }
+
         $changes = $departemen->getDirty();
         $original = $departemen->getOriginal();
 
@@ -29,7 +37,7 @@ class DepartemenObserver
             if (in_array($field, $ignore)) {
                 continue;
             }
-            $oldValue = $original[$field];
+            $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 
@@ -44,6 +52,10 @@ class DepartemenObserver
      */
     public function deleted(Departemen $departemen): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log kalau sedang seeding/migrate
+        }
+
         $original = $departemen->getOriginal();
         $nama_departemen = $original['nama_departemen'];
 

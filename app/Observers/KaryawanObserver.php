@@ -11,6 +11,10 @@ class KaryawanObserver
      */
     public function created(User $user): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         activity_log('Menambahkan', 'Karyawan', "Menambahkan data karyawan {$user->nama}");
     }
 
@@ -19,6 +23,10 @@ class KaryawanObserver
      */
     public function updated(User $user): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         $changes = $user->getDirty();
         $original = $user->getOriginal();
 
@@ -29,7 +37,7 @@ class KaryawanObserver
             if (in_array($field, $ignore)) {
                 continue;
             }
-            $oldValue = $original[$field];
+            $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 
@@ -44,6 +52,10 @@ class KaryawanObserver
      */
     public function deleted(User $user): void
     {
+        if (app()->runningInConsole()) {
+            return; // skip log saat seeding/migrate
+        }
+
         $original = $user->getOriginal();
         $nama = $original['nama'];
 
