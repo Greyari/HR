@@ -21,11 +21,11 @@ use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
 
 
-Route::get('/debug-env-clean', function () {
+Route::get('/debug-env', function () {
     return [
-        'CLOUDINARY_KEY' => env_clean('CLOUDINARY_API_KEY'),
-        'CLOUDINARY_SECRET' => env_clean('CLOUDINARY_API_SECRET'),
-        'CLOUDINARY_CLOUD' => env_clean('CLOUDINARY_CLOUD_NAME'),
+        'CLOUDINARY_KEY_env' => env('CLOUDINARY_API_KEY'),
+        'CLOUDINARY_KEY_envvar' => $_ENV['CLOUDINARY_API_KEY'] ?? null,
+        'CLOUDINARY_KEY_getenv' => getenv('CLOUDINARY_API_KEY'),
     ];
 });
 
