@@ -23,9 +23,26 @@ use Cloudinary\Cloudinary;
 
 Route::get('/debug-env', function () {
     return [
-        'CLOUDINARY_KEY_env' => env('CLOUDINARY_API_KEY'),
-        'CLOUDINARY_KEY_envvar' => $_ENV['CLOUDINARY_API_KEY'] ?? null,
-        'CLOUDINARY_KEY_getenv' => getenv('CLOUDINARY_API_KEY'),
+        'env_func' => [
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
+        ],
+        'server' => [
+            'CLOUDINARY_KEY' => $_SERVER['CLOUDINARY_API_KEY'] ?? null,
+            'CLOUDINARY_SECRET' => $_SERVER['CLOUDINARY_API_SECRET'] ?? null,
+            'CLOUDINARY_CLOUD' => $_SERVER['CLOUDINARY_CLOUD_NAME'] ?? null,
+        ],
+        'envvar' => [
+            'CLOUDINARY_KEY' => $_ENV['CLOUDINARY_API_KEY'] ?? null,
+            'CLOUDINARY_SECRET' => $_ENV['CLOUDINARY_API_SECRET'] ?? null,
+            'CLOUDINARY_CLOUD' => $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null,
+        ],
+        'getenv' => [
+            'CLOUDINARY_KEY' => getenv('CLOUDINARY_API_KEY'),
+            'CLOUDINARY_SECRET' => getenv('CLOUDINARY_API_SECRET'),
+            'CLOUDINARY_CLOUD' => getenv('CLOUDINARY_CLOUD_NAME'),
+        ],
     ];
 });
 
