@@ -37,9 +37,17 @@ fi
 composer install --no-interaction --optimize-autoloader
 composer dump-autoload -o
 
-# 🚑 Jalankan migrate dulu biar tabel cache ada
-php artisan migrate --force || true
+# -----------------------------
+# Bersihkan tanda kutip otomatis Railway dari env vars
+# -----------------------------
+export CLOUDINARY_API_KEY=$(echo $CLOUDINARY_API_KEY | sed 's/^"\(.*\)"$/\1/')
+export CLOUDINARY_API_SECRET=$(echo $CLOUDINARY_API_SECRET | sed 's/^"\(.*\)"$/\1/')
+export CLOUDINARY_CLOUD_NAME=$(echo $CLOUDINARY_CLOUD_NAME | sed 's/^"\(.*\)"$/\1/')
 
+# -----------------------------
+# Clear config cache supaya env baru terbaca
+# -----------------------------
+php artisan migrate --force || true
 php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
