@@ -4,22 +4,6 @@ set -e
 echo "🚀 Starting Laravel container..."
 
 # -----------------------------
-# Export semua variabel Railway ke shell
-# -----------------------------
-export APP_NAME APP_ENV APP_KEY APP_DEBUG APP_URL APP_TIMEZONE
-export DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD
-export QUEUE_CONNECTION
-export MAIL_MAILER MAIL_FROM_ADDRESS MAIL_FROM_NAME BREVO_API_KEY
-export CLOUDINARY_URL CLOUDINARY_CLOUD_NAME CLOUDINARY_API_KEY CLOUDINARY_API_SECRET
-
-# -----------------------------
-# Tambahkan fallback agar tidak null
-# -----------------------------
-CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-dummy_key}
-CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-dummy_secret}
-CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-dummy_cloud}
-
-# -----------------------------
 # Debug env vars
 # -----------------------------
 echo "🛠 Debug Environment Variables:"
@@ -47,49 +31,6 @@ until MYSQL_PWD="$DB_PASSWORD" mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" 
 done
 
 echo "✅ MySQL siap, lanjut proses Laravel..."
-
-# -----------------------------
-# Hapus .env lama jika ada
-# -----------------------------
-if [ -f .env ]; then
-    rm .env
-fi
-
-# -----------------------------
-# Buat file .env dari Railway vars
-# -----------------------------
-cat > .env <<EOL
-APP_NAME="${APP_NAME//\"/}"
-APP_ENV=${APP_ENV//\"/}
-APP_KEY=${APP_KEY//\"/}
-APP_DEBUG=${APP_DEBUG//\"/}
-APP_URL="${APP_URL//\"/}"
-APP_TIMEZONE=${APP_TIMEZONE//\"/}
-
-DB_CONNECTION=${DB_CONNECTION//\"/}
-DB_HOST=${DB_HOST//\"/}
-DB_PORT=${DB_PORT//\"/}
-DB_DATABASE=${DB_DATABASE//\"/}
-DB_USERNAME=${DB_USERNAME//\"/}
-DB_PASSWORD=${DB_PASSWORD//\"/}
-
-QUEUE_CONNECTION=${QUEUE_CONNECTION//\"/}
-
-MAIL_MAILER=${MAIL_MAILER//\"/}
-MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS//\"/}
-MAIL_FROM_NAME="${MAIL_FROM_NAME//\"/}"
-BREVO_API_KEY=${BREVO_API_KEY//\"/}
-
-CLOUDINARY_URL=${CLOUDINARY_URL//\"/}
-CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME//\"/}
-CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY//\"/}
-CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET//\"/}
-EOL
-
-# -----------------------------
-# Hapus tanda kutip ekstra jika ada
-# -----------------------------
-sed -i 's/^"\(.*\)"$/\1/' .env
 
 # -----------------------------
 # Install dependencies & cache config
