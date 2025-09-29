@@ -35,11 +35,11 @@ fi
 # Buat file .env dari Railway vars dan hapus semua tanda kutip
 # -----------------------------
 cat > .env <<EOL
-APP_NAME=${APP_NAME//\"/}
+APP_NAME="${APP_NAME//\"/}"
 APP_ENV=${APP_ENV//\"/}
 APP_KEY=${APP_KEY//\"/}
 APP_DEBUG=${APP_DEBUG//\"/}
-APP_URL=${APP_URL//\"/}
+APP_URL="${APP_URL//\"/}"
 APP_TIMEZONE=${APP_TIMEZONE//\"/}
 
 DB_CONNECTION=${DB_CONNECTION//\"/}
@@ -53,7 +53,7 @@ QUEUE_CONNECTION=${QUEUE_CONNECTION//\"/}
 
 MAIL_MAILER=${MAIL_MAILER//\"/}
 MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS//\"/}
-MAIL_FROM_NAME=${MAIL_FROM_NAME//\"/}
+MAIL_FROM_NAME="${MAIL_FROM_NAME//\"/}"
 BREVO_API_KEY=${BREVO_API_KEY//\"/}
 
 CLOUDINARY_URL=${CLOUDINARY_URL//\"/}
