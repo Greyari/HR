@@ -70,6 +70,15 @@ class AbsensiController extends Controller
             'keys'        => array_keys($request->all()),
         ]);
 
+        Log::info('Checkin Debug', [
+            'auth'        => $request->header('Authorization'),
+            'contentType' => $request->header('Content-Type'),
+            'keys'        => array_keys($request->all()),
+            'hasFile'     => $request->hasFile('video_user'),
+            'files'       => $request->allFiles(),
+        ]);
+
+
         $kantor = Kantor::first();
 
         // Konversi tanggal & waktu
