@@ -4,6 +4,19 @@ set -e
 echo "🚀 Starting Laravel container..."
 
 # -----------------------------
+# Debug env vars Railway
+# -----------------------------
+echo "🛠 Debug Railway Environment Variables:"
+echo "CLOUDINARY_API_KEY = '$CLOUDINARY_API_KEY'"
+echo "CLOUDINARY_API_SECRET = '$CLOUDINARY_API_SECRET'"
+echo "CLOUDINARY_CLOUD_NAME = '$CLOUDINARY_CLOUD_NAME'"
+
+echo "APP_NAME = '$APP_NAME'"
+echo "APP_ENV = '$APP_ENV'"
+echo "DB_DATABASE = '$DB_DATABASE'"
+echo "DB_USERNAME = '$DB_USERNAME'"
+
+# -----------------------------
 # Tunggu sampai database siap
 # -----------------------------
 echo "📡 Menunggu database MySQL..."
