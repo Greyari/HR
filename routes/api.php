@@ -28,23 +28,14 @@ Route::get('/debug-env', function () {
             'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
             'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
         ],
-        'server' => [
-            'CLOUDINARY_KEY' => $_SERVER['CLOUDINARY_API_KEY'] ?? null,
-            'CLOUDINARY_SECRET' => $_SERVER['CLOUDINARY_API_SECRET'] ?? null,
-            'CLOUDINARY_CLOUD' => $_SERVER['CLOUDINARY_CLOUD_NAME'] ?? null,
-        ],
-        'envvar' => [
-            'CLOUDINARY_KEY' => $_ENV['CLOUDINARY_API_KEY'] ?? null,
-            'CLOUDINARY_SECRET' => $_ENV['CLOUDINARY_API_SECRET'] ?? null,
-            'CLOUDINARY_CLOUD' => $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null,
-        ],
-        'getenv' => [
-            'CLOUDINARY_KEY' => getenv('CLOUDINARY_API_KEY'),
-            'CLOUDINARY_SECRET' => getenv('CLOUDINARY_API_SECRET'),
-            'CLOUDINARY_CLOUD' => getenv('CLOUDINARY_CLOUD_NAME'),
+        'trimmed' => [
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY') ? trim(env('CLOUDINARY_API_KEY'), '"') : null,
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET') ? trim(env('CLOUDINARY_API_SECRET'), '"') : null,
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME') ? trim(env('CLOUDINARY_CLOUD_NAME'), '"') : null,
         ],
     ];
 });
+
 
 Route::get('/test-upload', function () {
     // Buat instance Cloudinary langsung
