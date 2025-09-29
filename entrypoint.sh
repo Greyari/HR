@@ -4,13 +4,28 @@ set -e
 echo "🚀 Starting Laravel container..."
 
 # -----------------------------
-# Debug env vars Railway
+# Export semua variabel Railway ke shell
 # -----------------------------
-echo "🛠 Debug Railway Environment Variables:"
+export APP_NAME APP_ENV APP_KEY APP_DEBUG APP_URL APP_TIMEZONE
+export DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD
+export QUEUE_CONNECTION
+export MAIL_MAILER MAIL_FROM_ADDRESS MAIL_FROM_NAME BREVO_API_KEY
+export CLOUDINARY_URL CLOUDINARY_CLOUD_NAME CLOUDINARY_API_KEY CLOUDINARY_API_SECRET
+
+# -----------------------------
+# Tambahkan fallback agar tidak null
+# -----------------------------
+CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-dummy_key}
+CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-dummy_secret}
+CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-dummy_cloud}
+
+# -----------------------------
+# Debug env vars
+# -----------------------------
+echo "🛠 Debug Environment Variables:"
 echo "CLOUDINARY_API_KEY = '$CLOUDINARY_API_KEY'"
 echo "CLOUDINARY_API_SECRET = '$CLOUDINARY_API_SECRET'"
 echo "CLOUDINARY_CLOUD_NAME = '$CLOUDINARY_CLOUD_NAME'"
-
 echo "APP_NAME = '$APP_NAME'"
 echo "APP_ENV = '$APP_ENV'"
 echo "DB_DATABASE = '$DB_DATABASE'"
@@ -25,10 +40,6 @@ DB_HOST=${DB_HOST:-$MYSQLHOST}
 DB_PORT=${DB_PORT:-$MYSQLPORT}
 DB_USERNAME=${DB_USERNAME:-$MYSQLUSER}
 DB_PASSWORD=${DB_PASSWORD:-$MYSQLPASSWORD}
-
-echo "DB_HOST=$DB_HOST"
-echo "DB_PORT=$DB_PORT"
-echo "DB_USERNAME=$DB_USERNAME"
 
 until MYSQL_PWD="$DB_PASSWORD" mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -e "SELECT 1;" > /dev/null 2>&1; do
   echo "⏳ Menunggu MySQL..."
@@ -45,7 +56,7 @@ if [ -f .env ]; then
 fi
 
 # -----------------------------
-# Buat file .env dari Railway vars dan hapus semua tanda kutip
+# Buat file .env dari Railway vars
 # -----------------------------
 cat > .env <<EOL
 APP_NAME="${APP_NAME//\"/}"
