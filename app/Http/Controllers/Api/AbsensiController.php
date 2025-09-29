@@ -63,6 +63,13 @@ class AbsensiController extends Controller
             'video_base64' => 'nullable|string',
         ]);
 
+        // 🔎 Debug log untuk Railway
+        Log::info('Checkin request received', [
+            'files'       => $request->allFiles(),
+            'has_video'   => $request->hasFile('video_user') ? 'yes' : 'no',
+            'keys'        => array_keys($request->all()),
+        ]);
+
         $kantor = Kantor::first();
 
         // Konversi tanggal & waktu
