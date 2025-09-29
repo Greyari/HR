@@ -20,6 +20,15 @@ use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
 
+
+Route::get('/debug-env', function () {
+    return [
+        'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
+        'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
+        'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
+    ];
+});
+
 Route::get('/test-upload', function () {
     // Buat instance Cloudinary langsung
     $cloudinary = new Cloudinary([
