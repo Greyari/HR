@@ -21,20 +21,11 @@ use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
 
 
-Route::get('/debug-env', function () {
+Route::get('/debug-env-clean', function () {
     return [
-        // Cara Laravel env()
-        'env_func' => [
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
-        ],
-        // Cara getenv()
-        'getenv_func' => [
-            'CLOUDINARY_KEY' => getenv('CLOUDINARY_API_KEY'),
-            'CLOUDINARY_SECRET' => getenv('CLOUDINARY_API_SECRET'),
-            'CLOUDINARY_CLOUD' => getenv('CLOUDINARY_CLOUD_NAME'),
-        ],
+        'CLOUDINARY_KEY' => env_clean('CLOUDINARY_API_KEY'),
+        'CLOUDINARY_SECRET' => env_clean('CLOUDINARY_API_SECRET'),
+        'CLOUDINARY_CLOUD' => env_clean('CLOUDINARY_CLOUD_NAME'),
     ];
 });
 
