@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Cloudinary\Api\Upload\UploadApi;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-
+use Illuminate\Support\Facades\Log;
 
 class AbsensiController extends Controller
 {
@@ -102,18 +102,18 @@ class AbsensiController extends Controller
         // ================================
         $videoUrl = null;
 
-        if ($request->hasFile('video_user')) {
-            $result = (new UploadApi())->upload(
-                $request->file('video_user')->getRealPath(),
-                [
-                    'resource_type' => 'video',
-                    'folder'        => 'absensi/video',
-                ]
-            );
-            $videoUrl = $result['secure_url'];
+        try {
+            if ($request->hasFile('video_user')) {
+                $result = (new UploadApi())->upload(
+                    $request->file('video_user')->getRealPath(),
+                    [
+                        'resource_type' => 'video',
+                        'folder'        => 'absensi/video',
+                    ]
+                );
+                $videoUrl = $result['secure_url'];
 
-        } elseif ($request->filled('video_base64')) {
-            try {
+            } elseif ($request->filled('video_base64')) {
                 $videoData = base64_decode($request->video_base64);
                 $tmpPath = sys_get_temp_dir() . '/' . uniqid() . '.mp4';
                 file_put_contents($tmpPath, $videoData);
@@ -126,13 +126,14 @@ class AbsensiController extends Controller
                     ]
                 );
                 $videoUrl = $result['secure_url'];
-
-            } catch (\Exception $e) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Gagal menyimpan video base64: ' . $e->getMessage(),
-                ], 500);
             }
+        } catch (\Exception $e) {
+            Log::error('Upload video gagal: ' . $e->getMessage());
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'Upload video gagal: ' . $e->getMessage(),
+            ], 500);
         }
 
         // Simpan absensi baru
