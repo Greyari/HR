@@ -35,6 +35,9 @@ WORKDIR /var/www
 # Copy semua file ke container
 COPY . .
 
+# Copy custom php.ini
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
+
 # Set permission storage & cache
 RUN chmod -R 777 storage bootstrap/cache
 
