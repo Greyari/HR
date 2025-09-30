@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Admin Super',
                 'email' => 'adminsuper@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('3423123415'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
@@ -78,7 +78,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Desy',
                 'email' => 'desy@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('456345212'),
                 'jabatan_id' => $jabatanAos->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenOffice->id,
@@ -93,7 +93,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Nata',
                 'email' => 'nata@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('123412341'),
                 'jabatan_id' => $jabatanAos->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenOffice->id,
@@ -109,7 +109,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Afi Oktiani',
                 'email' => 'afioktiani0610@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('123124123'),
                 'jabatan_id' => $jabatanAs->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -124,7 +124,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Eka Paksi Ramadhani',
                 'email' => 'ekapaksir@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('123412331'),
                 'jabatan_id' => $jabatanSe->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -139,7 +139,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Desta Ayu Pusaprini',
                 'email' => 'official.destaayu@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('123412512'),
                 'jabatan_id' => $jabatanTm->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -185,7 +185,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Zidan',
                 'email' => 'zidan@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('42311212421'),
                 'jabatan_id' => $jabatanMi->id,
                 'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -200,7 +200,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Calvin',
                 'email' => 'calvin@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('241234123'),
                 'jabatan_id' => $jabatanMi->id,
                 'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -216,7 +216,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Budi',
                 'email' => 'budi@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('12341213'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -231,7 +231,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Louis',
                 'email' => 'louis@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('355213124'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -246,7 +246,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Siddiq',
                 'email' => 'siddiq@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('12341241241'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -261,7 +261,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Ridwan',
                 'email' => 'ridwan@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('12351521521'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMaintenance->id,
