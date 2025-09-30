@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('tipe_cuti', [
                 'Tahunan',
                 'Sakit',
-                'Unpaid',
                 'Izin'
                 ])->default('Izin');
             $table->date('tanggal_mulai');

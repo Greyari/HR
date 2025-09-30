@@ -24,7 +24,6 @@ class CutiController extends Controller
 
         if (in_array('lihat_semua_cuti', $fiturUser)) {
             if (in_array('approve_cuti_step2', $fiturUser)) {
-                // ✅ Pengecualian:
                 // kalau punya kedua fitur, batasi hanya cuti yg sudah step1 ke atas
                 $query->whereIn('approval_step', [1, 2, 3]);
             }
@@ -67,7 +66,7 @@ class CutiController extends Controller
 
         $user = Auth::user();
 
-        // ✅ Cek apakah user masih ada cuti yg belum selesai
+        // Cek apakah user masih ada cuti yg belum selesai
         $masihAdaCuti = Cuti::where('user_id', $user->id)
             ->whereIn('status', ['Pending', 'Proses']) // cuti yg belum final
             ->exists();
@@ -123,7 +122,6 @@ class CutiController extends Controller
             'data' => $cuti
         ], 201);
     }
-
 
     // Approve cuti
     public function approve($id)
