@@ -92,11 +92,16 @@ class AuthController extends Controller
                 'device_version'      => 'nullable|string',
             ]);
 
-            $existingDevice = Device::where('device_id', $request->device_id)->first();
-            if ($existingDevice && $existingDevice->user_id != $user->id) {
-                return response()->json([
-                    'message' => 'Device ini sudah terhubung ke akun lain. Silakan hubungi admin.'
-                ], 403);
+            // cek apakah user juga punya akses web
+            $punyaWeb = in_array('web', $fiturUser);
+
+            if (!$punyaWeb) {
+                $existingDevice = Device::where('device_id', $request->device_id)->first();
+                if ($existingDevice && $existingDevice->user_id != $user->id) {
+                    return response()->json([
+                        'message' => 'Device ini sudah terhubung ke akun lain. Silakan hubungi admin.'
+                    ], 403);
+                }
             }
 
             $device = $user->device()->first();
@@ -118,11 +123,8 @@ class AuthController extends Controller
                         'message' => 'Gagal menyimpan device. Silakan hubungi admin.'
                     ], 500);
                 }
-            } elseif ($device->device_id !== $request->device_id) {
-                return response()->json([
-                    'message' => 'Akun anda sudah terhubung dengan device lain. Silakan gunakan device pertama atau hubungi admin.'
-                ], 403);
             } else {
+                // kalau device sudah ada, cukup update last_login
                 $device->update(['last_login' => now()]);
                 Log::info('Device terakhir login diperbarui', ['device_id' => $device->device_id]);
             }
