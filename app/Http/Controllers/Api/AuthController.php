@@ -96,37 +96,40 @@ class AuthController extends Controller
             $punyaWeb = in_array('web', $fiturUser);
 
             if (!$punyaWeb) {
+                // device restriction + pencatatan device hanya untuk apk-only
                 $existingDevice = Device::where('device_id', $request->device_id)->first();
                 if ($existingDevice && $existingDevice->user_id != $user->id) {
                     return response()->json([
                         'message' => 'Device ini sudah terhubung ke akun lain. Silakan hubungi admin.'
                     ], 403);
                 }
-            }
 
-            $device = $user->device()->first();
+                $device = $user->device()->first();
 
-            if (!$device) {
-                try {
-                    $newDevice = $user->device()->create([
-                        'device_id'           => $request->device_id,
-                        'device_model'        => $request->device_model,
-                        'device_manufacturer' => $request->device_manufacturer,
-                        'device_version'      => $request->device_version,
-                        'last_login'          => now()
-                    ]);
+                if (!$device) {
+                    try {
+                        $user->device()->create([
+                            'device_id'           => $request->device_id,
+                            'device_model'        => $request->device_model,
+                            'device_manufacturer' => $request->device_manufacturer,
+                            'device_version'      => $request->device_version,
+                            'last_login'          => now()
+                        ]);
 
-                    Log::info('Device baru berhasil dibuat', ['device' => $newDevice->toArray()]);
-                } catch (\Exception $e) {
-                    Log::error('Gagal insert device', ['error' => $e->getMessage()]);
-                    return response()->json([
-                        'message' => 'Gagal menyimpan device. Silakan hubungi admin.'
-                    ], 500);
+                        Log::info('Device baru berhasil dibuat untuk apk-only user', ['user_id' => $user->id]);
+                    } catch (\Exception $e) {
+                        Log::error('Gagal insert device', ['error' => $e->getMessage()]);
+                        return response()->json([
+                            'message' => 'Gagal menyimpan device. Silakan hubungi admin.'
+                        ], 500);
+                    }
+                } else {
+                    $device->update(['last_login' => now()]);
+                    Log::info('Device terakhir login diperbarui (apk-only user)', ['device_id' => $device->device_id]);
                 }
             } else {
-                // kalau device sudah ada, cukup update last_login
-                $device->update(['last_login' => now()]);
-                Log::info('Device terakhir login diperbarui', ['device_id' => $device->device_id]);
+                // kalau punya akses web+apk → skip pencatatan device
+                Log::info('User punya akses web+apk, skip pencatatan device', ['user_id' => $user->id]);
             }
         }
 
