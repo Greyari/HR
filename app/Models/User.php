@@ -32,7 +32,9 @@ class User extends Authenticatable
         'bpjs_ketenagakerjaan',
         'jenis_kelamin',
         'status_pernikahan',
-        'onboarding'
+        'onboarding',
+        'coba_login',
+        'terkunci',
     ];
 
     /**
@@ -106,6 +108,12 @@ class User extends Authenticatable
         return $this->hasOne(Device::class);
     }
 
+    // Relasi semua device (dipakai di manajemen akun)
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
+    }
+    
     // relasi ke absensi
     public function absensi()
     {

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('peran_id')->nullable()->constrained('peran')->nullOnDelete();
             $table->foreignId('jabatan_id')->nullable()->constrained('jabatan')->nullOnDelete();
-            $table->foreignId('departemen_id')->nullable()->constrained('departemen')->nullOnDelete()   ;
+            $table->foreignId('departemen_id')->nullable()->constrained('departemen')->nullOnDelete();
             $table->string('nama');
             $table->decimal('gaji_per_hari', 15, 2)->nullable();
             $table->string('npwp')->unique()->nullable();
@@ -27,6 +27,8 @@ return new class extends Migration
             $table->enum('status_pernikahan', ['Menikah', 'Belum Menikah'])->default('Belum Menikah');
             $table->string('password');
             $table->boolean('onboarding')->default(false);
+            $table->integer('coba_login')->default(0); // jumlah salah password
+            $table->boolean('terkunci')->default(false); // true kalau akun terkunci
             $table->rememberToken();
             $table->timestamps();
         });
