@@ -27,7 +27,7 @@ class FiturSeeder extends Seeder
             // ---------------------- Cuti ----------------------
             ['lihat_cuti', 'Melihat daftar cuti'],
             ['lihat_semua_cuti', 'Karyawan dapat melihat semua cuti yang tercatat'],
-            ['lihat_cuti', 'Karyawan hanya dapat melihat cuti sendiri'],
+            ['lihat_cuti_sendiri', 'Karyawan hanya dapat melihat cuti sendiri'],
             ['tambah_cuti', 'Mengajukan cuti baru'],
             ['approve_cuti', 'Menyetujui cuti'],
             ['approve_cuti_step1', 'Melakukan persetujuan cuti pada tahap awal'],
