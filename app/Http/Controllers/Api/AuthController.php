@@ -140,10 +140,11 @@ class AuthController extends Controller
         // Onboarding
         // -----------------------------
         $onboarding = false;
+
         if (!$user->onboarding || $user->onboarding == "false" || $user->onboarding == 0) {
             $onboarding = true;
             $user->update(['onboarding' => 1]);
-            $user = $user->fresh();
+            $user->load(['peran.fitur', 'departemen', 'jabatan']);
         }
 
         return response()->json([
