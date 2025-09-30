@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\FiturController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
+use App\Http\Controllers\Api\ManajemenAkunController;
+use App\Http\Controllers\Api\ManajemenDeviceController;
 use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
@@ -112,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [TugasController::class, 'index'])->middleware(CheckFitur::class . ':lihat_tugas');
         Route::post('', [TugasController::class, 'store'])->middleware(CheckFitur::class . ':tambah_tugas');
 
-        // ⬅️ taruh upload-file dulu
+        // taruh upload-file dulu
         Route::post('{id}/upload-file', [TugasController::class, 'uploadLampiran'])->middleware(CheckFitur::class . ':tambah_lampiran_tugas');
         Route::put('{id}/status', [TugasController::class, 'updateStatus'])->middleware(CheckFitur::class . ':ubah_status_tugas');
         // baru route yang generik {id}
@@ -194,6 +196,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [PengingatController::class, 'store']);
         Route::put('{id}', [PengingatController::class, 'update']);
         Route::delete('{id}', [PengingatController::class, 'destroy']);
+    });
+
+    // Buka akun terkunci Route
+    Route::prefix('akun')->middleware(CheckFitur::class . ':buka_akun')->group(function() {
+        Route::get('terkunci', [ManajemenAkunController::class, 'lockedUsers']);
+        Route::post('{id}/terkunci', [ManajemenAkunController::class, 'unlockUser']);
+    });
+
+    // update device Route
+    Route::prefix('device')->middleware(CheckFitur::class . ':reset_device')->group(function() {
+        Route::get('', [ManajemenDeviceController::class, 'allDevices']);
+        Route::post('{id}/reset', [ManajemenDeviceController::class, 'resetDevice']);
     });
 
     // Route denger

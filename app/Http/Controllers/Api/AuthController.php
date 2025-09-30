@@ -27,19 +27,52 @@ class AuthController extends Controller
         ]);
 
         // -----------------------------
-        // Cek kredensial
+        // Cari user
         // -----------------------------
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $user = User::with(['peran.fitur', 'departemen', 'jabatan'])
+                    ->where('email', $request->email)
+                    ->first();
+
+        if (!$user) {
             return response()->json([
                 'message' => 'Email atau password salah'
             ], 401);
         }
 
-        $user = User::with(['peran.fitur', 'departemen', 'jabatan'])
-                    ->where('email', $request->email)
-                    ->first();
+        // -----------------------------
+        // Cek apakah akun terkunci
+        // -----------------------------
+        if ($user->terkunci) {
+            return response()->json([
+                'message' => 'Akun terkunci setelah 3 kali percobaan. Hubungi admin.'
+            ], 403);
+        }
 
-        Log::info('User ditemukan', ['id' => $user->id]);
+        // -----------------------------
+        // Cek password
+        // -----------------------------
+        if (!Hash::check($request->password, $user->password)) {
+            $user->increment('coba_login');
+
+            if ($user->coba_login >= 3) {
+                $user->update(['terkunci' => true]);
+                return response()->json([
+                    'message' => 'Akun terkunci setelah 3 kali percobaan login gagal. Hubungi admin.'
+                ], 403);
+            }
+
+            return response()->json([
+                'message' => 'Email atau password salah. Percobaan: ' . $user->coba_login . '/3'
+            ], 401);
+        }
+
+        // -----------------------------
+        // Reset percobaan kalau berhasil login
+        // -----------------------------
+        if ($user->coba_login > 0) {
+            $user->update(['coba_login' => 0]);
+            $user->refresh();
+        }
 
         // -----------------------------
         // Deteksi device menggunakan Agent

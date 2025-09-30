@@ -36,7 +36,8 @@ class FiturSeeder extends Seeder
 
             // ---------------------- Tugas ----------------------
             ['lihat_tugas', 'Melihat daftar tugas'],
-            ['lihat_semua_tugas', 'Karyawan dapat melihat semua daftar tugas'],            ['tambah_tugas', 'Menambahkan tugas baru'],
+            ['lihat_semua_tugas', 'Karyawan dapat melihat semua daftar tugas'],
+            ['tambah_tugas', 'Menambahkan tugas baru'],
             ['edit_tugas', 'Mengedit tugas'],
             ['hapus_tugas', 'Menghapus tugas'],
             ['lihat_tugas_sendiri', 'Karyawan hanya dapat melihat daftar tugas'],
@@ -80,6 +81,13 @@ class FiturSeeder extends Seeder
 
             // ---------------------- Denger ----------------------
             ['denger', 'Menghapus data secara massal'],
+
+            // ---------------------- Buka akun ----------------------
+            ['buka_akun', 'menejemen akun yang terkunci'],
+            
+            // ---------------------- menejemen device ----------------------
+            ['reset_device', 'menejemen akun untuk reset device terkait'],
+
         ];
 
         foreach ($fiturs as [$nama, $deskripsi]) {
