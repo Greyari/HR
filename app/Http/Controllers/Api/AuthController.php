@@ -172,7 +172,12 @@ class AuthController extends Controller
         $token = $user->createToken('token_login')->plainTextToken;
 
         // Catat log login
-        activity_log('Login', 'User', "{$user->nama} ({$user->email}) berhasil login");
+        activity_log(
+            'Login',
+            'User',
+            "{$user->nama} ({$user->email}) berhasil login",
+            $user->id
+        );
 
         // -----------------------------
         // Onboarding
@@ -188,7 +193,7 @@ class AuthController extends Controller
         return response()->json([
             'message'    => 'Login berhasil',
             'token'      => $token,
-            'data'       => $user,
+            'data'       => $user->setAttribute('gaji_per_hari', (int) $user->gaji_per_hari),
             'onboarding' => $onboarding,
         ]);
     }
@@ -278,13 +283,22 @@ class AuthController extends Controller
     // Fitur logout
     public function logout(Request $request)
     {
+        Log::info('Masuk ke logout endpoint', [
+            'auth_user' => $request->user(),
+            'headers' => $request->headers->all()
+        ]);
+
         $user = $request->user();
+        if ($user) {
+            activity_log(
+                'Logout',
+                'User',
+                "{$user->nama} ({$user->email}) berhasil logout",
+                $user->id
+            );
 
-        // Catat log logout
-        activity_log('Logout', 'User', "{$user->nama} ({$user->email}) berhasil logout");
-
-        // Hapus token
-        $user->currentAccessToken()->delete();
+            $user->currentAccessToken()->delete();
+        }
 
         return response()->json(['message' => 'Logout berhasil']);
     }
