@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class KaryawanObserver
 {
@@ -23,27 +24,50 @@ class KaryawanObserver
      */
     public function updated(User $user): void
     {
-        if (app()->runningInConsole()) {
-            return; // skip log saat seeding/migrate
-        }
+        if (app()->runningInConsole()) return;
 
         $changes = $user->getDirty();
         $original = $user->getOriginal();
 
-        $ignore = ['updated_at', 'created_at'];
+        $ignore = [
+            'updated_at',
+            'created_at',
+            'remember_token',
+            'coba_login',
+            'onboarding',
+            'last_login',
+        ];
+
+        // kalau semua perubahan ada di daftar ignore → skip log
+        if (! collect($changes)->except($ignore)->isNotEmpty()) {
+            return;
+        }
 
         $detailChanges = [];
         foreach ($changes as $field => $newValue) {
-            if (in_array($field, $ignore)) {
-                continue;
-            }
+            if (in_array($field, $ignore)) continue;
             $oldValue = $original[$field] ?? null;
             $detailChanges[] = "{$field}: '{$oldValue}' → '{$newValue}'";
         }
 
         if ($detailChanges) {
-            $description = "Memperbarui data karyawan {$user->nama}. Perubahan: " . implode(', ', $detailChanges);
-            activity_log('Mengubah', 'Karyawan', $description);
+            $description = "Perubahan: " . implode(', ', $detailChanges);
+
+            if (Auth::check() && Auth::id() === $user->id) {
+                // user update dirinya sendiri → Profile
+                activity_log(
+                    'Mengubah',
+                    'Profile',
+                    "Perubahan data profile {$user->nama}. {$description}"
+                );
+            } else {
+                // admin update user lain → Karyawan
+                activity_log(
+                    'Mengubah',
+                    'Karyawan',
+                    "Memperbarui data karyawan {$user->nama}. {$description}"
+                );
+            }
         }
     }
 
@@ -56,8 +80,7 @@ class KaryawanObserver
             return; // skip log saat seeding/migrate
         }
 
-        $original = $user->getOriginal();
-        $nama = $original['nama'];
+        $nama = $user->getOriginal()['nama'] ?? $user->nama;
 
         activity_log('Menghapus', 'Karyawan', "Menghapus akun karyawan {$nama}");
     }

@@ -11,11 +11,17 @@ class UserController extends Controller
 {
     // List semua user
     public function index() {
-        $user = User::with(['peran', 'departemen', 'jabatan'],)->get();
+        $users = User::with(['peran', 'departemen', 'jabatan'])->get()
+            ->map(function ($u) {
+                $u->gaji_per_hari = (fmod($u->gaji_per_hari, 1) == 0.0)
+                    ? (int) $u->gaji_per_hari
+                    : (float) $u->gaji_per_hari;
+                return $u;
+            });
 
         return response()->json([
             'message' => 'Data user berhasil diambil',
-            'data' => $user
+            'data' => $users
         ]);
     }
 

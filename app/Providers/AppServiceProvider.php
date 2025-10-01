@@ -61,7 +61,6 @@ class AppServiceProvider extends ServiceProvider
         Lembur::observe(LemburObserver::class);
         Cuti::observe(CutiObserver::class);
         Pengingat::observe(PengingatObservers::class);
-        User::observe(AuthObserver::class);
         Peran::observe(PeranObserver::class);
 
         // untuk api email bravo

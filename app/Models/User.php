@@ -113,7 +113,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Device::class);
     }
-    
+
     // relasi ke absensi
     public function absensi()
     {
