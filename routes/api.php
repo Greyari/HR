@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
 use App\Http\Controllers\Api\ManajemenAkunController;
 use App\Http\Controllers\Api\ManajemenDeviceController;
+use App\Http\Controllers\Api\PengaturanController;
 use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
@@ -21,60 +22,6 @@ use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
-
-
-Route::get('/debug-env', function () {
-    return [
-        'env_func' => [
-            // Ambil dari env() tapi fallback ke $_ENV kalau env() null
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null),
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null),
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null),
-        ],
-        'trimmed' => [
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null) ? trim(env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null), '"') : null,
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null) ? trim(env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null), '"') : null,
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null) ? trim(env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null), '"') : null,
-        ],
-    ];
-});
-
-
-Route::get('/tes-env', function () {
-    return [
-        'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
-        'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
-        'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
-    ];
-});
-
-Route::get('/test-upload', function () {
-    // Buat instance Cloudinary langsung
-    $cloudinary = new Cloudinary([
-        'cloud' => [
-            'cloud_name' => config('cloudinary.cloud.cloud_name'),
-            'api_key'    => config('cloudinary.cloud.api_key'),
-            'api_secret' => config('cloudinary.cloud.api_secret'),
-        ],
-        'url' => [
-            'secure' => true,
-        ],
-    ]);
-
-    // Path file lokal
-    $path = storage_path('app/public/videos/tes.mp4');
-
-    // Upload video
-    $result = $cloudinary->uploadApi()->upload($path, [
-        'resource_type' => 'video',
-        'folder'        => 'tugas/videos',
-    ]);
-
-    return response()->json([
-        'message' => 'Upload berhasil!',
-        'result'  => $result,
-    ]);
-});
 
 
 // publik route
@@ -91,6 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/email',[AuthController::class, 'updateEmail']);
     // nanti buat route untuk ubah password dari email yang terdaftar (ubah passwordnya ada di kirim link ke email)
 
+    // Route setting
+    Route::get('pengaturan', [PengaturanController::class, 'show']);
+    Route::post('pengaturan', [PengaturanController::class, 'update']);
+
     // Lembur Routes
     Route::prefix('lembur')->group(function () {
         Route::get('', [LemburController::class, 'index'])->middleware(CheckFitur::class . ':lihat_lembur');
@@ -99,8 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('{id}/decline', [LemburController::class, 'decline'])->middleware(CheckFitur::class . ':decline_lembur');
     });
 
-    // note besar untuk cuti :: masih bingung gimana bagusnya untuk konsep jatah cuti tahunan
-    // kemudian seharusnya kalau cuti di acc dia sudah bisa ke generate ke absensi kalau hari ini dia cuti
     // Cuti Routes
     Route::prefix('cuti')->group(function () {
         Route::get('', [CutiController::class, 'index'])->middleware(CheckFitur::class . ':lihat_cuti');
@@ -113,11 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('tugas')->group(function () {
         Route::get('', [TugasController::class, 'index'])->middleware(CheckFitur::class . ':lihat_tugas');
         Route::post('', [TugasController::class, 'store'])->middleware(CheckFitur::class . ':tambah_tugas');
-
-        // taruh upload-file dulu
         Route::post('{id}/upload-file', [TugasController::class, 'uploadLampiran'])->middleware(CheckFitur::class . ':tambah_lampiran_tugas');
         Route::put('{id}/status', [TugasController::class, 'updateStatus'])->middleware(CheckFitur::class . ':ubah_status_tugas');
-        // baru route yang generik {id}
         Route::put('{id}', [TugasController::class, 'update'])->middleware(CheckFitur::class . ':edit_tugas');
         Route::delete('{id}', [TugasController::class, 'destroy'])->middleware(CheckFitur::class . ':hapus_tugas');
     });
@@ -132,8 +78,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Peran Routes
     Route::prefix('peran')->middleware(CheckFitur::class . ':peran')->group(function() {
-        // note mungkin belum bisa di kerjakan sekedar membuat controller dan route
-        // nunggu perancangan fitur dan izin fitur
         Route::get('', [PeranController::class, 'index']);
         Route::post('', [PeranController::class, 'store']);
         Route::put('{id}', [PeranController::class, 'update']);
@@ -238,24 +182,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ini untuk debug email di hostingan
+////////////////////////// ini untuk debug email di hostingan //////////////////////////////
 Route::get('/scheduler-log', function () {
     $file = storage_path('logs/scheduler_output.log');
     if (!file_exists($file)) {
@@ -263,3 +190,56 @@ Route::get('/scheduler-log', function () {
     }
     return nl2br(file_get_contents($file));
 });
+
+Route::get('/debug-env', function () {
+    return [
+        'env_func' => [
+            // Ambil dari env() tapi fallback ke $_ENV kalau env() null
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null),
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null),
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null),
+        ],
+        'trimmed' => [
+            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null) ? trim(env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null), '"') : null,
+            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null) ? trim(env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null), '"') : null,
+            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null) ? trim(env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null), '"') : null,
+        ],
+    ];
+});
+
+Route::get('/tes-env', function () {
+    return [
+        'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
+        'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
+        'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
+    ];
+});
+
+Route::get('/test-upload', function () {
+    // Buat instance Cloudinary langsung
+    $cloudinary = new Cloudinary([
+        'cloud' => [
+            'cloud_name' => config('cloudinary.cloud.cloud_name'),
+            'api_key'    => config('cloudinary.cloud.api_key'),
+            'api_secret' => config('cloudinary.cloud.api_secret'),
+        ],
+        'url' => [
+            'secure' => true,
+        ],
+    ]);
+
+    // Path file lokal
+    $path = storage_path('app/public/videos/tes.mp4');
+
+    // Upload video
+    $result = $cloudinary->uploadApi()->upload($path, [
+        'resource_type' => 'video',
+        'folder'        => 'tugas/videos',
+    ]);
+
+    return response()->json([
+        'message' => 'Upload berhasil!',
+        'result'  => $result,
+    ]);
+});
+
