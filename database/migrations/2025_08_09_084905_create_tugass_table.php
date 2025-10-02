@@ -15,12 +15,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nama_tugas');
-            $table->time('jam_mulai');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
-            $table->string('lokasi')->nullable();
+            $table->integer('radius_meter')->default(100);
+            $table->decimal('tugas_lat', 10, 7)->nullable();
+            $table->decimal('tugas_lng', 10, 7)->nullable();
+            $table->decimal('lampiran_lat', 10, 7)->nullable();
+            $table->decimal('lampiran_lng', 10, 7)->nullable();
             $table->text('instruksi_tugas')->nullable();
             $table->enum('status', ['Proses', 'Menunggu Admin', 'Selesai'])->default('Proses');
+            $table->boolean('terlambat')->nullable()->default(null);
             $table->string('lampiran')->nullable();
             $table->timestamps();
         });
