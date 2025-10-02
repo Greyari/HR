@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengingat: {{ $pengingat->judul }}</title>
+    <title>Reset Password - Reminder System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Reset & Base Styles */
         body {
             font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.5;
-            color: #ffffff;
+            color: #333333;
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
@@ -228,60 +228,39 @@
                 <td class="header" align="center">
                     <div style="margin-bottom:10px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#ffffff" viewBox="0 0 24 24">
-                            <path d="M12 2a7 7 0 0 0-7 7v4.586l-1.707 1.707A1 1 0 0 0 4 17h16a1 1 0 0 0 .707-1.707L19 13.586V9a7 7 0 0 0-7-7zm0 20a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22z"/>
+                            <path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-7h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zM8 7a4 4 0 1 1 8 0v3H8V7z"/>
                         </svg>
                     </div>
                     <h1 class="header-title">Reminder System</h1>
-                    <p class="header-subtitle">Jangan lewatkan jadwal penting Anda</p>
+                    <p class="header-subtitle">Reset Password Akun Anda</p>
                 </td>
             </tr>
 
-
             <tr>
                 <td class="content">
-                    <div class="card">
-                        <h2 class="card-title">{{ $pengingat->judul }}</h2>
-                        <p class="card-text">{{ $pengingat->deskripsi }}</p>
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                                <td class="info-grid-col" width="49%" style="padding-right: 5px;">
-                                    <div class="info-item">
-                                        <div class="info-label">Tanggal & Waktu</div>
-                                        <div class="info-value">{{ $pengingat->tanggal_jatuh_tempo->format('d M Y, H:i') }}</div>
-                                    </div>
-                                </td>
-                                <td class="info-grid-col" width="49%" style="padding-left: 5px;">
-                                    <div class="info-item">
-                                        <div class="info-label">Status</div>
-                                        <div class="info-value">
-                                            <span class="status-badge status-{{ strtolower($pengingat->status) }}">{{ $pengingat->status }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr>
-                            <tr>
-                                <td class="info-grid-col" width="49%" style="padding-right: 5px;">
-                                    <div class="info-item">
-                                        <div class="info-label">PIC</div>
-                                        <div class="info-value">{{ $pengingat->peran ? $pengingat->peran->nama_peran : '-' }}</div>
-                                    </div>
-                                </td>
-                                <td class="info-grid-col" width="49%" style="padding-left: 5px;">
-                                    <div class="info-item">
-                                        <div class="info-label">Sisa Waktu</div>
-                                        <div class="info-value">{{ $pengingat->sisa_waktu }}</div>
-                                    </div>
-                                </td>
-                            </tr>
+                    <div class="card" style="text-align: center;">
+                        <h2 class="card-title">Reset Password Diperlukan</h2>
+                        <p class="card-text">
+                            Kami menerima permintaan untuk mengatur ulang password akun HRIS Anda. Silakan klik tombol di bawah untuk melanjutkan.
+                        </p>
+                        <table border="0" cellpadding="0" cellspacing="0" class="cta-button" align="center">
+                           <tr>
+                              <td align="center" style="border-radius: 8px;" bgcolor="#1F1F1F">
+                                 <a href="{{ $url }}" target="_blank">Reset Password Sekarang</a>
+                              </td>
+                           </tr>
                         </table>
                     </div>
                     <div class="highlight-card">
-                        <div class="highlight-label">DEADLINE</div>
-                        <div class="highlight-value">{{ $pengingat->tanggal_jatuh_tempo->format('d F Y - H:i') }} WIB</div>
+                        <div class="highlight-label">LINK AKAN KEDALUWARSA DALAM</div>
+                        <div class="highlight-value">60 Menit</div>
                     </div>
                     <div class="alert">
-                        <strong>Catatan:</strong> Email ini dikirim otomatis H-7 sebelum jatuh tempo. Jika tugas sudah selesai, harap perbarui statusnya menjadi "Selesai".
+                        <strong>Perhatian:</strong> Jika Anda tidak meminta reset password, mohon abaikan email ini. Keamanan akun Anda tetap terjaga.
+                    </div>
+                    <div class="alert">
+                        <strong>Link tidak berfungsi?</strong> Salin dan tempel URL berikut di browser Anda: <br>
+                        <a href="{{ $url }}" style="color: #1f2937; text-decoration: underline; word-break: break-all;">{{ $url }}</a>
                     </div>
                 </td>
             </tr>

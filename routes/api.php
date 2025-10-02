@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\DengerController;
 use App\Http\Controllers\Api\FiturController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\GajiController;
 use App\Http\Controllers\Api\JabatanController;
 use App\Http\Controllers\Api\LemburController;
@@ -23,20 +24,23 @@ use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
 
-
 // publik route
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// lupa kata sandi route
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 
-    // route untuk logout dan token user
+// auth sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    // route token user
     Route::get('/me', [AuthController::class, 'me']);
-    Route::post('/change-password', [AuthController::class, 'changePassword']);
+
+    // route logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Profile Route
     Route::put('/email',[AuthController::class, 'updateEmail']);
-    // nanti buat route untuk ubah password dari email yang terdaftar (ubah passwordnya ada di kirim link ke email)
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     // Route setting
     Route::get('pengaturan', [PengaturanController::class, 'show']);
