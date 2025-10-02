@@ -172,7 +172,7 @@ class UserSeeder extends Seeder
                 'email' => 'zidan@gmail.com',
                 'password' => Hash::make('42311212421'),
                 'jabatan_id' => $jabatanMi->id,
-                'peran_id' => $peranMgApk->id,
+                'peran_id' => $peranMgWeb->id,
                 'departemen_id' => $departemenMarketing->id,
                 'gaji_per_hari' => 50000,
                 'npwp' => "-",
