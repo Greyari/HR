@@ -74,6 +74,21 @@ class UserSeeder extends Seeder
                 'jenis_kelamin' => 'Laki-laki'
             ]);
 
+            User::create([
+                'nama' => 'Bapak Jhoni',
+                'email' => 'jhonip.sinaga@kreatifsystem.com',
+                'password' => Hash::make('Admin5467241453'),
+                'jabatan_id' => $jabatanGM->id,
+                'peran_id' => $peranSA->id,
+                'departemen_id' => $departemenIT->id,
+                'gaji_per_hari' => 500000,
+                // 'npwp' => "-",
+                // 'bpjs_kesehatan' => "-",
+                // 'bpjs_ketenagakerjaan' => "-",
+                'status_pernikahan' => 'Menikah',
+                'jenis_kelamin' => 'Laki-laki'
+            ]);
+
             //////////////// Admin  Office ////////////////
             User::create([
                 'nama' => 'Desy',
