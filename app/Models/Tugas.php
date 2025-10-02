@@ -12,15 +12,19 @@ class Tugas extends Model
     protected $table = 'tugas';
 
     protected $fillable = [
-        'user_id',       
+        'user_id',
         'nama_tugas',
-        'jam_mulai',
         'tanggal_mulai',
         'tanggal_selesai',
-        'lokasi',
         'instruksi_tugas',
         'status',
-        'bukti_video',
+        'terlambat',
+        'tugas_lat',
+        'tugas_lng',
+        'radius_meter',
+        'lampiran',
+        'lampiran_lat',
+        'lampiran_lng',
     ];
 
     public function user()
