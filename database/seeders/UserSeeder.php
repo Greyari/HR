@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'User Super',
                 'email' => 'usersuper@gmail.com',
-                'password' => Hash::make('123'),
+                'password' => Hash::make('123123123123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
