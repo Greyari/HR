@@ -107,21 +107,6 @@ class UserSeeder extends Seeder
 
             //////////////// marketing ////////////////
             User::create([
-                'nama' => 'Afi Oktiani',
-                'email' => 'afioktiani0610@gmail.com',
-                'password' => Hash::make('123124123'),
-                'jabatan_id' => $jabatanAs->id,
-                'peran_id' => $peranAoWeb->id,
-                'departemen_id' => $departemenMarketing->id,
-                'gaji_per_hari' => 250000,
-                'npwp' => "73.259.731.5-215.000",
-                'bpjs_kesehatan' => "0000365489638",
-                'bpjs_ketenagakerjaan' => "2171 0246 1096 9002",
-                'status_pernikahan' => 'Belum Menikah',
-                'jenis_kelamin' => 'Perempuan'
-            ]);
-
-            User::create([
                 'nama' => 'Eka Paksi Ramadhani',
                 'email' => 'ekapaksir@gmail.com',
                 'password' => Hash::make('123412331'),
@@ -133,21 +118,6 @@ class UserSeeder extends Seeder
                 'bpjs_kesehatan' => "0003510022364",
                 'bpjs_ketenagakerjaan' => "2171 1063 1299 9001",
                 'status_pernikahan' => 'Belum Menikah',
-                'jenis_kelamin' => 'Perempuan'
-            ]);
-
-            User::create([
-                'nama' => 'Desta Ayu Pusaprini',
-                'email' => 'official.destaayu@gmail.com',
-                'password' => Hash::make('123412512'),
-                'jabatan_id' => $jabatanTm->id,
-                'peran_id' => $peranAoWeb->id,
-                'departemen_id' => $departemenMarketing->id,
-                'gaji_per_hari' => 250000,
-                'npwp' => "64.365.608.5-215.000",
-                'bpjs_kesehatan' => "0000022899453",
-                'bpjs_ketenagakerjaan' => "21.710.458.1-293.004",
-                'status_pernikahan' => 'Menikah',
                 'jenis_kelamin' => 'Perempuan'
             ]);
 
