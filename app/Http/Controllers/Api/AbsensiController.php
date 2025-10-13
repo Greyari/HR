@@ -52,7 +52,7 @@ class AbsensiController extends Controller
      */
     public function checkin(Request $request)
     {
-        Log::info('🔥 RAW Request masuk ke checkin', [
+        Log::info('RAW Request masuk ke checkin', [
             'all'   => $request->all(),
             'files' => $request->allFiles(),
             'headers' => $request->headers->all(),
@@ -69,7 +69,7 @@ class AbsensiController extends Controller
             'video_base64' => 'nullable|string',
         ]);
 
-        // 🔎 Debug log untuk Railway
+        // Debug log untuk Railway
         Log::info('Checkin request received', [
             'files'       => $request->allFiles(),
             'has_video'   => $request->hasFile('video_user') ? 'yes' : 'no',
