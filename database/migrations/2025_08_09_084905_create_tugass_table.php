@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('nama_tugas');
-            $table->date('tanggal_mulai');
-            $table->date('tanggal_selesai');
+            $table->dateTime('tanggal_penugasan');
+            $table->dateTime('batas_penugasan');
             $table->integer('radius_meter')->default(100);
             $table->decimal('tugas_lat', 10, 7)->nullable();
             $table->decimal('tugas_lng', 10, 7)->nullable();

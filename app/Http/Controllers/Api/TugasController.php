@@ -6,31 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Cloudinary\Api\Admin\AdminApi;
 use Cloudinary\Api\Upload\UploadApi;
+
 class TugasController extends Controller
 {
-    // List semua tugas
+    // ====== LIST SEMUA TUGAS ======
     public function index()
     {
         $user = Auth::user();
-
         $fiturUser = $user->peran->fitur->pluck('nama_fitur');
 
         if ($fiturUser->contains('lihat_semua_tugas')) {
-            // bisa lihat semua tugas
             $tugas = Tugas::with('user')->latest()->get();
         } elseif ($fiturUser->contains('lihat_tugas_sendiri')) {
-            // hanya bisa lihat miliknya
-            $tugas = Tugas::with('user')
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
+            $tugas = Tugas::with('user')->where('user_id', $user->id)->latest()->get();
         } else {
-            return response()->json([
-                'message' => 'Anda tidak punya akses untuk melihat tugas',
-            ], 403);
+            return response()->json(['message' => 'Anda tidak punya akses untuk melihat tugas'], 403);
         }
 
         $tugas->transform(function ($item) {
@@ -44,18 +36,18 @@ class TugasController extends Controller
         ]);
     }
 
-    // Simpan tugas baru
+    // ====== SIMPAN TUGAS BARU ======
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id'           => 'required|exists:users,id',
-            'nama_tugas'        => 'required|string|max:255',
-            'tanggal_mulai'     => 'required|date',
-            'tanggal_selesai'   => 'required|date|after_or_equal:tanggal_mulai',
-            'instruksi_tugas'   => 'nullable|string',
-            'tugas_lat'         => 'required|numeric',
-            'tugas_lng'         => 'required|numeric',
-            'radius_meter'      => 'required|integer|min:10',
+            'user_id'             => 'required|exists:users,id',
+            'nama_tugas'          => 'required|string|max:255',
+            'tanggal_penugasan'   => 'required|date',
+            'batas_penugasan'     => 'required|date|after_or_equal:tanggal_penugasan',
+            'instruksi_tugas'     => 'nullable|string',
+            'tugas_lat'           => 'required|numeric',
+            'tugas_lng'           => 'required|numeric',
+            'radius_meter'        => 'required|integer|min:10',
         ]);
 
         $validated['status'] = 'Proses';
@@ -68,7 +60,7 @@ class TugasController extends Controller
         ], 201);
     }
 
-    // Update tugas
+    // ====== UPDATE TUGAS ======
     public function update(Request $request, $id)
     {
         $tugas = Tugas::find($id);
@@ -78,15 +70,15 @@ class TugasController extends Controller
         }
 
         $validated = $request->validate([
-            'user_id'           => 'sometimes|exists:users,id',
-            'nama_tugas'        => 'sometimes|required|string|max:255',
-            'tanggal_mulai'     => 'sometimes|required|date',
-            'tanggal_selesai'   => 'sometimes|required|date|after_or_equal:tanggal_mulai',
-            'instruksi_tugas'   => 'nullable|string',
-            'status'            => 'in:Proses,Selesai',
-            'tugas_lat'         => 'sometimes|numeric',
-            'tugas_lng'         => 'sometimes|numeric',
-            'radius_meter'      => 'sometimes|integer|min:10',
+            'user_id'             => 'sometimes|exists:users,id',
+            'nama_tugas'          => 'sometimes|required|string|max:255',
+            'tanggal_penugasan'   => 'sometimes|required|date',
+            'batas_penugasan'     => 'sometimes|required|date|after_or_equal:tanggal_penugasan',
+            'instruksi_tugas'     => 'nullable|string',
+            'status'              => 'in:Proses,Selesai,Menunggu Admin',
+            'tugas_lat'           => 'sometimes|numeric',
+            'tugas_lng'           => 'sometimes|numeric',
+            'radius_meter'        => 'sometimes|integer|min:10',
         ]);
 
         $tugas->update($validated);
@@ -97,7 +89,7 @@ class TugasController extends Controller
         ]);
     }
 
-    // Update status tugas (khusus ganti status)
+    // ====== UPDATE STATUS ======
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -111,11 +103,11 @@ class TugasController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Status tugas berhasil diperbarui',
-            'data' => $tugas
+            'data'    => $tugas
         ]);
     }
 
-    // Hapus tugas
+    // ====== HAPUS TUGAS ======
     public function destroy($id)
     {
         $tugas = Tugas::find($id);
@@ -124,13 +116,12 @@ class TugasController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
-        // Opsional: hapus file di Cloudinary
         if ($tugas->lampiran) {
             try {
                 $publicId = pathinfo(parse_url($tugas->lampiran)['path'], PATHINFO_FILENAME);
                 (new AdminApi())->deleteAssets([$publicId]);
             } catch (\Exception $e) {
-                // kalau gagal hapus, abaikan aja
+                // jika gagal hapus, abaikan
             }
         }
 
@@ -139,7 +130,7 @@ class TugasController extends Controller
         return response()->json(['message' => 'Tugas berhasil dihapus']);
     }
 
-    // User upload bukti lampiran
+    // ====== UPLOAD LAMPIRAN ======
     public function uploadLampiran(Request $request, $id)
     {
         $request->validate([
@@ -150,14 +141,10 @@ class TugasController extends Controller
 
         $tugas = Tugas::findOrFail($id);
 
-        // Pastikan tugas punya lokasi
         if (!$tugas->tugas_lat || !$tugas->tugas_lng) {
-            return response()->json([
-                'message' => 'Tugas ini belum memiliki lokasi koordinat.'
-            ], 422);
+            return response()->json(['message' => 'Tugas ini belum memiliki lokasi koordinat.'], 422);
         }
 
-        // Hitung jarak
         $distance = $this->calculateDistance(
             $tugas->tugas_lat,
             $tugas->tugas_lng,
@@ -171,7 +158,6 @@ class TugasController extends Controller
             ], 403);
         }
 
-        // Simpan koordinat upload
         $tugas->lampiran_lat = $request->lampiran_lat;
         $tugas->lampiran_lng = $request->lampiran_lng;
 
@@ -189,23 +175,21 @@ class TugasController extends Controller
                 $file->getRealPath(),
                 [
                     'resource_type' => in_array($extension, ['jpg', 'jpeg', 'png']) ? 'image' :
-                                    (in_array($extension, ['mp4', 'mov', 'avi', '3gp']) ? 'video' : 'raw'),
-                    'folder' => $folder,
+                                      (in_array($extension, ['mp4', 'mov', 'avi', '3gp']) ? 'video' : 'raw'),
+                    'folder'        => $folder,
                 ]
             );
 
-            $uploadedUrl = $result['secure_url'];
-            $tugas->lampiran = $uploadedUrl;
+            $tugas->lampiran = $result['secure_url'];
 
             // === CEK TIMELINE ===
-            $today = now()->toDateString();
-            if ($today < $tugas->tanggal_mulai || $today > $tugas->tanggal_selesai) {
-                $tugas->terlambat = true;   // upload di luar timeline
+            $now = now();
+            if ($now->lt($tugas->tanggal_penugasan) || $now->gt($tugas->batas_penugasan)) {
+                $tugas->terlambat = true;
             } else {
-                $tugas->terlambat = false;  // upload sesuai timeline
+                $tugas->terlambat = false;
             }
 
-            // Update status biasa
             $tugas->status = "Menunggu Admin";
             $tugas->save();
         }
@@ -218,21 +202,18 @@ class TugasController extends Controller
         ]);
     }
 
-    // helpon hitung radius
+    // ====== HITUNG JARAK (METER) ======
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
         $earthRadius = 6371000; // meter
-
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
 
-        $a = sin($dLat / 2) * sin($dLat / 2) +
+        $a = sin($dLat / 2) ** 2 +
             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon / 2) * sin($dLon / 2);
+            sin($dLon / 2) ** 2;
 
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        $distance = $earthRadius * $c;
-
-        return $distance; // meter
+        return $earthRadius * $c;
     }
 }
