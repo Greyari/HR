@@ -132,4 +132,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Gaji::class);
     }
+
+    public function fcmToken()
+    {
+        return $this->hasOne(\App\Models\FcmToken::class);
+    }
 }
