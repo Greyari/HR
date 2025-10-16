@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
-
+use App\Http\Controllers\NotificationController;
 // publik route
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Profile Route
-    Route::put('/email',[AuthController::class, 'updateEmail']);
+    Route::put('/email', [AuthController::class, 'updateEmail']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     // Route setting
@@ -73,7 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Departemen Routes
-    Route::prefix('departemen')->middleware(CheckFitur::class . ':departemen')->group(function() {
+    Route::prefix('departemen')->middleware(CheckFitur::class . ':departemen')->group(function () {
         Route::get('', [DepartemenController::class, 'index']);
         Route::post('', [DepartemenController::class, 'store']);
         Route::put('{id}', [DepartemenController::class, 'update']);
@@ -81,7 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Peran Routes
-    Route::prefix('peran')->middleware(CheckFitur::class . ':peran')->group(function() {
+    Route::prefix('peran')->middleware(CheckFitur::class . ':peran')->group(function () {
         Route::get('', [PeranController::class, 'index']);
         Route::post('', [PeranController::class, 'store']);
         Route::put('{id}', [PeranController::class, 'update']);
@@ -89,7 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Jabatan Routes
-    Route::prefix('jabatan')->middleware(CheckFitur::class . ':jabatan')->group(function() {
+    Route::prefix('jabatan')->middleware(CheckFitur::class . ':jabatan')->group(function () {
         Route::get('', [JabatanController::class, 'index']);
         Route::post('', [JabatanController::class, 'store']);
         Route::put('{id}', [JabatanController::class, 'update']);
@@ -97,15 +97,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // User Routes
-    Route::prefix('user')->middleware(CheckFitur::class . ':karyawan')->group(function() {
+    Route::prefix('user')->middleware(CheckFitur::class . ':karyawan')->group(function () {
         Route::get('', [UserController::class, 'index']);
         Route::post('', [UserController::class, 'store']);
-        Route::put('{id}',[UserController::class, 'update']);
-        Route::delete('{id}',[UserController::class, 'destroy']);
+        Route::put('{id}', [UserController::class, 'update']);
+        Route::delete('{id}', [UserController::class, 'destroy']);
     });
 
     // Gaji Routes
-    Route::prefix('gaji')->middleware(CheckFitur::class . ':gaji')->group(function() {
+    Route::prefix('gaji')->middleware(CheckFitur::class . ':gaji')->group(function () {
         Route::get('', [GajiController::class, 'calculateAll']);
         Route::get('/periods', [GajiController::class, 'availablePeriods']);
         Route::put('{id}/status', [GajiController::class, 'updateStatus']);
@@ -113,33 +113,33 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Potongan gaji
-    Route::prefix('potongan_gaji')->middleware(CheckFitur::class . ':potongan_gaji')->group(function() {
-        Route::get('',[PotonganGajiController::class, 'index']);
-        Route::post('',[PotonganGajiController::class, 'store']);
-        Route::put('{id}',[PotonganGajiController::class, 'update']);
-        Route::delete('{id}',[PotonganGajiController::class, 'destroy']);
+    Route::prefix('potongan_gaji')->middleware(CheckFitur::class . ':potongan_gaji')->group(function () {
+        Route::get('', [PotonganGajiController::class, 'index']);
+        Route::post('', [PotonganGajiController::class, 'store']);
+        Route::put('{id}', [PotonganGajiController::class, 'update']);
+        Route::delete('{id}', [PotonganGajiController::class, 'destroy']);
     });
 
     // Kantor Routes
-    Route::prefix('kantor')->middleware(CheckFitur::class . ':kantor')->group(function() {
-        Route::get('',[KantorController::class, 'index']);
-        Route::post('',[KantorController::class, 'saveProfile']);
+    Route::prefix('kantor')->middleware(CheckFitur::class . ':kantor')->group(function () {
+        Route::get('', [KantorController::class, 'index']);
+        Route::post('', [KantorController::class, 'saveProfile']);
     });
 
     // Absensi Route
-    Route::prefix('absensi')->middleware(CheckFitur::class . ':absensi')->group(function() {
-        Route::get('',[AbsensiController::class, 'getAbsensi']);
-        Route::post('checkin',[AbsensiController::class, 'checkin']);
-        Route::post('checkout',[AbsensiController::class, 'checkout']);
+    Route::prefix('absensi')->middleware(CheckFitur::class . ':absensi')->group(function () {
+        Route::get('', [AbsensiController::class, 'getAbsensi']);
+        Route::post('checkin', [AbsensiController::class, 'checkin']);
+        Route::post('checkout', [AbsensiController::class, 'checkout']);
     });
 
     // Log Activity Route
-    Route::prefix('log')->middleware(CheckFitur::class . ':log_aktifitas')->group(function() {
+    Route::prefix('log')->middleware(CheckFitur::class . ':log_aktifitas')->group(function () {
         Route::get('', [ActivityLogController::class, 'index']);
     });
 
     // Pengingat Route
-    Route::prefix('pengingat')->middleware(CheckFitur::class . ':pengingat')->group(function() {
+    Route::prefix('pengingat')->middleware(CheckFitur::class . ':pengingat')->group(function () {
         Route::get('', [PengingatController::class, 'index']);
         Route::post('', [PengingatController::class, 'store']);
         Route::put('{id}', [PengingatController::class, 'update']);
@@ -147,13 +147,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Buka akun terkunci Route
-    Route::prefix('akun')->middleware(CheckFitur::class . ':buka_akun')->group(function() {
+    Route::prefix('akun')->middleware(CheckFitur::class . ':buka_akun')->group(function () {
         Route::get('terkunci', [ManajemenAkunController::class, 'lockedUsers']);
         Route::post('{id}/terkunci', [ManajemenAkunController::class, 'unlockUser']);
     });
 
     // update device Route
-    Route::prefix('device')->middleware(CheckFitur::class . ':reset_device')->group(function() {
+    Route::prefix('device')->middleware(CheckFitur::class . ':reset_device')->group(function () {
         Route::get('', [ManajemenDeviceController::class, 'allDevices']);
         Route::post('{id}/reset', [ManajemenDeviceController::class, 'resetDevice']);
     });
@@ -181,10 +181,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ambil data tampa midlaware
     Route::get('user/tugas', [UserController::class, 'index']);
-    Route::get('kantor/jam',[KantorController::class, 'index']);
+    Route::get('kantor/jam', [KantorController::class, 'index']);
     Route::get('/fitur', [FiturController::class, 'index']);
 });
 
+Route::post('/save-token', [NotificationController::class, 'saveToken']);
+Route::post('/send-notif', [NotificationController::class, 'sendToUser']);
+Route::post('/delete-token', [NotificationController::class, 'deleteToken']);
+
+// Route::get('/test-send-notif', function () {
+//     $controller = new \App\Http\Controllers\NotificationController();
+
+//     $request = new \Illuminate\Http\Request([
+//         'token' => 'cOPKSvCyuKWM1EMm5iOmBP:APA91bE28OS1r8iWdwZ76hEOKrs_A4Z-zkFBNJi0sZ3yVbF7JdJ0T9DidEO20GgL0YtEjwyicZwVtABH4xt900n8w08U8Z9K7LHL1xiX3uASIR_gIUXcu8c',
+//         'title' => 'Test Notifikasi',
+//         'body' => 'Halo dari Laravel!',
+//     ]);
+
+//     return $controller->send($request);
+// });
 
 ////////////////////////// ini untuk debug email di hostingan //////////////////////////////
 Route::get('/scheduler-log', function () {
@@ -246,4 +261,3 @@ Route::get('/test-upload', function () {
         'result'  => $result,
     ]);
 });
-

@@ -12,9 +12,12 @@ Route::get('/', function () {
 // Route lupa kata sandi
 Route::get('url-reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
-Route::get('reset-success',[ForgotPasswordController::class, 'pagesucces'])->name('password.reset.success');
+Route::get('reset-success', [ForgotPasswordController::class, 'pagesucces'])->name('password.reset.success');
 
-
+// Route::get('/test-firebase', function () {
+//     $messaging = app('firebase.messaging');
+//     return response()->json(['status' => 'ok']);
+// });
 
 // // testing view email
 // Route::get('/pengingat', function () {
