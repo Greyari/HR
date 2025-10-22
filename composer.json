@@ -8,6 +8,8 @@
     "require": {
         "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "^3.0",
+        "google/apiclient": "^2.18",
+        "google/apiclient-services": "^0.416.0",
         "jenssegers/agent": "^2.6",
         "kreait/laravel-firebase": "^6.1",
         "laravel/framework": "^12.0",
@@ -34,7 +36,8 @@
         },
         "files": [
             "app/Helpers/activity.php",
-            "app/Helpers/EnvHelper.php"
+            "app/Helpers/EnvHelper.php",
+            "app/Helpers/NotificationHelper.php"
         ]
     },
     "autoload-dev": {

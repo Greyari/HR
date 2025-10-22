@@ -27,7 +27,7 @@ class AuthController extends Controller
         ]);
 
         // -----------------------------
-        // Cari user
+        // Cari user berdasarkan email
         // -----------------------------
         $user = User::with(['peran.fitur', 'departemen', 'jabatan'])
                     ->where('email', $request->email)
@@ -67,7 +67,7 @@ class AuthController extends Controller
         }
 
         // -----------------------------
-        // Reset percobaan kalau berhasil login
+        // Reset percobaan login jika berhasil
         // -----------------------------
         if ($user->coba_login > 0) {
             $user->update(['coba_login' => 0]);
@@ -75,26 +75,14 @@ class AuthController extends Controller
         }
 
         // -----------------------------
-        // Deteksi device menggunakan Agent
+        // Deteksi device (menggunakan Agent)
         // -----------------------------
         $agent = new Agent();
-
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        Log::info('Deteksi akses', [
-            'userAgent' => $request->header('User-Agent'),
-            'isDesktop' => $agent->isDesktop(),
-            'isMobile'  => $agent->isMobile(),
-            'fiturUser' => $fiturUser
-        ]);
-
-        // -----------------------------
-        // Deteksi platform (web / apk)
-        // -----------------------------
-        $platform = $request->input('platform'); // dari request
-
+        $platform = $request->input('platform'); // dikirim dari frontend (web/apk)
         if (!$platform) {
-            // fallback ke Agent kalau frontend tidak kirim platform
+            // fallback auto detect
             if ($agent->isDesktop()) {
                 $platform = 'web';
             } elseif ($agent->isMobile()) {
@@ -102,6 +90,15 @@ class AuthController extends Controller
             }
         }
 
+        Log::info('Deteksi akses user', [
+            'userAgent' => $request->header('User-Agent'),
+            'platform'  => $platform,
+            'fiturUser' => $fiturUser
+        ]);
+
+        // -----------------------------
+        // Validasi akses berdasarkan fitur role
+        // -----------------------------
         if ($platform === 'web' && !in_array('web', $fiturUser)) {
             return response()->json([
                 'message' => 'Login via web tidak diperbolehkan untuk akun ini.'
@@ -115,7 +112,18 @@ class AuthController extends Controller
         }
 
         // -----------------------------
-        // Validasi device (hanya untuk akses mobile / apk)
+        // Simpan / update device_token (untuk semua user)
+        // -----------------------------
+        if ($request->filled('device_token')) {
+            $user->update(['device_token' => $request->device_token]);
+            Log::info('Device token diperbarui', [
+                'user_id'  => $user->id,
+                'platform' => $platform
+            ]);
+        }
+
+        // -----------------------------
+        // Validasi device (khusus platform apk)
         // -----------------------------
         if ($platform === 'apk') {
             $request->validate([
@@ -129,7 +137,7 @@ class AuthController extends Controller
             $punyaWeb = in_array('web', $fiturUser);
 
             if (!$punyaWeb) {
-                // device restriction + pencatatan device hanya untuk apk-only
+                // hanya untuk apk-only
                 $existingDevice = Device::where('device_id', $request->device_id)->first();
                 if ($existingDevice && $existingDevice->user_id != $user->id) {
                     return response()->json([
@@ -149,7 +157,7 @@ class AuthController extends Controller
                             'last_login'          => now()
                         ]);
 
-                        Log::info('Device baru berhasil dibuat untuk apk-only user', ['user_id' => $user->id]);
+                        Log::info('Device baru dibuat (apk-only user)', ['user_id' => $user->id]);
                     } catch (\Exception $e) {
                         Log::error('Gagal insert device', ['error' => $e->getMessage()]);
                         return response()->json([
@@ -158,20 +166,25 @@ class AuthController extends Controller
                     }
                 } else {
                     $device->update(['last_login' => now()]);
-                    Log::info('Device terakhir login diperbarui (apk-only user)', ['device_id' => $device->device_id]);
+                    Log::info('Device terakhir login diperbarui (apk-only user)', [
+                        'device_id' => $device->device_id
+                    ]);
                 }
             } else {
-                // kalau punya akses web+apk → skip pencatatan device
-                Log::info('User punya akses web+apk, skip pencatatan device', ['user_id' => $user->id]);
+                Log::info('User punya akses web+apk, skip pencatatan device', [
+                    'user_id' => $user->id
+                ]);
             }
         }
 
         // -----------------------------
-        // Buat token login
+        // Buat token login (Sanctum)
         // -----------------------------
         $token = $user->createToken('token_login')->plainTextToken;
 
-        // Catat log login
+        // -----------------------------
+        // Catat log aktivitas login
+        // -----------------------------
         activity_log(
             'Login',
             'User',
@@ -180,23 +193,15 @@ class AuthController extends Controller
         );
 
         // -----------------------------
-        // Onboarding
+        // Response sukses
         // -----------------------------
-        $onboarding = false;
-
-        if (!$user->onboarding || $user->onboarding == "false" || $user->onboarding == 0) {
-            $onboarding = true;
-            $user->update(['onboarding' => 1]);
-            $user->load(['peran.fitur', 'departemen', 'jabatan']);
-        }
-
         return response()->json([
             'message'    => 'Login berhasil',
             'token'      => $token,
             'data'       => $user->setAttribute('gaji_per_hari', (int) $user->gaji_per_hari),
-            'onboarding' => $onboarding,
         ]);
     }
+
 
     // ganti email
     public function updateEmail(Request $request)
@@ -284,22 +289,25 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Log::info('Masuk ke logout endpoint', [
-            'auth_user' => $request->user(),
-            'headers' => $request->headers->all()
+            'Authorization' => $request->header('Authorization')
         ]);
 
         $user = $request->user();
-        if ($user) {
-            activity_log(
-                'Logout',
-                'User',
-                "{$user->nama} ({$user->email}) berhasil logout",
-                $user->id
-            );
-
-            $user->currentAccessToken()->delete();
+        if (!$user) {
+            Log::warning('Logout gagal: user null');
+            return response()->json(['message' => 'Token invalid atau expired'], 401);
         }
+
+        Log::info('Logout user ditemukan', ['user_id' => $user->id]);
+
+        $user->device_token = null;
+        $user->save();
+
+        $user->tokens()->delete();
+
+        activity_log('Logout', 'User', "{$user->nama} logout", $user->id);
 
         return response()->json(['message' => 'Logout berhasil']);
     }
+
 }

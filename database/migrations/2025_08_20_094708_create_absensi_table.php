@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('absensi', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('tugas_id')->nullable()->constrained()->onDelete('set null');
 
             $table->decimal('checkin_lat', 10, 7)->nullable();
             $table->decimal('checkin_lng', 10, 7)->nullable();
@@ -39,7 +38,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('absensi'); 
+        Schema::dropIfExists('absensi');
         Schema::enableForeignKeyConstraints();
     }
 };

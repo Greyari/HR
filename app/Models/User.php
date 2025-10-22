@@ -33,9 +33,9 @@ class User extends Authenticatable
         'bpjs_ketenagakerjaan',
         'jenis_kelamin',
         'status_pernikahan',
-        'onboarding',
         'coba_login',
         'terkunci',
+        'device_token',
     ];
 
     /**
@@ -131,10 +131,5 @@ class User extends Authenticatable
     public function gaji()
     {
         return $this->hasMany(Gaji::class);
-    }
-
-    public function fcmToken()
-    {
-        return $this->hasOne(\App\Models\FcmToken::class);
     }
 }

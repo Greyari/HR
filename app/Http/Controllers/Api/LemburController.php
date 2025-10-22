@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\NotificationHelper;
 use App\Models\Lembur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,22 @@ class LemburController extends Controller
             'status' => 'Pending',
         ]);
 
+        // Kirim ke user pemohon (notifikasi lokal di HP-nya)
+        NotificationHelper::sendToUser(
+            $user,
+            'Pengajuan Lembur Diterima',
+            'Pengajuan lembur Anda tanggal ' . $lembur->tanggal . ' berhasil dikirim.',
+            'lembur'
+        );
+
+        // Kirim ke semua user dengan fitur approve tahap 1
+        NotificationHelper::sendToFitur(
+            'approve_lembur_step1',
+            'Pengajuan Lembur Baru',
+            $user->name . ' mengajukan lembur pada tanggal ' . $lembur->tanggal,
+            'lembur'
+        );
+
         return response()->json([
             'message' => 'Pengajuan lembur berhasil dikirim',
             'data' => $lembur
@@ -112,6 +129,22 @@ class LemburController extends Controller
             $lembur->status = 'Proses';
             $lembur->save();
 
+            // Kirim ke pemohon bahwa cutinya disetujui tahap awal
+            NotificationHelper::sendToUser(
+                $lembur->user,
+                'Lembur Disetujui Tahap Awal',
+                'Lembur Anda tanggal ' . $lembur->tanggal . ' disetujui tahap awal.',
+                'lembur'
+            );
+
+            // Kirim ke semua user yang punya fitur approve step2
+            NotificationHelper::sendToFitur(
+                'approve_lembur_step2',
+                'Lembur Perlu Persetujuan Final',
+                $lembur->user->name . ' lemburnya disetujui tahap awal, perlu persetujuan final.',
+                'lembur'
+            );
+
             return response()->json([
                 'message' => 'Lembur disetujui tahap awal',
                 'step'    => $lembur->approval_step,
@@ -128,6 +161,15 @@ class LemburController extends Controller
             $lembur->approval_step = 2;
             $lembur->status = 'Disetujui';
             $lembur->save();
+
+
+            // Kirim ke pemohon bahwa cutinya disetujui final
+            NotificationHelper::sendToUser(
+                $lembur->user,
+                'Lembur Disetujui Final',
+                'Lembur Anda tanggal ' . $lembur->tanggal . ' telah disetujui.',
+                'lembur'
+            );
 
             return response()->json([
                 'message' => 'Lembur disetujui final',
@@ -168,6 +210,14 @@ class LemburController extends Controller
             $lembur->status = 'Ditolak';
             $lembur->catatan_penolakan = $request->catatan_penolakan;
             $lembur->save();
+
+            // Kirim ke pemohon bahwa cutinya ditolak
+            NotificationHelper::sendToUser(
+                $lembur->user,
+                'Lembur Ditolak',
+                'Lembur Anda tanggal ' . $lembur->tanggal . ' ditolak. Catatan: ' . $lembur->catatan_penolakan,
+                'lembur'
+            );
 
             return response()->json([
                 'message'            => 'Lembur ditolak dengan catatan revisi',

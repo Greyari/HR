@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cuti;
 use App\Models\Kantor;
 use App\Models\UserJatahCuti;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -117,6 +118,22 @@ class CutiController extends Controller
             'status' => 'Pending'
         ]);
 
+        // Kirim ke user pemohon (notifikasi lokal di HP-nya)
+        NotificationHelper::sendToUser(
+            $user,
+            'Pengajuan Cuti Diterima',
+            'Pengajuan cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' berhasil dikirim',
+            'cuti'
+        );
+
+        // Kirim ke semua user dengan fitur approve tahap 1
+        NotificationHelper::sendToFitur(
+            'approve_cuti_step1',
+            'Pengajuan Cuti Baru',
+            $user->name . ' mengajukan cuti dari ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai,
+            'cuti'
+        );
+
         return response()->json([
             'message' => 'Pengajuan cuti berhasil dikirim',
             'data' => $cuti
@@ -141,6 +158,22 @@ class CutiController extends Controller
             $cuti->approval_step = 1;
             $cuti->status = 'Proses';
             $cuti->save();
+
+            // Kirim ke pemohon bahwa cutinya disetujui tahap awal
+            NotificationHelper::sendToUser(
+                $cuti->user,
+                'Cuti Disetujui Tahap Awal',
+                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' disetujui tahap awal',
+                'cuti'
+            );
+
+            // Kirim ke semua user yang punya fitur approve step2
+            NotificationHelper::sendToFitur(
+                'approve_cuti_step2',
+                'Cuti Perlu Persetujuan Final',
+                $cuti->user->name . ' cutinya disetujui tahap awal, perlu persetujuan final.',
+                'cuti'
+            );
 
             return response()->json([
                 'message' => 'Cuti disetujui tahap awal',
@@ -177,6 +210,14 @@ class CutiController extends Controller
             $cuti->approval_step = 2;
             $cuti->status = 'Disetujui';
             $cuti->save();
+
+            // Kirim ke pemohon bahwa cutinya disetujui final
+            NotificationHelper::sendToUser(
+                $cuti->user,
+                'Cuti Disetujui Final',
+                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' telah disetujui.',
+                'cuti'
+            );
 
             return response()->json([
                 'message' => 'Cuti disetujui final',
@@ -218,6 +259,14 @@ class CutiController extends Controller
             $cuti->status = 'Ditolak';
             $cuti->catatan_penolakan = $request->catatan_penolakan;
             $cuti->save();
+
+            // Kirim ke pemohon bahwa cutinya ditolak
+            NotificationHelper::sendToUser(
+                $cuti->user,
+                'Cuti Ditolak',
+                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' ditolak. Catatan: ' . $cuti->catatan_penolakan,
+                'cuti'
+            );
 
             return response()->json([
                 'message' => 'Cuti ditolak dengan catatan revisi',

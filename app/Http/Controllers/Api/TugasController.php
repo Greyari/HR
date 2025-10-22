@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\NotificationHelper;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,14 @@ class TugasController extends Controller
 
         $tugas = Tugas::create($validated);
 
+        // Kirim notifikasi ke user yang ditugaskan
+        NotificationHelper::sendToUser(
+            $tugas->user,
+            'Tugas Baru Diberikan',
+            'Anda mendapat tugas baru: "' . $tugas->nama_tugas . '" mulai ' . $tugas->tanggal_penugasan . ' hingga ' . $tugas->batas_penugasan,
+            'tugas'
+        );
+
         return response()->json([
             'message' => 'Tugas berhasil dibuat',
             'data'    => $tugas->load('user')
@@ -83,6 +92,14 @@ class TugasController extends Controller
 
         $tugas->update($validated);
 
+        // Kirim notifikasi ke user yang ditugaskan
+        NotificationHelper::sendToUser(
+            $tugas->user,
+            'Tugas Diperbarui',
+            'Tugas "' . $tugas->nama_tugas . '" telah diperbarui oleh admin.',
+            'tugas'
+        );
+
         return response()->json([
             'message' => 'Tugas berhasil diperbarui',
             'data'    => $tugas->load('user')
@@ -99,6 +116,14 @@ class TugasController extends Controller
         $tugas = Tugas::findOrFail($id);
         $tugas->status = $request->status;
         $tugas->save();
+
+        // Kirim notifikasi ke yang upload
+        NotificationHelper::sendToUser(
+            $tugas->user,
+            'Status Tugas Diperbarui',
+            'Status tugas "' . $tugas->nama_tugas . '" diubah menjadi: ' . $tugas->status,
+            'tugas'
+        );
 
         return response()->json([
             'success' => true,
@@ -193,6 +218,14 @@ class TugasController extends Controller
             $tugas->status = "Menunggu Admin";
             $tugas->save();
         }
+
+        // Kirim notifikasi ke admin
+        NotificationHelper::sendToFitur(
+            'lihat_semua_tugas',
+            'Lampiran Baru Dikirim',
+            'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
+            'tugas'
+        );
 
         return response()->json([
             'message'   => 'Lampiran berhasil diupload!',

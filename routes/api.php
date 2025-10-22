@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
 use Cloudinary\Cloudinary;
-use App\Http\Controllers\NotificationController;
+
 // publik route
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -32,6 +32,7 @@ Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'
 
 // auth sanctum
 Route::middleware('auth:sanctum')->group(function () {
+
     // route token user
     Route::get('/me', [AuthController::class, 'me']);
 
@@ -184,22 +185,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('kantor/jam', [KantorController::class, 'index']);
     Route::get('/fitur', [FiturController::class, 'index']);
 });
-
-Route::post('/save-token', [NotificationController::class, 'saveToken']);
-Route::post('/send-notif', [NotificationController::class, 'sendToUser']);
-Route::post('/delete-token', [NotificationController::class, 'deleteToken']);
-
-// Route::get('/test-send-notif', function () {
-//     $controller = new \App\Http\Controllers\NotificationController();
-
-//     $request = new \Illuminate\Http\Request([
-//         'token' => 'cOPKSvCyuKWM1EMm5iOmBP:APA91bE28OS1r8iWdwZ76hEOKrs_A4Z-zkFBNJi0sZ3yVbF7JdJ0T9DidEO20GgL0YtEjwyicZwVtABH4xt900n8w08U8Z9K7LHL1xiX3uASIR_gIUXcu8c',
-//         'title' => 'Test Notifikasi',
-//         'body' => 'Halo dari Laravel!',
-//     ]);
-
-//     return $controller->send($request);
-// });
 
 ////////////////////////// ini untuk debug email di hostingan //////////////////////////////
 Route::get('/scheduler-log', function () {

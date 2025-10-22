@@ -34,7 +34,6 @@ class KaryawanObserver
             'created_at',
             'remember_token',
             'coba_login',
-            'onboarding',
             'last_login',
         ];
 
