@@ -25,6 +25,8 @@ class Tugas extends Model
         'lampiran',
         'lampiran_lat',
         'lampiran_lng',
+        'waktu_upload',
+        'menit_terlambat',
     ];
 
     public function user()

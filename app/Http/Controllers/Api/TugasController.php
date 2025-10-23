@@ -56,11 +56,11 @@ class TugasController extends Controller
         $tugas = Tugas::create($validated);
 
         // Kirim notifikasi ke user yang ditugaskan
-        NotificationHelper::sendToUser(
+        NotificationHelper::sendTugasBaru(
             $tugas->user,
             'Tugas Baru Diberikan',
-            'Anda mendapat tugas baru: "' . $tugas->nama_tugas . '" mulai ' . $tugas->tanggal_penugasan . ' hingga ' . $tugas->batas_penugasan,
-            'tugas'
+            'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
+            $tugas
         );
 
         return response()->json([
@@ -92,13 +92,8 @@ class TugasController extends Controller
 
         $tugas->update($validated);
 
-        // Kirim notifikasi ke user yang ditugaskan
-        NotificationHelper::sendToUser(
-            $tugas->user,
-            'Tugas Diperbarui',
-            'Tugas "' . $tugas->nama_tugas . '" telah diperbarui oleh admin.',
-            'tugas'
-        );
+        // 🔹 Kirim notifikasi ke user yang ditugaskan
+        NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
 
         return response()->json([
             'message' => 'Tugas berhasil diperbarui',
@@ -207,12 +202,18 @@ class TugasController extends Controller
 
             $tugas->lampiran = $result['secure_url'];
 
-            // === CEK TIMELINE ===
+            // === CATAT WAKTU UPLOAD & HITUNG KETERLAMBATAN ===
             $now = now();
-            if ($now->lt($tugas->tanggal_penugasan) || $now->gt($tugas->batas_penugasan)) {
+            $tugas->waktu_upload = $now;
+
+            // Jika lewat dari batas penugasan → terlambat
+            if ($now->gt($tugas->batas_penugasan)) {
+                $diffInMinutes = $tugas->batas_penugasan->diffInMinutes($now);
                 $tugas->terlambat = true;
+                $tugas->menit_terlambat = $diffInMinutes;
             } else {
                 $tugas->terlambat = false;
+                $tugas->menit_terlambat = 0;
             }
 
             $tugas->status = "Menunggu Admin";
@@ -228,10 +229,12 @@ class TugasController extends Controller
         );
 
         return response()->json([
-            'message'   => 'Lampiran berhasil diupload!',
-            'data'      => $tugas,
-            'file_url'  => $tugas->lampiran,
-            'terlambat' => $tugas->terlambat,
+            'message'         => 'Lampiran berhasil diupload!',
+            'data'            => $tugas,
+            'file_url'        => $tugas->lampiran,
+            'terlambat'       => $tugas->terlambat,
+            'menit_terlambat' => $tugas->menit_terlambat,
+            'waktu_upload'    => $tugas->waktu_upload,
         ]);
     }
 

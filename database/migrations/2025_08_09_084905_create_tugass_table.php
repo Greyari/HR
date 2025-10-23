@@ -24,6 +24,8 @@ return new class extends Migration
             $table->decimal('lampiran_lng', 10, 7)->nullable();
             $table->text('instruksi_tugas')->nullable();
             $table->enum('status', ['Proses', 'Menunggu Admin', 'Selesai'])->default('Proses');
+            $table->dateTime('waktu_upload')->nullable();
+            $table->integer('menit_terlambat')->nullable();
             $table->boolean('terlambat')->nullable()->default(null);
             $table->string('lampiran')->nullable();
             $table->timestamps();
