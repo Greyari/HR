@@ -39,7 +39,6 @@ class KantorController extends Controller
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
             'radius_meter' => 'required|integer',
-            'jatah_cuti_tahunan' => 'required|integer|min:0'
         ]);
 
         $kantor = Kantor::first();
@@ -52,7 +51,6 @@ class KantorController extends Controller
                 'lat',
                 'lng',
                 'radius_meter',
-                'jatah_cuti_tahunan'
             ]));
             $message = 'Data kantor berhasil diperbarui';
             $status = 200;
@@ -64,7 +62,6 @@ class KantorController extends Controller
                 'lat',
                 'lng',
                 'radius_meter',
-                'jatah_cuti_tahunan'
             ]));
             $message = 'Data kantor berhasil ditambahkan';
             $status = 201;

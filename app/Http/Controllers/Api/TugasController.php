@@ -72,7 +72,8 @@ class TugasController extends Controller
     // ====== UPDATE TUGAS ======
     public function update(Request $request, $id)
     {
-        $tugas = Tugas::find($id);
+        $tugas = Tugas::with('user')->find($id);
+
 
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
@@ -90,14 +91,37 @@ class TugasController extends Controller
             'radius_meter'        => 'sometimes|integer|min:10',
         ]);
 
+        $userLama = $tugas->user; // simpan PIC lama sebelum diubah
+
+        // Jalankan update ke database
         $tugas->update($validated);
 
-        // 🔹 Kirim notifikasi ke user yang ditugaskan
-        NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
+        // Refresh agar relasi dan data terbarui
+        $tugas->refresh();
+        $tugas->load('user');
+
+        // ==== CEK APAKAH PIC DIGANTI ====
+        if (isset($validated['user_id']) && $userLama->id !== $tugas->user_id) {
+
+            // 🔸 Kirim notif ke user lama bahwa tugas sudah dialihkan
+            NotificationHelper::sendTugasDialihkan($userLama, $tugas);
+
+            // 🔸 Kirim notif ke user baru bahwa dia dapat tugas baru
+            NotificationHelper::sendTugasBaru(
+                $tugas->user,
+                'Tugas Baru Diberikan',
+                'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
+                $tugas
+            );
+
+        } else {
+            // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa (waktu/status/instruksi)
+            NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
+        }
 
         return response()->json([
             'message' => 'Tugas berhasil diperbarui',
-            'data'    => $tugas->load('user')
+            'data'    => $tugas
         ]);
     }
 
@@ -130,7 +154,7 @@ class TugasController extends Controller
     // ====== HAPUS TUGAS ======
     public function destroy($id)
     {
-        $tugas = Tugas::find($id);
+        $tugas = Tugas::with('user')->find($id);
 
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
@@ -143,6 +167,11 @@ class TugasController extends Controller
             } catch (\Exception $e) {
                 // jika gagal hapus, abaikan
             }
+        }
+
+        // 🔹 Kirim notifikasi ke user jika tugas belum selesai
+        if ($tugas->user && $tugas->status !== 'Selesai') {
+            NotificationHelper::sendTugasDihapus($tugas->user, $tugas);
         }
 
         $tugas->delete();
@@ -227,6 +256,9 @@ class TugasController extends Controller
             'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
             'tugas'
         );
+
+        // Kirim notifikasi ke user (hapus progres bar + tunggal)
+        NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
         return response()->json([
             'message'         => 'Lampiran berhasil diupload!',

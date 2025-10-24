@@ -103,12 +103,6 @@ class User extends Authenticatable
         return $this->belongsTo(Kantor::class, 'kantor_id');
     }
 
-    // relasi jatah cuti tahunan
-    public function jatahCutiTahunan()
-    {
-        return $this->hasMany(UserJatahCuti::class);
-    }
-
     // relasi ke device
     public function device()
     {

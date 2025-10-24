@@ -19,7 +19,6 @@ class KantorSeeder extends Seeder
             'lat'                   => 1.125027673628618,
             'lng'                   => 104.029007793717,
             'radius_meter'          => 100,
-            'jatah_cuti_tahunan'    => 12,
             'created_at'            => now(),
             'updated_at'            => now(),
         ]);

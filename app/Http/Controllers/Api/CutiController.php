@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cuti;
-use App\Models\Kantor;
-use App\Models\UserJatahCuti;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,35 +76,9 @@ class CutiController extends Controller
             ], 400);
         }
 
-        $lamaCuti = Carbon::parse($request->tanggal_mulai)
-                    ->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
-        $tahun = Carbon::parse($request->tanggal_mulai)->year;
-
-        // Jika tipe cuti Tahunan, cek jatah
-        if ($request->tipe_cuti === 'Tahunan') {
-            $kantor = Kantor::first();
-
-            if (!$kantor || is_null($kantor->jatah_cuti_tahunan)) {
-                return response()->json([
-                    'message' => 'Jatah cuti tahunan belum di-setting admin, silakan hubungi admin.'
-                ], 400);
-            }
-
-            $jatah = UserJatahCuti::firstOrCreate(
-                ['user_id' => $user->id, 'tahun' => $tahun],
-                [
-                    'jatah' => $kantor->jatah_cuti_tahunan,
-                    'terpakai' => 0,
-                    'sisa' => $kantor->jatah_cuti_tahunan
-                ]
-            );
-
-            if ($lamaCuti > $jatah->sisa) {
-                return response()->json([
-                    'message' => 'Pengajuan cuti gagal. Sisa cuti tahunan: ' . $jatah->sisa
-                ], 400);
-            }
-        }
+        // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
+        $lamaCuti = Carbon::parse($request->tanggal_mulai)->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
+        // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
 
         // Buat cuti baru
         $cuti = Cuti::create([
@@ -189,23 +161,10 @@ class CutiController extends Controller
                 return response()->json(['message' => 'Cuti harus disetujui tahap awal dulu'], 400);
             }
 
-            $lamaCuti = Carbon::parse($cuti->tanggal_mulai)
-                ->diffInDays(Carbon::parse($cuti->tanggal_selesai)) + 1;
+            // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
+            $lamaCuti = Carbon::parse($cuti->tanggal_mulai)->diffInDays(Carbon::parse($cuti->tanggal_selesai)) + 1;
             $tahun = Carbon::parse($cuti->tanggal_mulai)->year;
-
-            if ($cuti->tipe_cuti === 'Tahunan') {
-                $jatah = UserJatahCuti::firstOrCreate(
-                    ['user_id' => $cuti->user_id, 'tahun' => $tahun],
-                    [
-                        'jatah' => $cuti->user->kantor->jatah_cuti_tahunan ?? 12,
-                        'terpakai' => 0,
-                        'sisa' => $cuti->user->kantor->jatah_cuti_tahunan ?? 12
-                    ]
-                );
-                $jatah->terpakai += $lamaCuti;
-                $jatah->sisa -= $lamaCuti;
-                $jatah->save();
-            }
+            // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
 
             $cuti->approval_step = 2;
             $cuti->status = 'Disetujui';

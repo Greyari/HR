@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('lat', 10, 7);
             $table->decimal('lng', 10, 7);
             $table->integer('radius_meter')->default(100);
-            $table->integer('jatah_cuti_tahunan')->default(12);
             $table->timestamps();
         });
     }

@@ -192,7 +192,6 @@ class AuthController extends Controller
         ]);
     }
 
-
     // ganti email
     public function updateEmail(Request $request)
     {

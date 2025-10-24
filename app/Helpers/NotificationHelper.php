@@ -22,8 +22,6 @@ class NotificationHelper
         })->get();
 
         foreach ($users as $user) {
-            self::createLog($user->id, $title, $message, $type);
-
             if ($user->device_token) {
                 $fcm->sendMessage($user->device_token, $title, $message, [
                     'tipe' => $type,
@@ -39,8 +37,6 @@ class NotificationHelper
      */
     public static function sendToUser($user, string $title, string $message, ?string $type = null, $tugas = null): void
     {
-        self::createLog($user->id, $title, $message, $type);
-
         if (!$user->device_token) return;
 
         $data = ['tipe' => $type];
@@ -92,31 +88,90 @@ class NotificationHelper
     }
 
     /**
-     * Kirim notifikasi saat user mengunggah lampiran tugas.
+     * Utility internal: log notifikasi ke database dan kirim ke FCM.
+     */
+    private static function logAndSend($user, string $title, string $message, string $type, array $data = []): void
+    {
+        if (!$user->device_token) return;
+
+        $data['tipe'] = $type;
+
+        app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, $data);
+    }
+
+    /**
+     * Kirim notifikasi saat tugas dialihkan ke user lain.
+     */
+    public static function sendTugasDialihkan($userLama, $tugas): void
+    {
+        $title = 'Tugas Dipindahkan';
+        $message = 'Tugas "' . $tugas->nama_tugas . '" telah dipindahkan ke user lain.';
+
+        self::createLog($userLama->id, $title, $message, 'tugas_pindah');
+
+        if ($userLama->device_token) {
+            app(FirebaseService::class)->sendMessage(
+                $userLama->device_token,
+                $title,
+                $message,
+                [
+                    'tipe' => 'tugas_pindah',
+                    'hapus_progress' => true,
+                    'tugas_id' => (string) $tugas->id,
+                    'judul' => $tugas->nama_tugas,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat user upload lampiran (mengganti progres bar dengan notif tunggal).
      */
     public static function sendLampiranDikirim($adminUser, $tugas): void
     {
         $title = 'Lampiran Baru Dikirim';
         $message = 'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".';
 
+        // 🔹 Log dan kirim ke admin
         self::logAndSend($adminUser, $title, $message, 'tugas_lampiran', [
             'tugas_id' => (string) $tugas->id,
             'judul' => $tugas->nama_tugas,
         ]);
+
+        // 🔹 Kirim juga ke user bahwa progresnya berakhir
+        $selfTitle = 'Tugas Dikirim';
+        $selfMessage = 'Kamu telah mengirim hasil tugas "' . $tugas->nama_tugas . '". Menunggu verifikasi admin.';
+        self::createLog($tugas->user_id, $selfTitle, $selfMessage, 'tugas_lampiran_dikirim');
+
+        if ($tugas->user->device_token) {
+            app(FirebaseService::class)->sendMessage($tugas->user->device_token, $selfTitle, $selfMessage, [
+                'tipe' => 'tugas_lampiran_dikirim',
+                'hapus_progress' => true,
+                'tugas_id' => (string) $tugas->id,
+            ]);
+        }
     }
 
     /**
-     * Utility internal: log notifikasi ke database dan kirim ke FCM.
+     * Kirim notifikasi saat tugas dihapus oleh admin (jika belum selesai).
      */
-    private static function logAndSend($user, string $title, string $message, string $type, array $data = []): void
+    public static function sendTugasDihapus($user, $tugas): void
     {
-        self::createLog($user->id, $title, $message, $type);
+        if ($tugas->status === 'Selesai') return;
 
-        if (!$user->device_token) return;
+        $title = 'Tugas Dihapus';
+        $message = 'Tugas "' . $tugas->nama_tugas . '" telah dihapus oleh admin.';
 
-        $data['tipe'] = $type;
+        self::createLog($user->id, $title, $message, 'tugas_hapus');
 
-        app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, $data);
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'tugas_hapus',
+                'hapus_progress' => true,
+                'tugas_id' => (string) $tugas->id,
+                'judul' => $tugas->nama_tugas,
+            ]);
+        }
     }
 
     /**

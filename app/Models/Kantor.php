@@ -18,6 +18,5 @@ class Kantor extends Model
         'lat',
         'lng',
         'radius_meter',
-        'jatah_cuti_tahunan'
     ];
 }
