@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'User Super',
                 'email' => 'usersuper@gmail.com',
-                'password' => Hash::make('123123123123'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
@@ -93,7 +93,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Desy',
                 'email' => 'desy@gmail.com',
-                'password' => Hash::make('456345212'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanAos->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenOffice->id,
@@ -108,7 +108,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Nata',
                 'email' => 'nata@gmail.com',
-                'password' => Hash::make('123412341'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanAos->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenOffice->id,
@@ -124,7 +124,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Eka Paksi Ramadhani',
                 'email' => 'ekapaksir@gmail.com',
-                'password' => Hash::make('123412331'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanSe->id,
                 'peran_id' => $peranAoWeb->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -170,7 +170,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Zidan',
                 'email' => 'zidan@gmail.com',
-                'password' => Hash::make('42311212421'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanMi->id,
                 'peran_id' => $peranMgWeb->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -185,7 +185,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Calvin',
                 'email' => 'calvin@gmail.com',
-                'password' => Hash::make('241234123'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanMi->id,
                 'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMarketing->id,
@@ -201,7 +201,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Budi',
                 'email' => 'budi@gmail.com',
-                'password' => Hash::make('12341213'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -216,7 +216,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Louis',
                 'email' => 'louis@gmail.com',
-                'password' => Hash::make('355213124'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -231,7 +231,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Siddiq',
                 'email' => 'siddiq@gmail.com',
-                'password' => Hash::make('12341241241'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
                 'departemen_id' => $departemenMaintenance->id,
@@ -246,7 +246,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Ridwan',
                 'email' => 'ridwan@gmail.com',
-                'password' => Hash::make('12351521521'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMaintenance->id,

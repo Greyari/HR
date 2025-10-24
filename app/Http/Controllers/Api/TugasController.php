@@ -74,7 +74,6 @@ class TugasController extends Controller
     {
         $tugas = Tugas::with('user')->find($id);
 
-
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
@@ -92,6 +91,7 @@ class TugasController extends Controller
         ]);
 
         $userLama = $tugas->user; // simpan PIC lama sebelum diubah
+        $isPICChanged = isset($validated['user_id']) && $userLama->id !== $validated['user_id'];
 
         // Jalankan update ke database
         $tugas->update($validated);
@@ -101,22 +101,28 @@ class TugasController extends Controller
         $tugas->load('user');
 
         // ==== CEK APAKAH PIC DIGANTI ====
-        if (isset($validated['user_id']) && $userLama->id !== $tugas->user_id) {
-
+        if ($isPICChanged) {
             // 🔸 Kirim notif ke user lama bahwa tugas sudah dialihkan
-            NotificationHelper::sendTugasDialihkan($userLama, $tugas);
+            // ✅ PENTING: Pastikan user lama masih ada device_token
+            if ($userLama->device_token) {
+                NotificationHelper::sendTugasDialihkan($userLama, $tugas);
+            }
 
             // 🔸 Kirim notif ke user baru bahwa dia dapat tugas baru
-            NotificationHelper::sendTugasBaru(
-                $tugas->user,
-                'Tugas Baru Diberikan',
-                'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
-                $tugas
-            );
+            if ($tugas->user->device_token) {
+                NotificationHelper::sendTugasBaru(
+                    $tugas->user,
+                    'Tugas Baru Diberikan',
+                    'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
+                    $tugas
+                );
+            }
 
         } else {
-            // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa (waktu/status/instruksi)
-            NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
+            // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa
+            if ($tugas->user->device_token) {
+                NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
+            }
         }
 
         return response()->json([
@@ -132,17 +138,32 @@ class TugasController extends Controller
             'status' => 'required|in:Selesai,Menunggu Admin,Proses,Ditolak'
         ]);
 
-        $tugas = Tugas::findOrFail($id);
+        $tugas = Tugas::with('user')->findOrFail($id);
+        $statusLama = $tugas->status;
         $tugas->status = $request->status;
         $tugas->save();
 
-        // Kirim notifikasi ke yang upload
-        NotificationHelper::sendToUser(
-            $tugas->user,
-            'Status Tugas Diperbarui',
-            'Status tugas "' . $tugas->nama_tugas . '" diubah menjadi: ' . $tugas->status,
-            'tugas'
-        );
+        // 🔹 Kirim notifikasi ke user berdasarkan perubahan status
+        if ($tugas->user && $tugas->user->device_token) {
+            // Jika status diubah menjadi Selesai
+            if ($request->status === 'Selesai' && $statusLama !== 'Selesai') {
+                NotificationHelper::sendTugasSelesai($tugas->user, $tugas);
+            }
+            // // Jika status diubah menjadi Ditolak
+            // elseif ($request->status === 'Ditolak') {
+            //     NotificationHelper::sendTugasDitolak($tugas->user, $tugas);
+            // }
+            
+            // Untuk status lainnya (Proses, Menunggu Admin)
+            else {
+                NotificationHelper::sendToUser(
+                    $tugas->user,
+                    'Status Tugas Diperbarui',
+                    'Status tugas "' . $tugas->nama_tugas . '" diubah menjadi: ' . $tugas->status,
+                    'tugas'
+                );
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -151,7 +172,9 @@ class TugasController extends Controller
         ]);
     }
 
+
     // ====== HAPUS TUGAS ======
+
     public function destroy($id)
     {
         $tugas = Tugas::with('user')->find($id);
@@ -160,6 +183,13 @@ class TugasController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
+        // ✅ Simpan data user sebelum tugas dihapus
+        $tugasUser = $tugas->user;
+        $tugasStatus = $tugas->status;
+        $tugasNama = $tugas->nama_tugas;
+        $tugasId = $tugas->id;
+
+        // Hapus lampiran dari Cloudinary jika ada
         if ($tugas->lampiran) {
             try {
                 $publicId = pathinfo(parse_url($tugas->lampiran)['path'], PATHINFO_FILENAME);
@@ -169,12 +199,21 @@ class TugasController extends Controller
             }
         }
 
-        // 🔹 Kirim notifikasi ke user jika tugas belum selesai
-        if ($tugas->user && $tugas->status !== 'Selesai') {
-            NotificationHelper::sendTugasDihapus($tugas->user, $tugas);
-        }
-
+        // Hapus tugas dari database
         $tugas->delete();
+
+        // 🔹 Kirim notifikasi ke user SETELAH tugas dihapus (jika belum selesai)
+        if ($tugasUser && $tugasUser->device_token && $tugasStatus !== 'Selesai') {
+            // Buat object temporary untuk notifikasi
+            $tugasTemp = (object) [
+                'id' => $tugasId,
+                'nama_tugas' => $tugasNama,
+                'status' => $tugasStatus,
+                'user' => $tugasUser
+            ];
+
+            NotificationHelper::sendTugasDihapus($tugasUser, $tugasTemp);
+        }
 
         return response()->json(['message' => 'Tugas berhasil dihapus']);
     }
