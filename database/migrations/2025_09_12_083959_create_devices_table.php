@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('device', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('device_id')->unique();
+            // info unik perangkat
+            $table->string('device_id')->nullable();
             $table->string('device_model');
             $table->string('device_manufacturer');
             $table->string('device_version');
-            $table->timestamp('last_login')->nullable();
+            // 🔐 tambahkan kolom baru untuk hash
+            $table->string('device_hash')->unique();
             $table->timestamps();
         });
     }

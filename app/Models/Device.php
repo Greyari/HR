@@ -17,7 +17,7 @@ class Device extends Model
         "device_model",
         "device_manufacturer",
         "device_version",
-        'last_login'
+        'device_hash',
     ];
 
     public function user()

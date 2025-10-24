@@ -82,12 +82,8 @@ class AuthController extends Controller
 
         $platform = $request->input('platform'); // dikirim dari frontend (web/apk)
         if (!$platform) {
-            // fallback auto detect
-            if ($agent->isDesktop()) {
-                $platform = 'web';
-            } elseif ($agent->isMobile()) {
-                $platform = 'apk';
-            }
+            if ($agent->isDesktop()) $platform = 'web';
+            elseif ($agent->isMobile()) $platform = 'apk';
         }
 
         Log::info('Deteksi akses user', [
@@ -123,11 +119,11 @@ class AuthController extends Controller
         }
 
         // -----------------------------
-        // Validasi device (khusus platform apk)
+        // Validasi device (APK)
         // -----------------------------
         if ($platform === 'apk') {
             $request->validate([
-                'device_id'           => 'required|string',
+                'device_hash'         => 'required|string',
                 'device_model'        => 'nullable|string',
                 'device_manufacturer' => 'nullable|string',
                 'device_version'      => 'nullable|string',
@@ -137,39 +133,33 @@ class AuthController extends Controller
             $punyaWeb = in_array('web', $fiturUser);
 
             if (!$punyaWeb) {
-                // hanya untuk apk-only
-                $existingDevice = Device::where('device_id', $request->device_id)->first();
-                if ($existingDevice && $existingDevice->user_id != $user->id) {
+                // 🔍 Cek apakah device_hash sudah terdaftar di user lain
+                $existing = Device::where('device_hash', $request->device_hash)
+                                ->where('user_id', '!=', $user->id)
+                                ->first();
+
+                if ($existing) {
                     return response()->json([
-                        'message' => 'Device ini sudah terhubung ke akun lain. Silakan hubungi admin.'
+                        'message' => 'Perangkat ini sudah terhubung ke akun lain. Silakan hubungi admin.'
                     ], 403);
                 }
 
-                $device = $user->device()->first();
+                // ✅ Simpan atau perbarui data device user ini
+                $device = Device::updateOrCreate(
+                    ['device_hash' => $request->device_hash],
+                    [
+                        'user_id'            => $user->id,
+                        'device_id'          => $request->device_id,
+                        'device_model'       => $request->device_model,
+                        'device_manufacturer'=> $request->device_manufacturer,
+                        'device_version'     => $request->device_version,
+                    ]
+                );
 
-                if (!$device) {
-                    try {
-                        $user->device()->create([
-                            'device_id'           => $request->device_id,
-                            'device_model'        => $request->device_model,
-                            'device_manufacturer' => $request->device_manufacturer,
-                            'device_version'      => $request->device_version,
-                            'last_login'          => now()
-                        ]);
-
-                        Log::info('Device baru dibuat (apk-only user)', ['user_id' => $user->id]);
-                    } catch (\Exception $e) {
-                        Log::error('Gagal insert device', ['error' => $e->getMessage()]);
-                        return response()->json([
-                            'message' => 'Gagal menyimpan device. Silakan hubungi admin.'
-                        ], 500);
-                    }
-                } else {
-                    $device->update(['last_login' => now()]);
-                    Log::info('Device terakhir login diperbarui (apk-only user)', [
-                        'device_id' => $device->device_id
-                    ]);
-                }
+                Log::info('Device hash tercatat / diperbarui', [
+                    'user_id' => $user->id,
+                    'device_hash' => $request->device_hash,
+                ]);
             } else {
                 Log::info('User punya akses web+apk, skip pencatatan device', [
                     'user_id' => $user->id
