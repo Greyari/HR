@@ -57,8 +57,6 @@ class NotificationHelper
      */
     public static function sendTugasBaru($user, string $title, string $message, $tugas): void
     {
-        self::createLog($user->id, $title, $message, 'tugas_baru');
-
         if (!$user->device_token) return;
 
         app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -76,8 +74,6 @@ class NotificationHelper
     {
         $title = 'Tugas Diperbarui';
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah diperbarui oleh admin.';
-
-        self::createLog($user->id, $title, $message, 'tugas_update');
 
         self::logAndSend($user, $title, $message, 'tugas_update', [
             'tugas_id' => (string) $tugas->id,
@@ -107,8 +103,6 @@ class NotificationHelper
     {
         $title = 'Tugas Dipindahkan';
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah dipindahkan ke user lain.';
-
-        self::createLog($userLama->id, $title, $message, 'tugas_pindah');
 
         if ($userLama->device_token) {
             // ✅ PERBAIKAN: Kirim dengan data lengkap termasuk hapus_progress
@@ -140,8 +134,6 @@ class NotificationHelper
         $message = 'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".';
 
         foreach ($admins as $admin) {
-            self::createLog($admin->id, $title, $message, 'tugas_lampiran');
-
             if ($admin->device_token) {
                 app(FirebaseService::class)->sendMessage($admin->device_token, $title, $message, [
                     'tipe' => 'tugas_lampiran',
@@ -154,8 +146,6 @@ class NotificationHelper
         // 🔹 Kirim juga ke USER bahwa tugasnya berhasil dikirim
         $selfTitle = 'Tugas Dikirim';
         $selfMessage = 'Kamu telah mengirim hasil tugas "' . $tugas->nama_tugas . '". Menunggu verifikasi admin.';
-        self::createLog($user->id, $selfTitle, $selfMessage, 'tugas_lampiran_dikirim');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $selfTitle, $selfMessage, [
                 'tipe' => 'tugas_lampiran_dikirim',
@@ -175,8 +165,6 @@ class NotificationHelper
         $title = 'Tugas Dihapus';
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah dihapus oleh admin.';
 
-        self::createLog($user->id, $title, $message, 'tugas_hapus');
-
         if ($user->device_token) {
             // ✅ PERBAIKAN: Kirim dengan data lengkap
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -195,8 +183,6 @@ class NotificationHelper
         $title = '✅ Tugas Selesai';
         $message = 'Kerja bagus! Tugas "' . $tugas->nama_tugas . '" telah disetujui dan statusnya diubah menjadi Selesai.';
 
-        self::createLog($user->id, $title, $message, 'tugas_selesai');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'tugas_selesai',
@@ -213,8 +199,6 @@ class NotificationHelper
     {
         $title = 'Tugas Dalam Proses';
         $message = 'Status tugas yang Anda telah upload lampiran diubah menjadi Proses. Tolong hubungi admin untuk menanyakan kejelasan.';
-
-        self::createLog($user->id, $title, $message, 'tugas_update_proses');
 
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -237,8 +221,6 @@ class NotificationHelper
         $title = '📝 Pengajuan Cuti Diterima';
         $message = 'Pengajuan cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' berhasil dikirim.';
 
-        self::createLog($user->id, $title, $message, 'cuti_diajukan');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'cuti_diajukan',
@@ -256,8 +238,6 @@ class NotificationHelper
     {
         $title = '✅ Cuti Disetujui Tahap Awal';
         $message = 'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' disetujui tahap awal.';
-
-        self::createLog($user->id, $title, $message, 'cuti_step1');
 
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -277,8 +257,6 @@ class NotificationHelper
         $title = '🎉 Cuti Disetujui Final';
         $message = 'Selamat! Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' telah disetujui.';
 
-        self::createLog($user->id, $title, $message, 'cuti_disetujui');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'cuti_disetujui',
@@ -296,8 +274,6 @@ class NotificationHelper
     {
         $title = '❌ Cuti Ditolak';
         $message = 'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' ditolak. Catatan: ' . ($cuti->catatan_penolakan ?? '-');
-
-        self::createLog($user->id, $title, $message, 'cuti_ditolak');
 
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -320,8 +296,6 @@ class NotificationHelper
         $title = '📝 Pengajuan Lembur Diterima';
         $message = 'Pengajuan lembur Anda tanggal ' . $lembur->tanggal . ' berhasil dikirim.';
 
-        self::createLog($user->id, $title, $message, 'lembur_diajukan');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'lembur_diajukan',
@@ -338,8 +312,6 @@ class NotificationHelper
     {
         $title = '✅ Lembur Disetujui Tahap Awal';
         $message = 'Lembur Anda tanggal ' . $lembur->tanggal . ' disetujui tahap awal.';
-
-        self::createLog($user->id, $title, $message, 'lembur_step1');
 
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
@@ -358,8 +330,6 @@ class NotificationHelper
         $title = '🎉 Lembur Disetujui Final';
         $message = 'Selamat! Lembur Anda tanggal ' . $lembur->tanggal . ' telah disetujui.';
 
-        self::createLog($user->id, $title, $message, 'lembur_disetujui');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'lembur_disetujui',
@@ -377,8 +347,6 @@ class NotificationHelper
         $title = '❌ Lembur Ditolak';
         $message = 'Lembur Anda tanggal ' . $lembur->tanggal . ' ditolak. Catatan: ' . ($lembur->catatan_penolakan ?? '-');
 
-        self::createLog($user->id, $title, $message, 'lembur_ditolak');
-
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'lembur_ditolak',
@@ -386,18 +354,5 @@ class NotificationHelper
                 'catatan_penolakan' => $lembur->catatan_penolakan ?? '-',
             ]);
         }
-    }
-
-    /**
-     * Utility internal: simpan notifikasi ke tabel `notifications`.
-     */
-    private static function createLog(int $userId, string $title, string $message, ?string $type = null): void
-    {
-        Notification::create([
-            'user_id' => $userId,
-            'title' => $title,
-            'message' => $message,
-            'type' => $type,
-        ]);
     }
 }
