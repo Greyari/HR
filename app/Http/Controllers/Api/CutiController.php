@@ -67,7 +67,7 @@ class CutiController extends Controller
 
         // Cek apakah user masih ada cuti yg belum selesai
         $masihAdaCuti = Cuti::where('user_id', $user->id)
-            ->whereIn('status', ['Pending', 'Proses']) // cuti yg belum final
+            ->whereIn('status', ['Pending', 'Proses'])
             ->exists();
 
         if ($masihAdaCuti) {
@@ -75,10 +75,6 @@ class CutiController extends Controller
                 'message' => 'Anda masih memiliki pengajuan cuti yang belum diproses. Selesaikan dulu sebelum mengajukan cuti baru.'
             ], 400);
         }
-
-        // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
-        $lamaCuti = Carbon::parse($request->tanggal_mulai)->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
-        // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
 
         // Buat cuti baru
         $cuti = Cuti::create([
@@ -91,12 +87,7 @@ class CutiController extends Controller
         ]);
 
         // Kirim ke user pemohon (notifikasi lokal di HP-nya)
-        NotificationHelper::sendToUser(
-            $user,
-            'Pengajuan Cuti Diterima',
-            'Pengajuan cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' berhasil dikirim',
-            'cuti'
-        );
+        NotificationHelper::sendCutiDiajukan($user, $cuti);
 
         // Kirim ke semua user dengan fitur approve tahap 1
         NotificationHelper::sendToFitur(
@@ -122,6 +113,7 @@ class CutiController extends Controller
         // Ambil fitur approve yang dimiliki user
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
+        // ====== STEP 1 APPROVE ======
         if (in_array('approve_cuti_step1', $fiturUser)) {
             // hanya bisa approve step 1
             if (!in_array($cuti->approval_step, [0, 3])) {
@@ -132,12 +124,7 @@ class CutiController extends Controller
             $cuti->save();
 
             // Kirim ke pemohon bahwa cutinya disetujui tahap awal
-            NotificationHelper::sendToUser(
-                $cuti->user,
-                'Cuti Disetujui Tahap Awal',
-                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' disetujui tahap awal',
-                'cuti'
-            );
+            NotificationHelper::sendCutiDisetujuiStep1($cuti->user, $cuti);
 
             // Kirim ke semua user yang punya fitur approve step2
             NotificationHelper::sendToFitur(
@@ -155,28 +142,19 @@ class CutiController extends Controller
             ]);
         }
 
+        // ====== STEP 2 APPROVE ======
         if (in_array('approve_cuti_step2', $fiturUser)) {
             // hanya bisa approve step 2
             if ($cuti->approval_step !== 1) {
                 return response()->json(['message' => 'Cuti harus disetujui tahap awal dulu'], 400);
             }
 
-            // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
-            $lamaCuti = Carbon::parse($cuti->tanggal_mulai)->diffInDays(Carbon::parse($cuti->tanggal_selesai)) + 1;
-            $tahun = Carbon::parse($cuti->tanggal_mulai)->year;
-            // coba liat ini boleh di hapus gakkkkkkkkkkkkkkkkkkk?////////////////
-
             $cuti->approval_step = 2;
             $cuti->status = 'Disetujui';
             $cuti->save();
 
             // Kirim ke pemohon bahwa cutinya disetujui final
-            NotificationHelper::sendToUser(
-                $cuti->user,
-                'Cuti Disetujui Final',
-                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' telah disetujui.',
-                'cuti'
-            );
+            NotificationHelper::sendCutiDisetujuiFinal($cuti->user, $cuti);
 
             return response()->json([
                 'message' => 'Cuti disetujui final',
@@ -220,12 +198,7 @@ class CutiController extends Controller
             $cuti->save();
 
             // Kirim ke pemohon bahwa cutinya ditolak
-            NotificationHelper::sendToUser(
-                $cuti->user,
-                'Cuti Ditolak',
-                'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' ditolak. Catatan: ' . $cuti->catatan_penolakan,
-                'cuti'
-            );
+            NotificationHelper::sendCutiDitolak($cuti->user, $cuti);
 
             return response()->json([
                 'message' => 'Cuti ditolak dengan catatan revisi',

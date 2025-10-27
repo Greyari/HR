@@ -153,7 +153,7 @@ class TugasController extends Controller
             // elseif ($request->status === 'Ditolak') {
             //     NotificationHelper::sendTugasDitolak($tugas->user, $tugas);
             // }
-            
+
             // Untuk status lainnya (Proses, Menunggu Admin)
             else {
                 NotificationHelper::sendToUser(
@@ -174,7 +174,6 @@ class TugasController extends Controller
 
 
     // ====== HAPUS TUGAS ======
-
     public function destroy($id)
     {
         $tugas = Tugas::with('user')->find($id);

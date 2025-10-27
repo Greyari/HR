@@ -206,24 +206,187 @@ class NotificationHelper
         }
     }
 
-    // /**
-    //  * Kirim notifikasi saat tugas ditolak oleh admin.
-    //  */
-    // public static function sendTugasDitolak($user, $tugas): void
-    // {
-    //     $title = '❌ Tugas Ditolak';
-    //     $message = 'Tugas "' . $tugas->nama_tugas . '" ditolak. Silakan perbaiki dan upload ulang.';
+    /**
+     * Kirim notifikasi saat tugas ditolak oleh admin.
+     */
+    public static function sendTugasDitolak($user, $tugas): void
+    {
+        $title = '❌ Tugas Ditolak';
+        $message = 'Tugas "' . $tugas->nama_tugas . '" ditolak. Silakan perbaiki dan upload ulang.';
 
-    //     self::createLog($user->id, $title, $message, 'tugas_ditolak');
+        self::createLog($user->id, $title, $message, 'tugas_ditolak');
 
-    //     if ($user->device_token) {
-    //         app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
-    //             'tipe' => 'tugas_ditolak',
-    //             'tugas_id' => (string) $tugas->id,
-    //             'judul' => $tugas->nama_tugas,
-    //         ]);
-    //     }
-    // }
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'tugas_ditolak',
+                'tugas_id' => (string) $tugas->id,
+                'judul' => $tugas->nama_tugas,
+            ]);
+        }
+    }
+
+    // ==========================================
+    // NOTIFIKASI CUTI
+    // ==========================================
+
+    /**
+     * Kirim notifikasi saat cuti diajukan (ke pemohon).
+     */
+    public static function sendCutiDiajukan($user, $cuti): void
+    {
+        $title = '📝 Pengajuan Cuti Diterima';
+        $message = 'Pengajuan cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' berhasil dikirim.';
+
+        self::createLog($user->id, $title, $message, 'cuti_diajukan');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'cuti_diajukan',
+                'cuti_id' => (string) $cuti->id,
+                'tanggal_mulai' => $cuti->tanggal_mulai,
+                'tanggal_selesai' => $cuti->tanggal_selesai,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat cuti disetujui tahap 1.
+     */
+    public static function sendCutiDisetujuiStep1($user, $cuti): void
+    {
+        $title = '✅ Cuti Disetujui Tahap Awal';
+        $message = 'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' disetujui tahap awal.';
+
+        self::createLog($user->id, $title, $message, 'cuti_step1');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'cuti_step1',
+                'cuti_id' => (string) $cuti->id,
+                'tanggal_mulai' => $cuti->tanggal_mulai,
+                'tanggal_selesai' => $cuti->tanggal_selesai,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat cuti disetujui final (step 2).
+     */
+    public static function sendCutiDisetujuiFinal($user, $cuti): void
+    {
+        $title = '🎉 Cuti Disetujui Final';
+        $message = 'Selamat! Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' telah disetujui.';
+
+        self::createLog($user->id, $title, $message, 'cuti_disetujui');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'cuti_disetujui',
+                'cuti_id' => (string) $cuti->id,
+                'tanggal_mulai' => $cuti->tanggal_mulai,
+                'tanggal_selesai' => $cuti->tanggal_selesai,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat cuti ditolak.
+     */
+    public static function sendCutiDitolak($user, $cuti): void
+    {
+        $title = '❌ Cuti Ditolak';
+        $message = 'Cuti Anda tanggal ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai . ' ditolak. Catatan: ' . ($cuti->catatan_penolakan ?? '-');
+
+        self::createLog($user->id, $title, $message, 'cuti_ditolak');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'cuti_ditolak',
+                'cuti_id' => (string) $cuti->id,
+                'catatan_penolakan' => $cuti->catatan_penolakan ?? '-',
+            ]);
+        }
+    }
+
+    // ==========================================
+    // NOTIFIKASI LEMBUR
+    // ==========================================
+
+    /**
+     * Kirim notifikasi saat lembur diajukan (ke pemohon).
+     */
+    public static function sendLemburDiajukan($user, $lembur): void
+    {
+        $title = '📝 Pengajuan Lembur Diterima';
+        $message = 'Pengajuan lembur Anda tanggal ' . $lembur->tanggal . ' berhasil dikirim.';
+
+        self::createLog($user->id, $title, $message, 'lembur_diajukan');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'lembur_diajukan',
+                'lembur_id' => (string) $lembur->id,
+                'tanggal' => $lembur->tanggal,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat lembur disetujui tahap 1.
+     */
+    public static function sendLemburDisetujuiStep1($user, $lembur): void
+    {
+        $title = '✅ Lembur Disetujui Tahap Awal';
+        $message = 'Lembur Anda tanggal ' . $lembur->tanggal . ' disetujui tahap awal.';
+
+        self::createLog($user->id, $title, $message, 'lembur_step1');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'lembur_step1',
+                'lembur_id' => (string) $lembur->id,
+                'tanggal' => $lembur->tanggal,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat lembur disetujui final (step 2).
+     */
+    public static function sendLemburDisetujuiFinal($user, $lembur): void
+    {
+        $title = '🎉 Lembur Disetujui Final';
+        $message = 'Selamat! Lembur Anda tanggal ' . $lembur->tanggal . ' telah disetujui.';
+
+        self::createLog($user->id, $title, $message, 'lembur_disetujui');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'lembur_disetujui',
+                'lembur_id' => (string) $lembur->id,
+                'tanggal' => $lembur->tanggal,
+            ]);
+        }
+    }
+
+    /**
+     * Kirim notifikasi saat lembur ditolak.
+     */
+    public static function sendLemburDitolak($user, $lembur): void
+    {
+        $title = '❌ Lembur Ditolak';
+        $message = 'Lembur Anda tanggal ' . $lembur->tanggal . ' ditolak. Catatan: ' . ($lembur->catatan_penolakan ?? '-');
+
+        self::createLog($user->id, $title, $message, 'lembur_ditolak');
+
+        if ($user->device_token) {
+            app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
+                'tipe' => 'lembur_ditolak',
+                'lembur_id' => (string) $lembur->id,
+                'catatan_penolakan' => $lembur->catatan_penolakan ?? '-',
+            ]);
+        }
+    }
 
     /**
      * Utility internal: simpan notifikasi ke tabel `notifications`.

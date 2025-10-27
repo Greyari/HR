@@ -86,12 +86,7 @@ class LemburController extends Controller
         ]);
 
         // Kirim ke user pemohon (notifikasi lokal di HP-nya)
-        NotificationHelper::sendToUser(
-            $user,
-            'Pengajuan Lembur Diterima',
-            'Pengajuan lembur Anda tanggal ' . $lembur->tanggal . ' berhasil dikirim.',
-            'lembur'
-        );
+        NotificationHelper::sendLemburDiajukan($user, $lembur);
 
         // Kirim ke semua user dengan fitur approve tahap 1
         NotificationHelper::sendToFitur(
@@ -120,7 +115,7 @@ class LemburController extends Controller
         // Ambil fitur approve yang dimiliki user
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        // Step 1 approve
+        // ====== STEP 1 APPROVE ======
         if (in_array('approve_lembur_step1', $fiturUser)) {
             if (!in_array($lembur->approval_step, [0, 3])) {
                 return response()->json(['message' => 'Lembur sudah diproses tahap awal'], 400);
@@ -129,13 +124,8 @@ class LemburController extends Controller
             $lembur->status = 'Proses';
             $lembur->save();
 
-            // Kirim ke pemohon bahwa cutinya disetujui tahap awal
-            NotificationHelper::sendToUser(
-                $lembur->user,
-                'Lembur Disetujui Tahap Awal',
-                'Lembur Anda tanggal ' . $lembur->tanggal . ' disetujui tahap awal.',
-                'lembur'
-            );
+            // Kirim ke pemohon bahwa lemburnya disetujui tahap awal
+            NotificationHelper::sendLemburDisetujuiStep1($lembur->user, $lembur);
 
             // Kirim ke semua user yang punya fitur approve step2
             NotificationHelper::sendToFitur(
@@ -153,6 +143,7 @@ class LemburController extends Controller
             ]);
         }
 
+        // ====== STEP 2 APPROVE ======
         if (in_array('approve_lembur_step2', $fiturUser)) {
             if ($lembur->approval_step !== 1) {
                 return response()->json(['message' => 'Lembur harus disetujui tahap awal dulu'], 400);
@@ -163,13 +154,8 @@ class LemburController extends Controller
             $lembur->save();
 
 
-            // Kirim ke pemohon bahwa cutinya disetujui final
-            NotificationHelper::sendToUser(
-                $lembur->user,
-                'Lembur Disetujui Final',
-                'Lembur Anda tanggal ' . $lembur->tanggal . ' telah disetujui.',
-                'lembur'
-            );
+            // Kirim ke pemohon bahwa lemburnya disetujui final
+            NotificationHelper::sendLemburDisetujuiFinal($lembur->user, $lembur);
 
             return response()->json([
                 'message' => 'Lembur disetujui final',
@@ -211,13 +197,8 @@ class LemburController extends Controller
             $lembur->catatan_penolakan = $request->catatan_penolakan;
             $lembur->save();
 
-            // Kirim ke pemohon bahwa cutinya ditolak
-            NotificationHelper::sendToUser(
-                $lembur->user,
-                'Lembur Ditolak',
-                'Lembur Anda tanggal ' . $lembur->tanggal . ' ditolak. Catatan: ' . $lembur->catatan_penolakan,
-                'lembur'
-            );
+            // Kirim ke pemohon bahwa lemburnya ditolak
+            NotificationHelper::sendLemburDitolak($lembur->user, $lembur);
 
             return response()->json([
                 'message'            => 'Lembur ditolak dengan catatan revisi',
