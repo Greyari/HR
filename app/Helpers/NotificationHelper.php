@@ -207,18 +207,18 @@ class NotificationHelper
     }
 
     /**
-     * Kirim notifikasi saat tugas ditolak oleh admin.
+     * Kirim notifikasi saat tugas di ubah menjadi proses.
      */
-    public static function sendTugasDitolak($user, $tugas): void
+    public static function sendTugasDiproses($user, $tugas): void
     {
-        $title = '❌ Tugas Ditolak';
-        $message = 'Tugas "' . $tugas->nama_tugas . '" ditolak. Silakan perbaiki dan upload ulang.';
+        $title = 'Tugas Dalam Proses';
+        $message = 'Status tugas yang Anda telah upload lampiran diubah menjadi Proses. Tolong hubungi admin untuk menanyakan kejelasan.';
 
-        self::createLog($user->id, $title, $message, 'tugas_ditolak');
+        self::createLog($user->id, $title, $message, 'tugas_update_proses');
 
         if ($user->device_token) {
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
-                'tipe' => 'tugas_ditolak',
+                'tipe' => 'tugas_update_proses',
                 'tugas_id' => (string) $tugas->id,
                 'judul' => $tugas->nama_tugas,
             ]);

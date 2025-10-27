@@ -149,19 +149,10 @@ class TugasController extends Controller
             if ($request->status === 'Selesai' && $statusLama !== 'Selesai') {
                 NotificationHelper::sendTugasSelesai($tugas->user, $tugas);
             }
-            // // Jika status diubah menjadi Ditolak
-            // elseif ($request->status === 'Ditolak') {
-            //     NotificationHelper::sendTugasDitolak($tugas->user, $tugas);
-            // }
 
-            // Untuk status lainnya (Proses, Menunggu Admin)
-            else {
-                NotificationHelper::sendToUser(
-                    $tugas->user,
-                    'Status Tugas Diperbarui',
-                    'Status tugas "' . $tugas->nama_tugas . '" diubah menjadi: ' . $tugas->status,
-                    'tugas'
-                );
+            // Jika status diubah menjadi Proses
+            elseif ($request->status === 'Proses' && $statusLama !== 'Proses') {
+                NotificationHelper::sendTugasDiproses($tugas->user, $tugas);
             }
         }
 
