@@ -281,22 +281,35 @@ class AuthController extends Controller
             'Authorization' => $request->header('Authorization')
         ]);
 
-        $user = $request->user();
-        if (!$user) {
-            Log::warning('Logout gagal: user null');
-            return response()->json(['message' => 'Token invalid atau expired'], 401);
+        try {
+            $user = $request->user();
+
+            if (!$user) {
+                Log::warning('Logout gagal: user null atau token tidak valid');
+                return response()->json(['message' => 'Token invalid atau expired'], 401);
+            }
+
+            Log::info('Logout user ditemukan', [
+                'user_id' => $user->id,
+                'device_token' => $user->device_token,
+            ]);
+
+            // 🧹 Hapus token device agar tidak terima push notif lagi
+            $user->update(['device_token' => null]);
+
+            // 🔥 Hapus semua personal access token (Sanctum)
+            $user->tokens()->delete();
+
+            // 🪵 Catat ke activity log
+            activity_log('Logout', 'User', "{$user->nama} logout", $user->id);
+
+            Log::info('Logout berhasil untuk user', ['user_id' => $user->id]);
+
+            return response()->json(['message' => 'Logout berhasil'], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error di logout: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan server saat logout'], 500);
         }
-
-        Log::info('Logout user ditemukan', ['user_id' => $user->id]);
-
-        $user->device_token = null;
-        $user->save();
-
-        $user->tokens()->delete();
-
-        activity_log('Logout', 'User', "{$user->nama} logout", $user->id);
-
-        return response()->json(['message' => 'Logout berhasil']);
     }
-
 }
