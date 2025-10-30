@@ -22,7 +22,6 @@ use App\Http\Controllers\Api\DepartemenController;
 use App\Http\Controllers\Api\KantorController;
 use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
-use Cloudinary\Cloudinary;
 
 // publik route
 Route::post('/login', [AuthController::class, 'login']);
@@ -184,65 +183,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user/tugas', [UserController::class, 'index']);
     Route::get('kantor/jam', [KantorController::class, 'index']);
     Route::get('/fitur', [FiturController::class, 'index']);
-});
-
-////////////////////////// ini untuk debug email di hostingan //////////////////////////////
-Route::get('/scheduler-log', function () {
-    $file = storage_path('logs/scheduler_output.log');
-    if (!file_exists($file)) {
-        return "Belum ada log scheduler.";
-    }
-    return nl2br(file_get_contents($file));
-});
-
-Route::get('/debug-env', function () {
-    return [
-        'env_func' => [
-            // Ambil dari env() tapi fallback ke $_ENV kalau env() null
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null),
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null),
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null),
-        ],
-        'trimmed' => [
-            'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null) ? trim(env('CLOUDINARY_API_KEY', $_ENV['CLOUDINARY_API_KEY'] ?? null), '"') : null,
-            'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null) ? trim(env('CLOUDINARY_API_SECRET', $_ENV['CLOUDINARY_API_SECRET'] ?? null), '"') : null,
-            'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null) ? trim(env('CLOUDINARY_CLOUD_NAME', $_ENV['CLOUDINARY_CLOUD_NAME'] ?? null), '"') : null,
-        ],
-    ];
-});
-
-Route::get('/tes-env', function () {
-    return [
-        'CLOUDINARY_KEY' => env('CLOUDINARY_API_KEY'),
-        'CLOUDINARY_SECRET' => env('CLOUDINARY_API_SECRET'),
-        'CLOUDINARY_CLOUD' => env('CLOUDINARY_CLOUD_NAME'),
-    ];
-});
-
-Route::get('/test-upload', function () {
-    // Buat instance Cloudinary langsung
-    $cloudinary = new Cloudinary([
-        'cloud' => [
-            'cloud_name' => config('cloudinary.cloud.cloud_name'),
-            'api_key'    => config('cloudinary.cloud.api_key'),
-            'api_secret' => config('cloudinary.cloud.api_secret'),
-        ],
-        'url' => [
-            'secure' => true,
-        ],
-    ]);
-
-    // Path file lokal
-    $path = storage_path('app/public/videos/tes.mp4');
-
-    // Upload video
-    $result = $cloudinary->uploadApi()->upload($path, [
-        'resource_type' => 'video',
-        'folder'        => 'tugas/videos',
-    ]);
-
-    return response()->json([
-        'message' => 'Upload berhasil!',
-        'result'  => $result,
-    ]);
 });

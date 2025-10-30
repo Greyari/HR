@@ -8,8 +8,9 @@ use App\Models\Absensi;
 use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Cloudinary\Api\Upload\UploadApi;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+// use Cloudinary\Api\Upload\UploadApi;
+// use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class AbsensiController extends Controller
@@ -120,35 +121,34 @@ class AbsensiController extends Controller
         $status = $checkinDateTime->lte($toleransi) ? 'Tepat Waktu' : 'Terlambat';
 
         // ================================
-        // Upload video ke Cloudinary
+        // Upload video ke Lokal
         // ================================
         $videoUrl = null;
 
         try {
             if ($request->hasFile('video_user')) {
-                $result = (new UploadApi())->upload(
-                    $request->file('video_user')->getRealPath(),
-                    [
-                        'resource_type' => 'video',
-                        'folder'        => 'absensi/video',
-                    ]
-                );
-                $videoUrl = $result['secure_url'];
-
+                // simpan di disk public
+                $path = $request->file('video_user')->store('absensi', 'public');
+                $videoUrl = Storage::url($path);
             } elseif ($request->filled('video_base64')) {
                 $videoData = base64_decode($request->video_base64);
-                $tmpPath = sys_get_temp_dir() . '/' . uniqid() . '.mp4';
-                file_put_contents($tmpPath, $videoData);
-
-                $result = (new UploadApi())->upload(
-                    $tmpPath,
-                    [
-                        'resource_type' => 'video',
-                        'folder'        => 'absensi/video',
-                    ]
-                );
-                $videoUrl = $result['secure_url'];
+                $fileName = uniqid() . '.mp4';
+                $filePath = 'absensi/' . $fileName;
+                Storage::disk('public')->put($filePath, $videoData);
+                $videoUrl = Storage::url($filePath);
             }
+            if ($request->hasFile('video_user')) {
+                // simpan di disk public
+                $path = $request->file('video_user')->store('absensi/video', 'public');
+                $videoUrl = Storage::url($path);
+            } elseif ($request->filled('video_base64')) {
+                $videoData = base64_decode($request->video_base64);
+                $fileName = uniqid() . '.mp4';
+                $filePath = 'absensi/' . $fileName;
+                Storage::disk('public')->put($filePath, $videoData);
+                $videoUrl = Storage::url($filePath);
+            }
+
         } catch (\Exception $e) {
             Log::error('Upload video gagal: ' . $e->getMessage());
 
@@ -165,7 +165,7 @@ class AbsensiController extends Controller
             'checkin_lng'  => $request->lng,
             'checkin_date' => $checkinDate,
             'checkin_time' => $checkinTime,
-            'video_user'   => $videoUrl, // sekarang URL Cloudinary
+            'video_user'   => $videoUrl,
             'status'       => $status,
         ]);
 

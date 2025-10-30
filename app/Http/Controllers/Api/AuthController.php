@@ -80,7 +80,7 @@ class AuthController extends Controller
         $agent = new Agent();
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        $platform = $request->input('platform'); // dikirim dari frontend (web/apk)
+        $platform = $request->input('platform'); 
         if (!$platform) {
             if ($agent->isDesktop()) $platform = 'web';
             elseif ($agent->isMobile()) $platform = 'apk';
@@ -144,7 +144,7 @@ class AuthController extends Controller
                     ], 403);
                 }
 
-                // ✅ Simpan atau perbarui data device user ini
+                // Simpan atau perbarui data device user ini
                 $device = Device::updateOrCreate(
                     ['device_hash' => $request->device_hash],
                     [
@@ -196,7 +196,6 @@ class AuthController extends Controller
     public function updateEmail(Request $request)
     {
         // Dapatkan pengguna yang sedang login
-        // $user = Auth::user();
         $user = User::find(Auth::id());
 
         // Validasi input
@@ -294,13 +293,13 @@ class AuthController extends Controller
                 'device_token' => $user->device_token,
             ]);
 
-            // 🧹 Hapus token device agar tidak terima push notif lagi
+            // Hapus token device agar tidak terima push notif lagi
             $user->update(['device_token' => null]);
 
-            // 🔥 Hapus semua personal access token (Sanctum)
+            // Hapus semua personal access token (Sanctum)
             $user->tokens()->delete();
 
-            // 🪵 Catat ke activity log
+            // Catat ke activity log
             activity_log('Logout', 'User', "{$user->nama} logout", $user->id);
 
             Log::info('Logout berhasil untuk user', ['user_id' => $user->id]);

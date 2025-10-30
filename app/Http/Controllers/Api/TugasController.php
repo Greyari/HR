@@ -7,8 +7,9 @@ use App\Helpers\NotificationHelper;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Cloudinary\Api\Admin\AdminApi;
-use Cloudinary\Api\Upload\UploadApi;
+use Illuminate\Support\Facades\Storage;
+// use Cloudinary\Api\Admin\AdminApi;
+// use Cloudinary\Api\Upload\UploadApi;
 
 class TugasController extends Controller
 {
@@ -173,20 +174,16 @@ class TugasController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
-        // ✅ Simpan data user sebelum tugas dihapus
+        // Simpan data user sebelum tugas dihapus
         $tugasUser = $tugas->user;
         $tugasStatus = $tugas->status;
         $tugasNama = $tugas->nama_tugas;
         $tugasId = $tugas->id;
 
-        // Hapus lampiran dari Cloudinary jika ada
+        // Hapus lampiran dari lokal jika ada
         if ($tugas->lampiran) {
-            try {
-                $publicId = pathinfo(parse_url($tugas->lampiran)['path'], PATHINFO_FILENAME);
-                (new AdminApi())->deleteAssets([$publicId]);
-            } catch (\Exception $e) {
-                // jika gagal hapus, abaikan
-            }
+            $oldPath = str_replace('/storage/', 'public/', $tugas->lampiran);
+            Storage::delete($oldPath);
         }
 
         // Hapus tugas dari database
@@ -249,16 +246,8 @@ class TugasController extends Controller
                 default                    => 'tugas/files',
             };
 
-            $result = (new UploadApi())->upload(
-                $file->getRealPath(),
-                [
-                    'resource_type' => in_array($extension, ['jpg', 'jpeg', 'png']) ? 'image' :
-                                      (in_array($extension, ['mp4', 'mov', 'avi', '3gp']) ? 'video' : 'raw'),
-                    'folder'        => $folder,
-                ]
-            );
-
-            $tugas->lampiran = $result['secure_url'];
+            $path = $file->store($folder, 'public');   // simpan di disk 'public'
+            $tugas->lampiran = Storage::url($path);    // URL publik
 
             // === CATAT WAKTU UPLOAD & HITUNG KETERLAMBATAN ===
             $now = now();

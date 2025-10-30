@@ -25,7 +25,6 @@ use App\Observers\LemburObserver;
 use App\Observers\PengingatObservers;
 use App\Observers\PotonganGajiObserver;
 use App\Observers\TugasObserver;
-use App\Observers\AuthObserver;
 use App\Observers\PeranObserver;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
