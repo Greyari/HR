@@ -16,7 +16,7 @@ class FirebaseService
     {
         // Inisialisasi Google Client
         $this->client = new Client();
-        $this->client->setAuthConfig(storage_path(config('services.firebase.credentials')));
+        $this->client->setAuthConfig(config('firebase.projects.app.credentials'));
         $this->client->addScope('https://www.googleapis.com/auth/firebase.messaging');
 
         $this->messaging = new FirebaseCloudMessaging($this->client);

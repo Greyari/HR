@@ -50,7 +50,7 @@ return [
              *
              */
 
-            'credentials' => storage_path('firebase/fcm-hris-5763a-firebase-adminsdk-fbsvc-8486f7912a.json'),
+            'credentials' => storage_path('firebase/fcm-hris-5763a-9d6e182663f4.json'),
 
             /*
              * ------------------------------------------------------------------------
