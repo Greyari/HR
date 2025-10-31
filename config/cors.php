@@ -11,12 +11,12 @@ return [
     'paths' => [
         'api/*',
         'sanctum/csrf-cookie',
-        'storage/*', 
+        'storage/*',
     ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'], // Bisa juga kamu batasi nanti misalnya ['http://localhost:49849']
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
