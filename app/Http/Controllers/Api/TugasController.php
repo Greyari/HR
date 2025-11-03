@@ -180,10 +180,10 @@ class TugasController extends Controller
         $tugasNama = $tugas->nama_tugas;
         $tugasId = $tugas->id;
 
-        // Hapus lampiran dari lokal jika ada
+        // Hapus lampiran dari storage jika ada
         if ($tugas->lampiran) {
-            $oldPath = str_replace('/storage/', 'public/', $tugas->lampiran);
-            Storage::delete($oldPath);
+            $filePath = str_replace('/storage/', '', $tugas->lampiran); // "tugas/images/xxx.png"
+            Storage::disk('public')->delete($filePath);
         }
 
         // Hapus tugas dari database
@@ -237,6 +237,13 @@ class TugasController extends Controller
         $tugas->lampiran_lng = $request->lampiran_lng;
 
         if ($request->hasFile('lampiran')) {
+
+            // Hapus lampiran lama terlebih dahulu jika ada
+            if ($tugas->lampiran) {
+                $oldPath = str_replace('/storage/', '', $tugas->lampiran);
+                Storage::disk('public')->delete($oldPath);
+            }
+
             $file = $request->file('lampiran');
             $extension = strtolower($file->getClientOriginalExtension());
 
@@ -246,8 +253,8 @@ class TugasController extends Controller
                 default                    => 'tugas/files',
             };
 
-            $path = $file->store($folder, 'public');   // simpan di disk 'public'
-            $tugas->lampiran = Storage::url($path);    // URL publik
+            $path = $file->store($folder, 'public');
+            $tugas->lampiran = Storage::url($path);
 
             // === CATAT WAKTU UPLOAD & HITUNG KETERLAMBATAN ===
             $now = now();
@@ -255,9 +262,8 @@ class TugasController extends Controller
 
             // Jika lewat dari batas penugasan → terlambat
             if ($now->gt($tugas->batas_penugasan)) {
-                $diffInMinutes = $tugas->batas_penugasan->diffInMinutes($now);
                 $tugas->terlambat = true;
-                $tugas->menit_terlambat = $diffInMinutes;
+                $tugas->menit_terlambat = $tugas->batas_penugasan->diffInMinutes($now);
             } else {
                 $tugas->terlambat = false;
                 $tugas->menit_terlambat = 0;
@@ -279,12 +285,12 @@ class TugasController extends Controller
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
         return response()->json([
-            'message'         => 'Lampiran berhasil diupload!',
-            'data'            => $tugas,
-            'file_url'        => $tugas->lampiran,
-            'terlambat'       => $tugas->terlambat,
+            'message' => 'Lampiran berhasil diupload!',
+            'data'    => $tugas,
+            'file_url' => $tugas->lampiran,
+            'terlambat' => $tugas->terlambat,
             'menit_terlambat' => $tugas->menit_terlambat,
-            'waktu_upload'    => $tugas->waktu_upload,
+            'waktu_upload' => $tugas->waktu_upload,
         ]);
     }
 

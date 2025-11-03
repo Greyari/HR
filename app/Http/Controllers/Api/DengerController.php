@@ -10,6 +10,7 @@ use App\Models\Lembur;
 use App\Models\Gaji;
 use App\Models\Tugas;
 use App\Models\LogAktivitas;
+use Illuminate\Support\Facades\Storage;
 
 class DengerController extends Controller
 {
@@ -134,19 +135,32 @@ class DengerController extends Controller
             'tahun' => 'required|integer|min:2000|max:2100',
         ]);
 
-        $query = Tugas::whereYear('created_at', $request->tahun)
-            ->whereMonth('created_at', $request->bulan);
+        $tugasList = Tugas::whereYear('created_at', $request->tahun)
+            ->whereMonth('created_at', $request->bulan)
+            ->get();
 
-        if (!$query->exists()) {
+        if ($tugasList->isEmpty()) {
             return response()->json([
                 'message' => "Data tugas bulan {$request->bulan} tahun {$request->tahun} tidak ditemukan"
             ], 404);
         }
 
-        $deleted = $query->delete();
+        // Hapus file storage satu per satu
+        foreach ($tugasList as $tugas) {
+            if ($tugas->lampiran) {
+                $parsed = parse_url($tugas->lampiran, PHP_URL_PATH);
+                $filePath = str_replace('/storage/', '', $parsed); // hasil: "tugas/images/xxx.png"
+                Storage::disk('public')->delete($filePath);
+            }
+        }
+
+        // Hapus data di database
+        $deletedCount = Tugas::whereYear('created_at', $request->tahun)
+            ->whereMonth('created_at', $request->bulan)
+            ->delete();
 
         return response()->json([
-            'message' => "Sebanyak $deleted data tugas bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
+            'message' => "Sebanyak $deletedCount data tugas + semua file lampiran berhasil dihapus."
         ]);
     }
 
@@ -208,19 +222,30 @@ class DengerController extends Controller
             'tahun' => 'required|integer|min:2000|max:2100',
         ]);
 
-        $query = Absensi::whereYear('created_at', $request->tahun)
-            ->whereMonth('created_at', $request->bulan);
+        $absensis = Absensi::whereYear('created_at', $request->tahun)
+            ->whereMonth('created_at', $request->bulan)
+            ->get();
 
-        if (!$query->exists()) {
+        if ($absensis->isEmpty()) {
             return response()->json([
                 'message' => "Absensi bulan {$request->bulan} tahun {$request->tahun} tidak ditemukan"
             ], 404);
         }
 
-        $deleted = $query->delete();
+        // Hapus file videonya dulu
+        foreach ($absensis as $absen) {
+            if (!empty($absen->video_user)) {
+                // Convert URL ke path relatif yang bisa dihapus
+                $filePath = str_replace('/storage/', '', $absen->video_user);
+                Storage::disk('public')->delete($filePath);
+            }
+        }
+
+        // Baru hapus data dari database
+        $deleted = Absensi::whereIn('id', $absensis->pluck('id'))->delete();
 
         return response()->json([
-            'message' => "Sebanyak $deleted absensi bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
+            'message' => "Sebanyak $deleted absensi bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus (beserta videonya)"
         ]);
     }
 

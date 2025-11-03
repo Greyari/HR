@@ -128,17 +128,6 @@ class AbsensiController extends Controller
         try {
             if ($request->hasFile('video_user')) {
                 // simpan di disk public
-                $path = $request->file('video_user')->store('absensi', 'public');
-                $videoUrl = Storage::url($path);
-            } elseif ($request->filled('video_base64')) {
-                $videoData = base64_decode($request->video_base64);
-                $fileName = uniqid() . '.mp4';
-                $filePath = 'absensi/' . $fileName;
-                Storage::disk('public')->put($filePath, $videoData);
-                $videoUrl = Storage::url($filePath);
-            }
-            if ($request->hasFile('video_user')) {
-                // simpan di disk public
                 $path = $request->file('video_user')->store('absensi/video', 'public');
                 $videoUrl = Storage::url($path);
             } elseif ($request->filled('video_base64')) {
