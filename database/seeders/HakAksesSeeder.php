@@ -25,12 +25,14 @@ class HakAksesSeeder extends Seeder
                 'lihat_lembur_sendiri',
                 'lihat_cuti_sendiri',
                 'lihat_tugas_sendiri',
-                // 'tambah_lampiran_tugas',
+                'tambah_lampiran_tugas',
             ])->pluck('nama_fitur')->toArray(),
 
             // Admin Office Website
             'Admin Office Website' => [
                 'web',
+                'tambah_cuti',
+                'tambah_lembur',
                 'approve_cuti_step1',
                 'approve_lembur_step1',
                 'approve_cuti',
@@ -41,7 +43,6 @@ class HakAksesSeeder extends Seeder
                 'lihat_lembur',
                 'lihat_cuti',
                 'lihat_semua_cuti',
-                'karyawan',
                 'ubah_status_tugas',
                 'tambah_tugas',
                 'edit_tugas',
@@ -50,12 +51,15 @@ class HakAksesSeeder extends Seeder
                 'lihat_tugas',
                 'gaji',
                 'potongan_gaji',
-                'lihat_semua_absensi',
+                'absensi',
+                'lihat_absensi_sendiri',
             ],
 
             // Admin Office Aplikasi
             'Admin Office Aplikasi' => [
                 'apk',
+                'tambah_cuti',
+                'tambah_lembur',
                 'approve_cuti_step1',
                 'approve_lembur_step1',
                 'approve_cuti',
@@ -66,7 +70,6 @@ class HakAksesSeeder extends Seeder
                 'lihat_lembur',
                 'lihat_cuti',
                 'lihat_semua_cuti',
-                'karyawan',
                 'ubah_status_tugas',
                 'tambah_tugas',
                 'edit_tugas',
@@ -75,7 +78,8 @@ class HakAksesSeeder extends Seeder
                 'lihat_tugas',
                 'gaji',
                 'potongan_gaji',
-                'lihat_semua_absensi',
+                'absensi',
+                'lihat_absensi_sendiri',
             ],
 
             // Teknisi Website
