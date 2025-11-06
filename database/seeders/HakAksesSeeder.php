@@ -26,6 +26,8 @@ class HakAksesSeeder extends Seeder
                 'lihat_cuti_sendiri',
                 'lihat_tugas_sendiri',
                 'tambah_lampiran_tugas',
+                'absensi',
+                'lihat_absensi_sendiri',
             ])->pluck('nama_fitur')->toArray(),
 
             // Admin Office Website
