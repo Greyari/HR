@@ -15,22 +15,14 @@ class Kernel extends ConsoleKernel
         Log::channel('scheduler')->info('[Scheduler] schedule() dipanggil');
 
         if (app()->environment('production')) {
-            $kantor = DB::table('kantor')->first();
-
-            if ($kantor && $kantor->jam_masuk) {
-                $jamMasuk = Carbon::createFromFormat('H:i:s', $kantor->jam_masuk)->format('H:i');
-
-                $schedule->command('pengingat:kirim')
-                    ->dailyAt($jamMasuk)
-                    ->before(function () use ($jamMasuk) {
-                        Log::channel('scheduler')->info("[PRODUCTION] pengingat:kirim akan dijalankan jam {$jamMasuk}");
-                    })
-                    ->after(function () {
-                        Log::channel('scheduler')->info('[PRODUCTION] pengingat:kirim selesai dijalankan pada ' . now());
-                    });
-            } else {
-                Log::channel('scheduler')->warning('[Scheduler] Data kantor tidak ditemukan atau jam_masuk kosong');
-            }
+            $schedule->command('pengingat:kirim')
+                ->dailyAt('08:00')
+                ->before(function () {
+                    Log::channel('scheduler')->info("[PRODUCTION] pengingat:kirim akan dijalankan jam 08:00");
+                })
+                ->after(function () {
+                    Log::channel('scheduler')->info('[PRODUCTION] pengingat:kirim selesai dijalankan pada ' . now());
+                });
         } else {
             $schedule->command('pengingat:kirim')
                 ->everyMinute()
