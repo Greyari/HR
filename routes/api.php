@@ -20,8 +20,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CutiController;
 use App\Http\Controllers\Api\DepartemenController;
 use App\Http\Controllers\Api\KantorController;
-use App\Http\Middleware\CheckFitur;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\CheckFitur;
 
 // publik route
 Route::post('/login', [AuthController::class, 'login']);

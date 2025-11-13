@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class KaryawanObserver
 {
@@ -35,7 +36,7 @@ class KaryawanObserver
             'remember_token',
             'coba_login',
             'last_login',
-            'device_token', 
+            'device_token',
         ];
 
         // kalau semua perubahan ada di daftar ignore → skip log
@@ -69,6 +70,15 @@ class KaryawanObserver
                 );
             }
         }
+    }
+
+    /**
+     * Event sebelum user dihapus.
+     * Di sini kita hapus semua log milik user itu supaya tidak error null.
+     */
+    public function deleting(User $user): void
+    {
+        Activity::where('user_id', $user->id)->delete();
     }
 
     /**

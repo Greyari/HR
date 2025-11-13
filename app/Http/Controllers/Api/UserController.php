@@ -73,7 +73,7 @@ class UserController extends Controller
     }
 
     // Update User
-    public function update (Request $request, $id)
+    public function update(Request $request, $id)
     {
         $user = User::find($id);
 
@@ -87,14 +87,15 @@ class UserController extends Controller
             'jabatan_id' => 'nullable|exists:jabatan,id',
             'departemen_id' => 'nullable|exists:departemen,id',
             'gaji_per_hari' => 'numeric|min:0',
-            'npwp' => ['nullable', 'string', Rule::unique('users','npwp')->ignore($user->id)],
-            'bpjs_kesehatan' => ['nullable', 'string', Rule::unique('users','bpjs_kesehatan')->ignore($user->id)],
-            'bpjs_ketenagakerjaan' => ['nullable', 'string', Rule::unique('users','bpjs_ketenagakerjaan')->ignore($user->id)],
+            'npwp' => ['nullable', 'string', Rule::unique('users', 'npwp')->ignore($user->id)],
+            'bpjs_kesehatan' => ['nullable', 'string', Rule::unique('users', 'bpjs_kesehatan')->ignore($user->id)],
+            'bpjs_ketenagakerjaan' => ['nullable', 'string', Rule::unique('users', 'bpjs_ketenagakerjaan')->ignore($user->id)],
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
             'status_pernikahan' => 'nullable|in:Menikah,Belum Menikah',
+            'password' => 'nullable|string|min:6', 
         ]);
 
-        $user->update($request->only([
+        $data = $request->only([
             'nama',
             'peran_id',
             'jabatan_id',
@@ -105,7 +106,14 @@ class UserController extends Controller
             'bpjs_ketenagakerjaan',
             'jenis_kelamin',
             'status_pernikahan'
-        ]));
+        ]);
+
+        // Jika admin isi password baru, hash dulu
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
+
+        $user->update($data);
 
         return response()->json([
             'message' => 'User berhasil diperbarui',
