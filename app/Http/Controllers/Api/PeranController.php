@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Peran;
 use App\Models\Pengaturan;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PeranController extends Controller
@@ -124,14 +125,10 @@ class PeranController extends Controller
             ], 404);
         }
 
-        if ($peran->users()->count() > 0) {
-            return response()->json([
-                'message' => $bahasa === 'indonesia'
-                    ? 'Peran masih digunakan oleh user, tidak bisa dihapus'
-                    : 'This role is still assigned to users and cannot be deleted',
-            ], 400);
-        }
+        // Hapus relasi dari user (set null dulu agar aman)
+        User::where('peran_id', $id)->update(['peran_id' => null]);
 
+        // Baru hapus peran
         $peran->delete();
 
         return response()->json([

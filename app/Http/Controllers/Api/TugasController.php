@@ -5,18 +5,27 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Helpers\NotificationHelper;
 use App\Models\Tugas;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-// use Cloudinary\Api\Admin\AdminApi;
-// use Cloudinary\Api\Upload\UploadApi;
 
 class TugasController extends Controller
 {
+    /**
+     * Ambil bahasa user dari tabel pengaturan
+     */
+    private function getUserLanguage()
+    {
+        $user = Auth::user();
+        return Pengaturan::where('user_id', $user->id)->value('bahasa') ?? 'indonesia';
+    }
+
     // ====== LIST SEMUA TUGAS ======
     public function index()
     {
         $user = Auth::user();
+        $bahasa = $this->getUserLanguage();
         $fiturUser = $user->peran->fitur->pluck('nama_fitur');
 
         if ($fiturUser->contains('lihat_semua_tugas')) {
@@ -24,7 +33,11 @@ class TugasController extends Controller
         } elseif ($fiturUser->contains('lihat_tugas_sendiri')) {
             $tugas = Tugas::with('user')->where('user_id', $user->id)->latest()->get();
         } else {
-            return response()->json(['message' => 'Anda tidak punya akses untuk melihat tugas'], 403);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'Anda tidak punya akses untuk melihat tugas'
+                    : 'You do not have access to view tasks'
+            ], 403);
         }
 
         $tugas->transform(function ($item) {
@@ -33,14 +46,18 @@ class TugasController extends Controller
         });
 
         return response()->json([
-            'message' => 'Data tugas berhasil diambil',
-            'data'    => $tugas
+            'message' => $bahasa === 'indonesia'
+                ? 'Data tugas berhasil diambil'
+                : 'Task data retrieved successfully',
+            'data' => $tugas
         ]);
     }
 
     // ====== SIMPAN TUGAS BARU ======
     public function store(Request $request)
     {
+        $bahasa = $this->getUserLanguage();
+
         $validated = $request->validate([
             'user_id'             => 'required|exists:users,id',
             'nama_tugas'          => 'required|string|max:255',
@@ -50,42 +67,43 @@ class TugasController extends Controller
             'tugas_lat'           => 'required|numeric',
             'tugas_lng'           => 'required|numeric',
             'radius_meter'        => 'required|integer|min:10',
-        ], [
-            'user_id.required' => 'User harus dipilih.',
-            'user_id.exists' => 'User yang dipilih tidak valid.',
-            'nama_tugas.required' => 'Nama tugas wajib diisi.',
-            'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
-            'batas_penugasan.required' => 'Batas penugasan wajib diisi.',
-            'batas_penugasan.after_or_equal' => 'Batas penugasan harus setelah atau sama dengan tanggal penugasan.',
-            'radius_meter.integer' => 'Radius harus berupa angka bulat.',
-            'radius_meter.min' => 'Radius minimal adalah 10 meter.',
         ]);
 
         $validated['status'] = 'Proses';
 
         $tugas = Tugas::create($validated);
 
-        // Kirim notifikasi ke user yang ditugaskan
+        // Kirim notifikasi
         NotificationHelper::sendTugasBaru(
             $tugas->user,
-            'Tugas Baru Diberikan',
-            'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
+            $bahasa === 'indonesia' ? 'Tugas Baru Diberikan' : 'New Task Assigned',
+            ($bahasa === 'indonesia'
+                ? 'Anda mendapat tugas baru: '
+                : 'You have received a new task: ') . $tugas->nama_tugas,
             $tugas
         );
 
         return response()->json([
-            'message' => 'Tugas berhasil dibuat',
-            'data'    => $tugas->load('user')
+            'message' => $bahasa === 'indonesia'
+                ? 'Tugas berhasil dibuat'
+                : 'Task created successfully',
+            'data' => $tugas->load('user')
         ], 201);
     }
 
     // ====== UPDATE TUGAS ======
     public function update(Request $request, $id)
     {
+        $bahasa = $this->getUserLanguage();
+
         $tugas = Tugas::with('user')->find($id);
 
         if (!$tugas) {
-            return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'Tugas tidak ditemukan'
+                    : 'Task not found',
+            ], 404);
         }
 
         $validated = $request->validate([
@@ -98,67 +116,48 @@ class TugasController extends Controller
             'tugas_lat'           => 'sometimes|numeric',
             'tugas_lng'           => 'sometimes|numeric',
             'radius_meter'        => 'sometimes|integer|min:10',
-        ], [
-            'user_id.exists' => 'User yang dipilih tidak valid.',
-            'nama_tugas.required' => 'Nama tugas wajib diisi.',
-            'nama_tugas.string' => 'Nama tugas harus berupa teks.',
-            'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
-            'tanggal_penugasan.date' => 'Tanggal penugasan harus berupa format tanggal yang valid.',
-            'batas_penugasan.required' => 'Batas penugasan wajib diisi.',
-            'batas_penugasan.date' => 'Batas penugasan harus berupa format tanggal yang valid.',
-            'batas_penugasan.after_or_equal' => 'Batas penugasan harus setelah atau sama dengan tanggal penugasan.',
-            'instruksi_tugas.string' => 'Instruksi tugas harus berupa teks.',
-            'status.in' => 'Status tugas hanya boleh: Proses, Selesai, atau Menunggu Admin.',
-            'tugas_lat.numeric' => 'Koordinat latitude harus berupa angka.',
-            'tugas_lng.numeric' => 'Koordinat longitude harus berupa angka.',
-            'radius_meter.integer' => 'Radius harus berupa angka bulat.',
-            'radius_meter.min' => 'Radius minimal adalah 10 meter.',
         ]);
 
-        $userLama = $tugas->user; // simpan PIC lama sebelum diubah
+        $userLama = $tugas->user;
         $isPICChanged = isset($validated['user_id']) && $userLama->id !== $validated['user_id'];
 
-        // Jalankan update ke database
         $tugas->update($validated);
+        $tugas->refresh()->load('user');
 
-        // Refresh agar relasi dan data terbarui
-        $tugas->refresh();
-        $tugas->load('user');
-
-        // ==== CEK APAKAH PIC DIGANTI ====
+        // Kirim notifikasi tergantung perubahan PIC
         if ($isPICChanged) {
-            // 🔸 Kirim notif ke user lama bahwa tugas sudah dialihkan
-            // ✅ PENTING: Pastikan user lama masih ada device_token
             if ($userLama->device_token) {
                 NotificationHelper::sendTugasDialihkan($userLama, $tugas);
             }
-
-            // 🔸 Kirim notif ke user baru bahwa dia dapat tugas baru
             if ($tugas->user->device_token) {
                 NotificationHelper::sendTugasBaru(
                     $tugas->user,
-                    'Tugas Baru Diberikan',
-                    'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
+                    $bahasa === 'indonesia' ? 'Tugas Baru Diberikan' : 'New Task Assigned',
+                    ($bahasa === 'indonesia'
+                        ? 'Anda mendapat tugas baru: '
+                        : 'You have received a new task: ') . $tugas->nama_tugas,
                     $tugas
                 );
             }
-
         } else {
-            // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa
             if ($tugas->user->device_token) {
                 NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
             }
         }
 
         return response()->json([
-            'message' => 'Tugas berhasil diperbarui',
-            'data'    => $tugas
+            'message' => $bahasa === 'indonesia'
+                ? 'Tugas berhasil diperbarui'
+                : 'Task updated successfully',
+            'data' => $tugas
         ]);
     }
 
     // ====== UPDATE STATUS ======
     public function updateStatus(Request $request, $id)
     {
+        $bahasa = $this->getUserLanguage();
+
         $request->validate([
             'status' => 'required|in:Selesai,Menunggu Admin,Proses,Ditolak'
         ]);
@@ -168,70 +167,71 @@ class TugasController extends Controller
         $tugas->status = $request->status;
         $tugas->save();
 
-        // 🔹 Kirim notifikasi ke user berdasarkan perubahan status
         if ($tugas->user && $tugas->user->device_token) {
-            // Jika status diubah menjadi Selesai
             if ($request->status === 'Selesai' && $statusLama !== 'Selesai') {
                 NotificationHelper::sendTugasSelesai($tugas->user, $tugas);
-            }
-
-            // Jika status diubah menjadi Proses
-            elseif ($request->status === 'Proses' && $statusLama !== 'Proses') {
+            } elseif ($request->status === 'Proses' && $statusLama !== 'Proses') {
                 NotificationHelper::sendTugasDiproses($tugas->user, $tugas);
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Status tugas berhasil diperbarui',
-            'data'    => $tugas
+            'message' => $bahasa === 'indonesia'
+                ? 'Status tugas berhasil diperbarui'
+                : 'Task status updated successfully',
+            'data' => $tugas
         ]);
     }
-
 
     // ====== HAPUS TUGAS ======
     public function destroy($id)
     {
+        $bahasa = $this->getUserLanguage();
         $tugas = Tugas::with('user')->find($id);
 
         if (!$tugas) {
-            return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'Tugas tidak ditemukan'
+                    : 'Task not found',
+            ], 404);
         }
 
-        // Simpan data user sebelum tugas dihapus
         $tugasUser = $tugas->user;
         $tugasStatus = $tugas->status;
         $tugasNama = $tugas->nama_tugas;
         $tugasId = $tugas->id;
 
-        // Hapus lampiran dari storage jika ada
         if ($tugas->lampiran) {
-            $filePath = str_replace('/storage/', '', $tugas->lampiran); // "tugas/images/xxx.png"
+            $filePath = str_replace('/storage/', '', $tugas->lampiran);
             Storage::disk('public')->delete($filePath);
         }
 
-        // Hapus tugas dari database
         $tugas->delete();
 
-        // 🔹 Kirim notifikasi ke user SETELAH tugas dihapus (jika belum selesai)
         if ($tugasUser && $tugasUser->device_token && $tugasStatus !== 'Selesai') {
-            // Buat object temporary untuk notifikasi
-            $tugasTemp = (object) [
+            $tugasTemp = (object)[
                 'id' => $tugasId,
                 'nama_tugas' => $tugasNama,
                 'status' => $tugasStatus,
                 'user' => $tugasUser
             ];
-
             NotificationHelper::sendTugasDihapus($tugasUser, $tugasTemp);
         }
 
-        return response()->json(['message' => 'Tugas berhasil dihapus']);
+        return response()->json([
+            'message' => $bahasa === 'indonesia'
+                ? 'Tugas berhasil dihapus'
+                : 'Task deleted successfully',
+        ]);
     }
 
     // ====== UPLOAD LAMPIRAN ======
     public function uploadLampiran(Request $request, $id)
     {
+        $bahasa = $this->getUserLanguage();
+
         $request->validate([
             'lampiran'     => 'required|file|max:204800',
             'lampiran_lat' => 'required|numeric',
@@ -241,7 +241,11 @@ class TugasController extends Controller
         $tugas = Tugas::findOrFail($id);
 
         if (!$tugas->tugas_lat || !$tugas->tugas_lng) {
-            return response()->json(['message' => 'Tugas ini belum memiliki lokasi koordinat.'], 422);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'Tugas ini belum memiliki lokasi koordinat.'
+                    : 'This task does not have location coordinates yet.',
+            ], 422);
         }
 
         $distance = $this->calculateDistance(
@@ -253,25 +257,22 @@ class TugasController extends Controller
 
         if ($distance > $tugas->radius_meter) {
             return response()->json([
-                'message' => 'Upload gagal. Lokasi Anda berada di luar radius tugas (' . round($distance, 2) . ' m).',
+                'message' => $bahasa === 'indonesia'
+                    ? 'Upload gagal. Lokasi Anda berada di luar radius tugas (' . round($distance, 2) . ' m).'
+                    : 'Upload failed. You are outside the task radius (' . round($distance, 2) . ' m).',
             ], 403);
         }
 
-        $tugas->lampiran_lat = $request->lampiran_lat;
-        $tugas->lampiran_lng = $request->lampiran_lng;
-
+        // === PROSES UPLOAD ===
         if ($request->hasFile('lampiran')) {
-
-            // Hapus lampiran lama terlebih dahulu jika ada
             if ($tugas->lampiran) {
                 $oldPath = str_replace('/storage/', '', $tugas->lampiran);
                 Storage::disk('public')->delete($oldPath);
             }
 
             $file = $request->file('lampiran');
-            $extension = strtolower($file->getClientOriginalExtension());
-
-            $folder = match ($extension) {
+            $ext = strtolower($file->getClientOriginalExtension());
+            $folder = match ($ext) {
                 'mp4', 'mov', 'avi', '3gp' => 'tugas/videos',
                 'jpg', 'jpeg', 'png'       => 'tugas/images',
                 default                    => 'tugas/files',
@@ -283,34 +284,30 @@ class TugasController extends Controller
             // === CATAT WAKTU UPLOAD & HITUNG KETERLAMBATAN ===
             $now = now();
             $tugas->waktu_upload = $now;
-
-            // Jika lewat dari batas penugasan → terlambat
-            if ($now->gt($tugas->batas_penugasan)) {
-                $tugas->terlambat = true;
-                $tugas->menit_terlambat = $tugas->batas_penugasan->diffInMinutes($now);
-            } else {
-                $tugas->terlambat = false;
-                $tugas->menit_terlambat = 0;
-            }
-
+            $tugas->terlambat = $now->gt($tugas->batas_penugasan);
+            $tugas->menit_terlambat = $tugas->terlambat
+                ? $tugas->batas_penugasan->diffInMinutes($now)
+                : 0;
             $tugas->status = "Menunggu Admin";
             $tugas->save();
         }
 
-        // Kirim notifikasi ke admin
         NotificationHelper::sendToFitur(
             'lihat_semua_tugas',
-            'Lampiran Baru Dikirim',
-            'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
+            $bahasa === 'indonesia' ? 'Lampiran Baru Dikirim' : 'New Attachment Submitted',
+            ($bahasa === 'indonesia'
+                ? 'User ' . $tugas->user->nama . ' mengunggah hasil tugas "'
+                : 'User ' . $tugas->user->nama . ' uploaded task "') . $tugas->nama_tugas . '".',
             'tugas'
         );
 
-        // Kirim notifikasi ke user (hapus progres bar + tunggal)
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
         return response()->json([
-            'message' => 'Lampiran berhasil diupload!',
-            'data'    => $tugas,
+            'message' => $bahasa === 'indonesia'
+                ? 'Lampiran berhasil diupload!'
+                : 'Attachment uploaded successfully!',
+            'data' => $tugas,
             'file_url' => $tugas->lampiran,
             'terlambat' => $tugas->terlambat,
             'menit_terlambat' => $tugas->menit_terlambat,
@@ -318,17 +315,15 @@ class TugasController extends Controller
         ]);
     }
 
-    // ====== HITUNG JARAK (METER) ======
+    // ====== HITUNG JARAK ======
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        $earthRadius = 6371000; // meter
+        $earthRadius = 6371000;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
-
         $a = sin($dLat / 2) ** 2 +
             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
             sin($dLon / 2) ** 2;
-
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $earthRadius * $c;
     }
