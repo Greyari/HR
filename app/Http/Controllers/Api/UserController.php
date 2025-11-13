@@ -4,13 +4,28 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    // List semua user
-    public function index() {
+    /**
+     * Ambil bahasa pengguna dari tabel pengaturan
+     */
+    private function getUserLanguage($userId)
+    {
+        return Pengaturan::where('user_id', $userId)->value('bahasa') ?? 'indonesia';
+    }
+
+    /**
+     * List semua user
+     */
+    public function index(Request $request)
+    {
+        $userId = $request->user()->id ?? null;
+        $bahasa = $this->getUserLanguage($userId);
+
         $users = User::with(['peran', 'departemen', 'jabatan'])->get()
             ->map(function ($u) {
                 $u->gaji_per_hari = (fmod($u->gaji_per_hari, 1) == 0.0)
@@ -20,14 +35,21 @@ class UserController extends Controller
             });
 
         return response()->json([
-            'message' => 'Data user berhasil diambil',
+            'message' => $bahasa === 'indonesia'
+                ? 'Data user berhasil diambil'
+                : 'User data retrieved successfully',
             'data' => $users
         ]);
     }
 
-    // Simpan user baru
+    /**
+     * Simpan user baru
+     */
     public function store(Request $request)
     {
+        $userId = $request->user()->id ?? null;
+        $bahasa = $this->getUserLanguage($userId);
+
         $request->validate([
             'nama' => 'required|string|max:255',
             'peran_id' => 'required|exists:peran,id',
@@ -39,10 +61,10 @@ class UserController extends Controller
             'bpjs_ketenagakerjaan' => 'required|string|unique:users,bpjs_ketenagakerjaan',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'status_pernikahan' => 'required|in:Menikah,Belum Menikah',
-            'password' => 'required|string|min:1',
+            'password' => 'required|string|min:6',
         ]);
 
-        // Untuk generate email otomatis
+        // Generate email otomatis
         $namaDepan = strtolower(str_replace(' ', '', explode(' ', $request->nama)[0]));
         $email = $namaDepan . '@gmail.com';
         $counter = 1;
@@ -67,18 +89,29 @@ class UserController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Karyawan berhasil dibuat',
+            'message' => $bahasa === 'indonesia'
+                ? 'Karyawan berhasil dibuat'
+                : 'Employee created successfully',
             'data' => $karyawan
         ], 201);
     }
 
-    // Update User
+    /**
+     * Update user
+     */
     public function update(Request $request, $id)
     {
+        $currentUser = $request->user()->id ?? null;
+        $bahasa = $this->getUserLanguage($currentUser);
+
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json(['message' => 'User tidak ditemukan'], 404);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'User tidak ditemukan'
+                    : 'User not found',
+            ], 404);
         }
 
         $request->validate([
@@ -92,7 +125,7 @@ class UserController extends Controller
             'bpjs_ketenagakerjaan' => ['nullable', 'string', Rule::unique('users', 'bpjs_ketenagakerjaan')->ignore($user->id)],
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
             'status_pernikahan' => 'nullable|in:Menikah,Belum Menikah',
-            'password' => 'nullable|string|min:6', 
+            'password' => 'nullable|string|min:6',
         ]);
 
         $data = $request->only([
@@ -105,10 +138,9 @@ class UserController extends Controller
             'bpjs_kesehatan',
             'bpjs_ketenagakerjaan',
             'jenis_kelamin',
-            'status_pernikahan'
+            'status_pernikahan',
         ]);
 
-        // Jika admin isi password baru, hash dulu
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
         }
@@ -116,25 +148,37 @@ class UserController extends Controller
         $user->update($data);
 
         return response()->json([
-            'message' => 'User berhasil diperbarui',
+            'message' => $bahasa === 'indonesia'
+                ? 'User berhasil diperbarui'
+                : 'User updated successfully',
             'data' => $user
         ]);
     }
 
-    // Hapus user
-    public function destroy ($id)
+    /**
+     * Hapus user
+     */
+    public function destroy(Request $request, $id)
     {
+        $currentUser = $request->user()->id ?? null;
+        $bahasa = $this->getUserLanguage($currentUser);
+
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json(['User tidak ditemukan']);
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'User tidak ditemukan'
+                    : 'User not found',
+            ], 404);
         }
 
         $user->delete();
 
         return response()->json([
-            'message' => 'User berhasil dihapus'
+            'message' => $bahasa === 'indonesia'
+                ? 'User berhasil dihapus'
+                : 'User deleted successfully',
         ]);
     }
-
 }

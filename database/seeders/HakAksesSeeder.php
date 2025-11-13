@@ -28,6 +28,8 @@ class HakAksesSeeder extends Seeder
                 'tambah_lampiran_tugas',
                 'absensi',
                 'lihat_absensi_sendiri',
+                'tambah_lembur',
+                'tambah_cuti',
             ])->pluck('nama_fitur')->toArray(),
 
             // Admin Office Website
