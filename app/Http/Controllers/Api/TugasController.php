@@ -50,6 +50,13 @@ class TugasController extends Controller
             'tugas_lat'           => 'required|numeric',
             'tugas_lng'           => 'required|numeric',
             'radius_meter'        => 'required|integer|min:10',
+        ], [
+            'user_id.required' => 'User harus dipilih.',
+            'user_id.exists' => 'User yang dipilih tidak valid.',
+            'nama_tugas.required' => 'Nama tugas wajib diisi.',
+            'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
+            'batas_penugasan.required' => 'Batas penugasan wajib diisi.',
+            'batas_penugasan.after_or_equal' => 'Batas penugasan harus setelah atau sama dengan tanggal penugasan.',
         ]);
 
         $validated['status'] = 'Proses';
@@ -89,6 +96,21 @@ class TugasController extends Controller
             'tugas_lat'           => 'sometimes|numeric',
             'tugas_lng'           => 'sometimes|numeric',
             'radius_meter'        => 'sometimes|integer|min:10',
+        ], [
+            'user_id.exists' => 'User yang dipilih tidak valid.',
+            'nama_tugas.required' => 'Nama tugas wajib diisi.',
+            'nama_tugas.string' => 'Nama tugas harus berupa teks.',
+            'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
+            'tanggal_penugasan.date' => 'Tanggal penugasan harus berupa format tanggal yang valid.',
+            'batas_penugasan.required' => 'Batas penugasan wajib diisi.',
+            'batas_penugasan.date' => 'Batas penugasan harus berupa format tanggal yang valid.',
+            'batas_penugasan.after_or_equal' => 'Batas penugasan harus setelah atau sama dengan tanggal penugasan.',
+            'instruksi_tugas.string' => 'Instruksi tugas harus berupa teks.',
+            'status.in' => 'Status tugas hanya boleh: Proses, Selesai, atau Menunggu Admin.',
+            'tugas_lat.numeric' => 'Koordinat latitude harus berupa angka.',
+            'tugas_lng.numeric' => 'Koordinat longitude harus berupa angka.',
+            'radius_meter.integer' => 'Radius harus berupa angka bulat.',
+            'radius_meter.min' => 'Radius minimal adalah 10 meter.',
         ]);
 
         $userLama = $tugas->user; // simpan PIC lama sebelum diubah

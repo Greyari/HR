@@ -126,11 +126,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('', [KantorController::class, 'saveProfile']);
     });
 
-    // Absensi Route
+    // Route untuk tindakan absensi (checkin / checkout)
     Route::prefix('absensi')->middleware(CheckFitur::class . ':absensi')->group(function () {
-        Route::get('', [AbsensiController::class, 'getAbsensi']);
         Route::post('checkin', [AbsensiController::class, 'checkin']);
         Route::post('checkout', [AbsensiController::class, 'checkout']);
+    });
+
+    // Route untuk melihat data absensi
+    Route::prefix('absensi')->middleware(CheckFitur::class . ':lihat_absensi_sendiri,lihat_semua_absensi')->group(function () {
+        Route::get('', [AbsensiController::class, 'getAbsensi']);
     });
 
     // Log Activity Route
