@@ -57,6 +57,8 @@ class TugasController extends Controller
             'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
             'batas_penugasan.required' => 'Batas penugasan wajib diisi.',
             'batas_penugasan.after_or_equal' => 'Batas penugasan harus setelah atau sama dengan tanggal penugasan.',
+            'radius_meter.integer' => 'Radius harus berupa angka bulat.',
+            'radius_meter.min' => 'Radius minimal adalah 10 meter.',
         ]);
 
         $validated['status'] = 'Proses';
