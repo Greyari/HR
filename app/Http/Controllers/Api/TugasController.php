@@ -58,6 +58,45 @@ class TugasController extends Controller
     {
         $bahasa = $this->getUserLanguage();
 
+        $messages = [
+            'indonesia' => [
+                'user_id.required'             => 'Pegawai wajib dipilih.',
+                'user_id.exists'               => 'Pegawai tidak ditemukan.',
+                'nama_tugas.required'          => 'Nama tugas wajib diisi.',
+                'nama_tugas.max'               => 'Nama tugas tidak boleh lebih dari 255 karakter.',
+                'tanggal_penugasan.required'   => 'Tanggal penugasan wajib diisi.',
+                'tanggal_penugasan.date'       => 'Tanggal penugasan harus berupa tanggal yang valid.',
+                'batas_penugasan.required'     => 'Batas penugasan wajib diisi.',
+                'batas_penugasan.date'         => 'Batas penugasan harus berupa tanggal yang valid.',
+                'batas_penugasan.after_or_equal' => 'Batas penugasan tidak boleh sebelum tanggal penugasan.',
+                'tugas_lat.required'           => 'Koordinat latitude tugas wajib diisi.',
+                'tugas_lat.numeric'            => 'Koordinat latitude tugas harus berupa angka.',
+                'tugas_lng.required'           => 'Koordinat longitude tugas wajib diisi.',
+                'tugas_lng.numeric'            => 'Koordinat longitude tugas harus berupa angka.',
+                'radius_meter.required'        => 'Radius meter wajib diisi.',
+                'radius_meter.integer'         => 'Radius meter harus berupa angka bulat.',
+                'radius_meter.min'             => 'Radius meter minimal 10 meter.',
+            ],
+            'inggris' => [
+                'user_id.required'             => 'Employee is required.',
+                'user_id.exists'               => 'Selected employee not found.',
+                'nama_tugas.required'          => 'Task name is required.',
+                'nama_tugas.max'               => 'Task name must not exceed 255 characters.',
+                'tanggal_penugasan.required'   => 'Assignment date is required.',
+                'tanggal_penugasan.date'       => 'Assignment date must be a valid date.',
+                'batas_penugasan.required'     => 'Deadline is required.',
+                'batas_penugasan.date'         => 'Deadline must be a valid date.',
+                'batas_penugasan.after_or_equal' => 'Deadline cannot be before the assignment date.',
+                'tugas_lat.required'           => 'Task latitude coordinate is required.',
+                'tugas_lat.numeric'            => 'Task latitude coordinate must be numeric.',
+                'tugas_lng.required'           => 'Task longitude coordinate is required.',
+                'tugas_lng.numeric'            => 'Task longitude coordinate must be numeric.',
+                'radius_meter.required'        => 'Radius meter is required.',
+                'radius_meter.integer'         => 'Radius meter must be an integer.',
+                'radius_meter.min'             => 'Radius meter must be at least 10 meters.',
+            ],
+        ];
+
         $validated = $request->validate([
             'user_id'             => 'required|exists:users,id',
             'nama_tugas'          => 'required|string|max:255',
@@ -67,19 +106,17 @@ class TugasController extends Controller
             'tugas_lat'           => 'required|numeric',
             'tugas_lng'           => 'required|numeric',
             'radius_meter'        => 'required|integer|min:10',
-        ]);
+        ], $messages[$bahasa]);
 
         $validated['status'] = 'Proses';
 
         $tugas = Tugas::create($validated);
 
-        // Kirim notifikasi
+        // Kirim notifikasi ke user yang ditugaskan
         NotificationHelper::sendTugasBaru(
             $tugas->user,
-            $bahasa === 'indonesia' ? 'Tugas Baru Diberikan' : 'New Task Assigned',
-            ($bahasa === 'indonesia'
-                ? 'Anda mendapat tugas baru: '
-                : 'You have received a new task: ') . $tugas->nama_tugas,
+            'Tugas Baru Diberikan',
+            'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
             $tugas
         );
 
@@ -106,6 +143,23 @@ class TugasController extends Controller
             ], 404);
         }
 
+        $messages = [
+            'indonesia' => [
+                'nama_tugas.required'        => 'Nama tugas wajib diisi.',
+                'tanggal_penugasan.required' => 'Tanggal penugasan wajib diisi.',
+                'batas_penugasan.required'   => 'Batas penugasan wajib diisi.',
+                'batas_penugasan.after_or_equal' => 'Batas penugasan tidak boleh sebelum tanggal penugasan.',
+                'radius_meter.min'           => 'Radius meter minimal 10 meter.',
+            ],
+            'inggris' => [
+                'nama_tugas.required'        => 'Task name is required.',
+                'tanggal_penugasan.required' => 'Assignment date is required.',
+                'batas_penugasan.required'   => 'Deadline is required.',
+                'batas_penugasan.after_or_equal' => 'Deadline cannot be before assignment date.',
+                'radius_meter.min'           => 'Radius meter must be at least 10 meters.',
+            ],
+        ];
+
         $validated = $request->validate([
             'user_id'             => 'sometimes|exists:users,id',
             'nama_tugas'          => 'sometimes|required|string|max:255',
@@ -116,7 +170,7 @@ class TugasController extends Controller
             'tugas_lat'           => 'sometimes|numeric',
             'tugas_lng'           => 'sometimes|numeric',
             'radius_meter'        => 'sometimes|integer|min:10',
-        ]);
+        ], $messages[$bahasa]);
 
         $userLama = $tugas->user;
         $isPICChanged = isset($validated['user_id']) && $userLama->id !== $validated['user_id'];
@@ -124,22 +178,26 @@ class TugasController extends Controller
         $tugas->update($validated);
         $tugas->refresh()->load('user');
 
-        // Kirim notifikasi tergantung perubahan PIC
+        // ==== CEK APAKAH PIC DIGANTI ====
         if ($isPICChanged) {
+            // 🔸 Kirim notif ke user lama bahwa tugas sudah dialihkan
+            // ✅ PENTING: Pastikan user lama masih ada device_token
             if ($userLama->device_token) {
                 NotificationHelper::sendTugasDialihkan($userLama, $tugas);
             }
+
+            // 🔸 Kirim notif ke user baru bahwa dia dapat tugas baru
             if ($tugas->user->device_token) {
                 NotificationHelper::sendTugasBaru(
                     $tugas->user,
-                    $bahasa === 'indonesia' ? 'Tugas Baru Diberikan' : 'New Task Assigned',
-                    ($bahasa === 'indonesia'
-                        ? 'Anda mendapat tugas baru: '
-                        : 'You have received a new task: ') . $tugas->nama_tugas,
+                    'Tugas Baru Diberikan',
+                    'Anda mendapat tugas baru: ' . $tugas->nama_tugas,
                     $tugas
                 );
             }
+
         } else {
+            // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa
             if ($tugas->user->device_token) {
                 NotificationHelper::sendTugasUpdate($tugas->user, $tugas);
             }
@@ -167,10 +225,15 @@ class TugasController extends Controller
         $tugas->status = $request->status;
         $tugas->save();
 
+        // 🔹 Kirim notifikasi ke user berdasarkan perubahan status
         if ($tugas->user && $tugas->user->device_token) {
+            // Jika status diubah menjadi Selesai
             if ($request->status === 'Selesai' && $statusLama !== 'Selesai') {
                 NotificationHelper::sendTugasSelesai($tugas->user, $tugas);
-            } elseif ($request->status === 'Proses' && $statusLama !== 'Proses') {
+            }
+
+            // Jika status diubah menjadi Proses
+            elseif ($request->status === 'Proses' && $statusLama !== 'Proses') {
                 NotificationHelper::sendTugasDiproses($tugas->user, $tugas);
             }
         }
@@ -210,13 +273,16 @@ class TugasController extends Controller
 
         $tugas->delete();
 
+        // 🔹 Kirim notifikasi ke user SETELAH tugas dihapus (jika belum selesai)
         if ($tugasUser && $tugasUser->device_token && $tugasStatus !== 'Selesai') {
-            $tugasTemp = (object)[
+            // Buat object temporary untuk notifikasi
+            $tugasTemp = (object) [
                 'id' => $tugasId,
                 'nama_tugas' => $tugasNama,
                 'status' => $tugasStatus,
                 'user' => $tugasUser
             ];
+
             NotificationHelper::sendTugasDihapus($tugasUser, $tugasTemp);
         }
 
@@ -232,11 +298,32 @@ class TugasController extends Controller
     {
         $bahasa = $this->getUserLanguage();
 
+        $messages = [
+            'indonesia' => [
+                'lampiran.required'     => 'File lampiran wajib diunggah.',
+                'lampiran.file'         => 'Lampiran harus berupa file.',
+                'lampiran.max'          => 'Ukuran lampiran tidak boleh lebih dari 200MB.',
+                'lampiran_lat.required' => 'Koordinat latitude wajib diisi.',
+                'lampiran_lat.numeric'  => 'Koordinat latitude harus berupa angka.',
+                'lampiran_lng.required' => 'Koordinat longitude wajib diisi.',
+                'lampiran_lng.numeric'  => 'Koordinat longitude harus berupa angka.',
+            ],
+            'inggris' => [
+                'lampiran.required'     => 'Attachment file is required.',
+                'lampiran.file'         => 'Attachment must be a valid file.',
+                'lampiran.max'          => 'Attachment size must not exceed 200MB.',
+                'lampiran_lat.required' => 'Latitude coordinate is required.',
+                'lampiran_lat.numeric'  => 'Latitude coordinate must be numeric.',
+                'lampiran_lng.required' => 'Longitude coordinate is required.',
+                'lampiran_lng.numeric'  => 'Longitude coordinate must be numeric.',
+            ],
+        ];
+
         $request->validate([
             'lampiran'     => 'required|file|max:204800',
             'lampiran_lat' => 'required|numeric',
             'lampiran_lng' => 'required|numeric',
-        ]);
+        ], $messages[$bahasa]);
 
         $tugas = Tugas::findOrFail($id);
 
@@ -292,15 +379,15 @@ class TugasController extends Controller
             $tugas->save();
         }
 
+        // Kirim notifikasi ke admin
         NotificationHelper::sendToFitur(
             'lihat_semua_tugas',
-            $bahasa === 'indonesia' ? 'Lampiran Baru Dikirim' : 'New Attachment Submitted',
-            ($bahasa === 'indonesia'
-                ? 'User ' . $tugas->user->nama . ' mengunggah hasil tugas "'
-                : 'User ' . $tugas->user->nama . ' uploaded task "') . $tugas->nama_tugas . '".',
+            'Lampiran Baru Dikirim',
+            'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
             'tugas'
         );
-
+        
+        // Kirim notifikasi ke user (hapus progres bar + tunggal)
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
         return response()->json([
