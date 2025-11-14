@@ -12,7 +12,7 @@ class ManajemenDeviceController extends Controller
     // Ambil device
     public function allDevices()
     {
-        $devices = Device::with('user')->get(); 
+        $devices = Device::with('user')->get();
         return response()->json([
             'message' => "Daftar semua device terdaftar",
             'data'    => $devices,
@@ -25,7 +25,7 @@ class ManajemenDeviceController extends Controller
         $user = User::findOrFail($id);
 
         // hapus device terkait user
-        $user->device()->delete();
+        $user->device->each->delete();
 
         return response()->json([
             'message' => "Device untuk akun {$user->nama} berhasil direset. User bisa login dari device baru.",
