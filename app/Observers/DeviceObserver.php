@@ -9,18 +9,18 @@ class DeviceObserver
     /**
      * Event ketika device baru dibuat
      */
-    public function created(Device $device)
-    {
-        if (app()->runningInConsole()) return;
+    // public function created(Device $device)
+    // {
+    //     if (app()->runningInConsole()) return;
 
-        $nama = $device->user->nama ?? 'Tidak diketahui';
+    //     $nama = $device->user->nama ?? 'Tidak diketahui';
 
-        activity_log(
-            'Tambah Device',
-            'Device',
-            "Device baru terdaftar untuk user {$nama} ({$device->device_model})"
-        );
-    }
+    //     activity_log(
+    //         'Tambah Device',
+    //         'Device',
+    //         "Device baru terdaftar untuk user {$nama} ({$device->device_model})"
+    //     );
+    // }
 
     /**
      * Event ketika device diupdate (misal ganti device_hash / model)
