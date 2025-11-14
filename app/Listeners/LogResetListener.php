@@ -10,9 +10,9 @@ class LogResetListener
     public function handle(DataResetEvent $event)
     {
         LogAktivitas::create([
-            'user_id'   => $event->user_id,
-            'aksi'      => "Reset data {$event->module}",
-            'deskripsi'=> "Menghapus {$event->jumlah} data pada bulan {$event->bulan} tahun {$event->tahun}",
+            'user_id'    => $event->user_id,
+            'action'     => "Reset data {$event->module}",
+            'description'=> "Menghapus {$event->jumlah} data pada bulan {$event->bulan} tahun {$event->tahun}",
         ]);
     }
 }
