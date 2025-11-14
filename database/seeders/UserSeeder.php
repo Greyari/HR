@@ -62,7 +62,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'ksi.admin',
                 'email' => 'ksi.admin@gmail.com',
-                'password' => Hash::make('Adm!n@K5i'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             User::create([
                 'nama' => 'Bapak Jhoni',
                 'email' => 'jhonip.sinaga@kreatifsystem.com',
-                'password' => Hash::make('Admin5467241453'),
+                'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
                 'departemen_id' => $departemenIT->id,
@@ -126,7 +126,7 @@ class UserSeeder extends Seeder
                 'email' => 'ekapaksir@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanSe->id,
-                'peran_id' => $peranAoWeb->id,
+                'peran_id' => $peranMkApk->id,
                 'departemen_id' => $departemenMarketing->id,
                 'gaji_per_hari' => 250000,
                 'npwp' => "39.716.935.0-225.000",
@@ -234,21 +234,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,
-                'departemen_id' => $departemenMaintenance->id,
-                'gaji_per_hari' => 250000,
-                // 'npwp' => "-",
-                // 'bpjs_kesehatan' => "-",
-                // 'bpjs_ketenagakerjaan' => "-",
-                'status_pernikahan' => 'Belum Menikah',
-                'jenis_kelamin' => 'Laki-laki'
-            ]);
-
-            User::create([
-                'nama' => 'Ridwan',
-                'email' => 'ridwan@gmail.com',
-                'password' => Hash::make('123'),
-                'jabatan_id' => $jabatanTs->id,
-                'peran_id' => $peranMgApk->id,
                 'departemen_id' => $departemenMaintenance->id,
                 'gaji_per_hari' => 250000,
                 // 'npwp' => "-",
