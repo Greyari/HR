@@ -11,6 +11,7 @@ use App\Models\Gaji;
 use App\Models\Tugas;
 use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Storage;
+use App\Events\DataResetEvent;
 
 class DengerController extends Controller
 {
@@ -34,6 +35,16 @@ class DengerController extends Controller
         }
 
         $deleted = $query->delete();
+
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'cuti',
+            $request->bulan,
+            $request->tahun,
+            $deleted,
+            $request->user()->id
+        );
+
 
         return response()->json([
             'message' => "Sebanyak $deleted data cuti bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
@@ -72,6 +83,15 @@ class DengerController extends Controller
 
         $deleted = $query->delete();
 
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'lembur',
+            $request->bulan,
+            $request->tahun,
+            $deleted,
+            $request->user()->id
+        );
+
         return response()->json([
             'message' => "Sebanyak $deleted data lembur bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
         ]);
@@ -108,6 +128,15 @@ class DengerController extends Controller
         }
 
         $deleted = $query->delete();
+
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'gaji',
+            $request->bulan,
+            $request->tahun,
+            $deleted,
+            $request->user()->id
+        );
 
         return response()->json([
             'message' => "Sebanyak $deleted data gaji bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
@@ -159,6 +188,15 @@ class DengerController extends Controller
             ->whereMonth('created_at', $request->bulan)
             ->delete();
 
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'tugas',
+            $request->bulan,
+            $request->tahun,
+            $deletedCount,
+            $request->user()->id
+        );
+
         return response()->json([
             'message' => "Sebanyak $deletedCount data tugas + semua file lampiran berhasil dihapus."
         ]);
@@ -195,6 +233,15 @@ class DengerController extends Controller
         }
 
         $deleted = $query->delete();
+
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'log aktivitas',
+            $request->bulan,
+            $request->tahun,
+            $deleted,
+            $request->user()->id
+        );
 
         return response()->json([
             'message' => "Sebanyak $deleted log aktivitas bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
@@ -243,6 +290,15 @@ class DengerController extends Controller
 
         // Baru hapus data dari database
         $deleted = Absensi::whereIn('id', $absensis->pluck('id'))->delete();
+
+        // Trigger Observer Event
+        DataResetEvent::dispatch(
+            'absensi',
+            $request->bulan,
+            $request->tahun,
+            $deleted,
+            $request->user()->id
+        );
 
         return response()->json([
             'message' => "Sebanyak $deleted absensi bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus (beserta videonya)"

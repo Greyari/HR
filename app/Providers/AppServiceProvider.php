@@ -14,6 +14,7 @@ use App\Models\PotonganGaji;
 use App\Models\Tugas;
 use App\Models\User;
 use App\Models\Peran;
+use App\Models\Device;
 use App\Observers\AbsensiObserver;
 use App\Observers\CutiObserver;
 use App\Observers\DepartemenObserver;
@@ -25,6 +26,8 @@ use App\Observers\LemburObserver;
 use App\Observers\PengingatObservers;
 use App\Observers\PotonganGajiObserver;
 use App\Observers\TugasObserver;
+use App\Observers\AkunTerkunciObserver;
+use App\Observers\DeviceObserver;
 use App\Observers\PeranObserver;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
@@ -61,6 +64,8 @@ class AppServiceProvider extends ServiceProvider
         Cuti::observe(CutiObserver::class);
         Pengingat::observe(PengingatObservers::class);
         Peran::observe(PeranObserver::class);
+        User::observe(AkunTerkunciObserver::class);
+        Device::observe(DeviceObserver::class);
 
         // untuk api email bravo
         $this->app->make(MailManager::class)->extend('brevo', function ($app) {

@@ -2,20 +2,21 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
     /**
-     * Register services.
+     * Event → Listener mapping
      */
-    public function register(): void
-    {
-        //
-    }
+    protected $listen = [
+        \App\Events\DataResetEvent::class => [
+            \App\Listeners\LogResetListener::class,
+        ],
+    ];
 
     /**
-     * Bootstrap services.
+     * Register any events for your application.
      */
     public function boot(): void
     {
