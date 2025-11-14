@@ -37,6 +37,7 @@ class KaryawanObserver
             'coba_login',
             'last_login',
             'device_token',
+            'terkunci',
         ];
 
         // kalau semua perubahan ada di daftar ignore → skip log
