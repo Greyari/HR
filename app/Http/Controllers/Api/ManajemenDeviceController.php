@@ -24,8 +24,9 @@ class ManajemenDeviceController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // hapus device terkait user
-        $user->device->each->delete();
+        if ($user->device) {
+            $user->device->delete(); // ini akan memicu observer
+        }
 
         return response()->json([
             'message' => "Device untuk akun {$user->nama} berhasil direset. User bisa login dari device baru.",
