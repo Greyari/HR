@@ -54,47 +54,78 @@ class UserController extends Controller
         $messages = [
             'indonesia' => [
                 'nama.required' => 'Nama wajib diisi.',
+                'nama.string' => 'Nama harus berupa teks.',
                 'nama.max' => 'Nama tidak boleh lebih dari 255 karakter.',
+
                 'peran_id.required' => 'Peran wajib dipilih.',
-                'peran_id.exists' => 'Peran tidak valid.',
-                'jabatan_id.exists' => 'Jabatan tidak valid.',
-                'departemen_id.exists' => 'Departemen tidak valid.',
+                'peran_id.exists' => 'Peran yang dipilih tidak valid.',
+
+                'jabatan_id.exists' => 'Jabatan yang dipilih tidak valid.',
+                'departemen_id.exists' => 'Departemen yang dipilih tidak valid.',
+
                 'gaji_per_hari.required' => 'Gaji per hari wajib diisi.',
                 'gaji_per_hari.numeric' => 'Gaji per hari harus berupa angka.',
+                'gaji_per_hari.min' => 'Gaji per hari tidak boleh bernilai negatif.',
+
                 'npwp.required' => 'NPWP wajib diisi.',
-                'npwp.unique' => 'NPWP sudah digunakan.',
+                'npwp.unique' => 'NPWP sudah digunakan oleh karyawan lain.',
+                'npwp.regex' => 'NPWP hanya boleh berisi angka, titik, strip, atau garis miring.',
+
                 'bpjs_kesehatan.required' => 'BPJS Kesehatan wajib diisi.',
-                'bpjs_kesehatan.unique' => 'BPJS Kesehatan sudah digunakan.',
+                'bpjs_kesehatan.unique' => 'BPJS Kesehatan sudah digunakan oleh karyawan lain.',
+                'bpjs_kesehatan.regex' => 'BPJS Kesehatan hanya boleh berisi angka.',
+
                 'bpjs_ketenagakerjaan.required' => 'BPJS Ketenagakerjaan wajib diisi.',
-                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan sudah digunakan.',
+                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan sudah digunakan oleh karyawan lain.',
+                'bpjs_ketenagakerjaan.regex' => 'BPJS Ketenagakerjaan hanya boleh berisi angka.',
+
                 'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
-                'jenis_kelamin.in' => 'Jenis kelamin tidak valid.',
+                'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+
                 'status_pernikahan.required' => 'Status pernikahan wajib dipilih.',
-                'status_pernikahan.in' => 'Status pernikahan tidak valid.',
+                'status_pernikahan.in' => 'Status pernikahan harus Menikah atau Belum Menikah.',
+
                 'password.required' => 'Password wajib diisi.',
-                'password.min' => 'Password minimal 6 karakter.',
+                'password.min' => 'Password minimal terdiri dari 6 karakter.',
+                'password.string' => 'Password harus berupa teks.',
             ],
+
             'inggris' => [
                 'nama.required' => 'Name is required.',
-                'nama.max' => 'Name must not exceed 255 characters.',
+                'nama.string' => 'Name must be a text string.',
+                'nama.max' => 'Name may not exceed 255 characters.',
+
                 'peran_id.required' => 'Role is required.',
-                'peran_id.exists' => 'Role is invalid.',
-                'jabatan_id.exists' => 'Position is invalid.',
-                'departemen_id.exists' => 'Department is invalid.',
+                'peran_id.exists' => 'The selected role is invalid.',
+
+                'jabatan_id.exists' => 'The selected position is invalid.',
+                'departemen_id.exists' => 'The selected department is invalid.',
+
                 'gaji_per_hari.required' => 'Daily salary is required.',
-                'gaji_per_hari.numeric' => 'Daily salary must be numeric.',
+                'gaji_per_hari.numeric' => 'Daily salary must be a number.',
+                'gaji_per_hari.min' => 'Daily salary cannot be negative.',
+
                 'npwp.required' => 'NPWP is required.',
-                'npwp.unique' => 'NPWP has already been taken.',
+                'npwp.unique' => 'This NPWP is already registered.',
+                'npwp.regex' => 'NPWP may only contain numbers, dots, dashes, and slashes.',
+
                 'bpjs_kesehatan.required' => 'BPJS Kesehatan is required.',
-                'bpjs_kesehatan.unique' => 'BPJS Kesehatan has already been taken.',
+                'bpjs_kesehatan.unique' => 'This BPJS Kesehatan is already registered.',
+                'bpjs_kesehatan.regex' => 'BPJS Kesehatan may only contain numbers.',
+
                 'bpjs_ketenagakerjaan.required' => 'BPJS Ketenagakerjaan is required.',
-                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan has already been taken.',
+                'bpjs_ketenagakerjaan.unique' => 'This BPJS Ketenagakerjaan is already registered.',
+                'bpjs_ketenagakerjaan.regex' => 'BPJS Ketenagakerjaan may only contain numbers.',
+
                 'jenis_kelamin.required' => 'Gender is required.',
-                'jenis_kelamin.in' => 'Gender is invalid.',
+                'jenis_kelamin.in' => 'Gender must be either Male or Female.',
+
                 'status_pernikahan.required' => 'Marital status is required.',
-                'status_pernikahan.in' => 'Marital status is invalid.',
+                'status_pernikahan.in' => 'Marital status must be Married or Single.',
+
                 'password.required' => 'Password is required.',
                 'password.min' => 'Password must be at least 6 characters.',
+                'password.string' => 'Password must be a text string.',
             ],
         ];
 
@@ -120,7 +151,7 @@ class UserController extends Controller
                 'required',
                 'string',
                 'unique:users,bpjs_ketenagakerjaan',
-                'regex:/^[0-9]+$/', 
+                'regex:/^[0-9]+$/',
             ],
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'status_pernikahan' => 'required|in:Menikah,Belum Menikah',
@@ -179,32 +210,57 @@ class UserController extends Controller
         // Pesan validasi multi bahasa untuk update
         $messages = [
             'indonesia' => [
+                'nama.string' => 'Nama harus berupa teks.',
                 'nama.max' => 'Nama tidak boleh lebih dari 255 karakter.',
-                'peran_id.exists' => 'Peran tidak valid.',
-                'jabatan_id.exists' => 'Jabatan tidak valid.',
-                'departemen_id.exists' => 'Departemen tidak valid.',
+
+                'peran_id.exists' => 'Peran yang dipilih tidak valid.',
+                'jabatan_id.exists' => 'Jabatan yang dipilih tidak valid.',
+                'departemen_id.exists' => 'Departemen yang dipilih tidak valid.',
+
                 'gaji_per_hari.numeric' => 'Gaji per hari harus berupa angka.',
-                'gaji_per_hari.min' => 'Gaji per hari minimal 0.',
-                'npwp.unique' => 'NPWP sudah digunakan.',
-                'bpjs_kesehatan.unique' => 'BPJS Kesehatan sudah digunakan.',
-                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan sudah digunakan.',
-                'jenis_kelamin.in' => 'Jenis kelamin tidak valid.',
-                'status_pernikahan.in' => 'Status pernikahan tidak valid.',
-                'password.min' => 'Password minimal 6 karakter.',
+                'gaji_per_hari.min' => 'Gaji per hari tidak boleh bernilai negatif.',
+
+                'npwp.unique' => 'NPWP sudah digunakan oleh karyawan lain.',
+                'npwp.regex' => 'NPWP hanya boleh berisi angka, titik, strip, atau garis miring.',
+
+                'bpjs_kesehatan.unique' => 'BPJS Kesehatan sudah digunakan oleh karyawan lain.',
+                'bpjs_kesehatan.regex' => 'BPJS Kesehatan hanya boleh berisi angka.',
+
+                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan sudah digunakan oleh karyawan lain.',
+                'bpjs_ketenagakerjaan.regex' => 'BPJS Ketenagakerjaan hanya boleh berisi angka.',
+
+                'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+                'status_pernikahan.in' => 'Status pernikahan harus Menikah atau Belum Menikah.',
+
+                'password.min' => 'Password minimal terdiri dari 6 karakter.',
+                'password.string' => 'Password harus berupa teks.',
             ],
+
             'inggris' => [
-                'nama.max' => 'Name must not exceed 255 characters.',
-                'peran_id.exists' => 'Role is invalid.',
-                'jabatan_id.exists' => 'Position is invalid.',
-                'departemen_id.exists' => 'Department is invalid.',
+                'nama.string' => 'Name must be a text string.',
+                'nama.max' => 'Name may not exceed 255 characters.',
+
+                'peran_id.exists' => 'The selected role is invalid.',
+                'jabatan_id.exists' => 'The selected position is invalid.',
+                'departemen_id.exists' => 'The selected department is invalid.',
+
                 'gaji_per_hari.numeric' => 'Daily salary must be numeric.',
-                'gaji_per_hari.min' => 'Daily salary must be at least 0.',
-                'npwp.unique' => 'NPWP has already been taken.',
-                'bpjs_kesehatan.unique' => 'BPJS Kesehatan has already been taken.',
-                'bpjs_ketenagakerjaan.unique' => 'BPJS Ketenagakerjaan has already been taken.',
-                'jenis_kelamin.in' => 'Gender is invalid.',
-                'status_pernikahan.in' => 'Marital status is invalid.',
+                'gaji_per_hari.min' => 'Daily salary cannot be negative.',
+
+                'npwp.unique' => 'This NPWP is already registered.',
+                'npwp.regex' => 'NPWP may only contain numbers, dots, dashes, and slashes.',
+
+                'bpjs_kesehatan.unique' => 'This BPJS Kesehatan is already registered.',
+                'bpjs_kesehatan.regex' => 'BPJS Kesehatan may only contain numbers.',
+
+                'bpjs_ketenagakerjaan.unique' => 'This BPJS Ketenagakerjaan is already registered.',
+                'bpjs_ketenagakerjaan.regex' => 'BPJS Ketenagakerjaan may only contain numbers.',
+
+                'jenis_kelamin.in' => 'Gender must be either Male or Female.',
+                'status_pernikahan.in' => 'Marital status must be Married or Single.',
+
                 'password.min' => 'Password must be at least 6 characters.',
+                'password.string' => 'Password must be a text string.',
             ],
         ];
 
