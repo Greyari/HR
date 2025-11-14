@@ -7,6 +7,7 @@ use App\Helpers\NotificationHelper;
 use App\Models\Lembur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Pengaturan;
 
 class LemburController extends Controller
 {
@@ -55,27 +56,55 @@ class LemburController extends Controller
     // Menyimpan pengajuan lembur
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $bahasa = Pengaturan::where('user_id', $user->id)->value('bahasa') ?? 'indonesia';
+
+        // Messages bilingual
+        $messages = [
+            'indonesia' => [
+                'tanggal.required' => 'Tanggal lembur wajib diisi.',
+                'tanggal.date' => 'Format tanggal tidak valid.',
+                'jam_mulai.required' => 'Jam mulai wajib diisi.',
+                'jam_mulai.date_format' => 'Format jam mulai tidak valid.',
+                'jam_selesai.required' => 'Jam selesai wajib diisi.',
+                'jam_selesai.date_format' => 'Format jam selesai tidak valid.',
+                'jam_selesai.after' => 'Jam selesai harus lebih besar dari jam mulai.',
+                'deskripsi.max' => 'Deskripsi tidak boleh lebih dari 255 karakter.',
+            ],
+            'inggris' => [
+                'tanggal.required' => 'Overtime date is required.',
+                'tanggal.date' => 'Invalid date format.',
+                'jam_mulai.required' => 'Start time is required.',
+                'jam_mulai.date_format' => 'Invalid start time format.',
+                'jam_selesai.required' => 'End time is required.',
+                'jam_selesai.date_format' => 'Invalid end time format.',
+                'jam_selesai.after' => 'End time must be after start time.',
+                'deskripsi.max' => 'Description must not exceed 255 characters.',
+            ]
+        ];
+
+        // Validasi
         $request->validate([
             'tanggal' => 'required|date',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'deskripsi' => 'nullable|string|max:255',
-        ]);
+        ], $messages[$bahasa]);
 
-        $user = Auth::user();
-
-        // ✅ Cek apakah user masih ada lembur yg belum diproses
+        // Cek lembur aktif
         $masihAdaLembur = Lembur::where('user_id', $user->id)
             ->whereIn('status', ['Pending', 'Proses'])
             ->exists();
 
         if ($masihAdaLembur) {
             return response()->json([
-                'message' => 'Anda masih memiliki pengajuan lembur yang belum diproses. Selesaikan dulu sebelum mengajukan lembur baru.'
+                'message' => $bahasa === 'inggris'
+                    ? 'You still have an unprocessed overtime request. Finish it before creating a new one.'
+                    : 'Anda masih memiliki pengajuan lembur yang belum diproses. Selesaikan dulu sebelum mengajukan lembur baru.'
             ], 400);
         }
 
-        // ✅ Buat lembur baru
+        // Buat lembur baru
         $lembur = Lembur::create([
             'user_id' => $user->id,
             'tanggal' => $request->tanggal,
@@ -97,7 +126,9 @@ class LemburController extends Controller
         );
 
         return response()->json([
-            'message' => 'Pengajuan lembur berhasil dikirim',
+            'message' => $bahasa === 'inggris'
+                ? 'Overtime request submitted successfully'
+                : 'Pengajuan lembur berhasil dikirim',
             'data' => $lembur
         ], 201);
     }

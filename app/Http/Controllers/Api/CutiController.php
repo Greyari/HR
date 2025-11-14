@@ -7,7 +7,7 @@ use App\Models\Cuti;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use App\Models\Pengaturan;
 
 class CutiController extends Controller
 {
@@ -55,23 +55,49 @@ class CutiController extends Controller
     // Menyimpan pengajuan cuti
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $bahasa = Pengaturan::where('user_id', $user->id)->value('bahasa') ?? 'indonesia';
+
+        // Bilingual messages
+        $messages = [
+            'indonesia' => [
+                'tipe_cuti.required' => 'Tipe cuti wajib diisi.',
+                'tanggal_mulai.required' => 'Tanggal mulai wajib diisi.',
+                'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+                'tanggal_selesai.required' => 'Tanggal selesai wajib diisi.',
+                'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus setelah atau sama dengan tanggal mulai.',
+                'alasan.max' => 'Alasan tidak boleh lebih dari 255 karakter.',
+            ],
+            'inggris' => [
+                'tipe_cuti.required' => 'Leave type is required.',
+                'tanggal_mulai.required' => 'Start date is required.',
+                'tanggal_mulai.date' => 'Invalid start date format.',
+                'tanggal_selesai.required' => 'End date is required.',
+                'tanggal_selesai.date' => 'Invalid end date format.',
+                'tanggal_selesai.after_or_equal' => 'End date must be after or equal to start date.',
+                'alasan.max' => 'Reason must not exceed 255 characters.',
+            ]
+        ];
+
+        // Validasi
         $request->validate([
             'tipe_cuti' => 'required|string|max:50',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'alasan' => 'nullable|string|max:255',
-        ]);
+        ], $messages[$bahasa]);
 
-        $user = Auth::user();
-
-        // Cek apakah user masih ada cuti yg belum selesai
+        // Cek cuti aktif
         $masihAdaCuti = Cuti::where('user_id', $user->id)
             ->whereIn('status', ['Pending', 'Proses'])
             ->exists();
 
         if ($masihAdaCuti) {
             return response()->json([
-                'message' => 'Anda masih memiliki pengajuan cuti yang belum diproses. Selesaikan dulu sebelum mengajukan cuti baru.'
+                'message' => $bahasa === 'inggris'
+                    ? 'You still have an unprocessed leave request. Finish it before creating a new one.'
+                    : 'Anda masih memiliki pengajuan cuti yang belum diproses. Selesaikan dulu sebelum mengajukan cuti baru.'
             ], 400);
         }
 
@@ -97,10 +123,13 @@ class CutiController extends Controller
         );
 
         return response()->json([
-            'message' => 'Pengajuan cuti berhasil dikirim',
+            'message' => $bahasa === 'inggris'
+                ? 'Leave request submitted successfully'
+                : 'Pengajuan cuti berhasil dikirim',
             'data' => $cuti
         ], 201);
     }
+
 
     // Approve cuti
     public function approve($id)
