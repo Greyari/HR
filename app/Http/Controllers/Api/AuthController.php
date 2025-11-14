@@ -80,7 +80,7 @@ class AuthController extends Controller
         $agent = new Agent();
         $fiturUser = $user->peran->fitur->pluck('nama_fitur')->toArray();
 
-        $platform = $request->input('platform'); 
+        $platform = $request->input('platform');
         if (!$platform) {
             if ($agent->isDesktop()) $platform = 'web';
             elseif ($agent->isMobile()) $platform = 'apk';
@@ -297,7 +297,7 @@ class AuthController extends Controller
             $user->update(['device_token' => null]);
 
             // Hapus semua personal access token (Sanctum)
-            $user->tokens()->delete();
+            $request->user()->currentAccessToken()->delete();
 
             // Catat ke activity log
             activity_log('Logout', 'User', "{$user->nama} logout", $user->id);
