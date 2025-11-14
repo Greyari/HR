@@ -28,14 +28,14 @@ class AkunTerkunciObserver
                 );
             }
 
-            // Jika akun dikunci (misalnya karena gagal login)
-            if ($original == false && $new == true) {
-                activity_log(
-                    'Kunci Akun',
-                    'Akun Terkunci',
-                    "Akun {$nama} dikunci karena gagal login"
-                );
-            }
+            // // Jika akun dikunci (misalnya karena gagal login)
+            // if ($original == false && $new == true) {
+            //     activity_log(
+            //         'Kunci Akun',
+            //         'Akun Terkunci',
+            //         "Akun {$nama} dikunci karena gagal login"
+            //     );
+            // }
         }
     }
 }
