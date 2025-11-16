@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Services\FirebaseService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class NotificationHelper
 {
@@ -20,13 +21,50 @@ class NotificationHelper
             $q->where('nama_fitur', $namaFitur);
         })->get();
 
+        Log::info("=== DEBUG SEND TO FITUR ===");
+        Log::info("Fitur dicari: " . $namaFitur);
+        Log::info("Total user ditemukan: " . $users->count());
+
+        if ($users->isEmpty()) {
+            Log::warning("⚠️ TIDAK ADA USER dengan fitur: " . $namaFitur);
+            return 0;
+        }
+
+        Log::info("User ditemukan:", $users->pluck('nama', 'id')->toArray());
+        Log::info("Device tokens:", $users->mapWithKeys(function($user) {
+            return [$user->nama => substr($user->device_token ?? 'null', 0, 30) . '...'];
+        })->toArray());
+
+        $sentCount = 0;
         foreach ($users as $user) {
+            Log::info("--- Processing user: {$user->nama} (ID: {$user->id}) ---");
+
             if ($user->device_token) {
-                $fcm->sendMessage($user->device_token, $title, $message, [
-                    'tipe' => $type,
-                ]);
+                Log::info("✅ Device token ada: " . substr($user->device_token, 0, 30) . "...");
+
+                try {
+                    $result = $fcm->sendMessage($user->device_token, $title, $message, [
+                        'tipe' => $type,
+                    ]);
+
+                    if ($result) {
+                        Log::info("📤 FCM berhasil dikirim ke {$user->nama}");
+                        $sentCount++;
+                    } else {
+                        Log::error("❌ FCM GAGAL (return false) ke {$user->nama}");
+                    }
+
+                    Log::info("FCM Response: " . json_encode($result));
+
+                } catch (\Exception $e) {
+                    Log::error("❌ FCM EXCEPTION ke {$user->nama}: " . $e->getMessage());
+                }
+            } else {
+                Log::warning("⚠️ User {$user->nama} TIDAK PUNYA device_token");
             }
         }
+
+        Log::info("=== TOTAL NOTIFIKASI TERKIRIM: $sentCount dari {$users->count()} user ===");
 
         return $users->count();
     }
@@ -105,7 +143,6 @@ class NotificationHelper
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah dipindahkan ke user lain.';
 
         if ($userLama->device_token) {
-            // ✅ PERBAIKAN: Kirim dengan data lengkap termasuk hapus_progress
             app(FirebaseService::class)->sendMessage(
                 $userLama->device_token,
                 $title,
@@ -125,13 +162,12 @@ class NotificationHelper
      */
     public static function sendLampiranDikirim($user, $tugas): void
     {
-        // 🔹 Kirim ke ADMIN yang punya fitur lihat_semua_tugas
         $admins = User::whereHas('peran.fitur', function ($q) {
             $q->where('nama_fitur', 'lihat_semua_tugas');
         })->get();
 
         $title = 'Lampiran Baru Dikirim';
-        $message = 'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".';
+        $message = 'User ' . $tugas->user->nama . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".';
 
         foreach ($admins as $admin) {
             if ($admin->device_token) {
@@ -166,7 +202,6 @@ class NotificationHelper
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah dihapus oleh admin.';
 
         if ($user->device_token) {
-            // ✅ PERBAIKAN: Kirim dengan data lengkap
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'tugas_hapus',
                 'tugas_id' => (string) $tugas->id,

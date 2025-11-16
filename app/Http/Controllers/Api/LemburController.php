@@ -120,9 +120,9 @@ class LemburController extends Controller
         // Kirim ke semua user dengan fitur approve tahap 1
         NotificationHelper::sendToFitur(
             'approve_lembur_step1',
-            'Pengajuan Lembur Baru',
-            $user->name . ' mengajukan lembur pada tanggal ' . $lembur->tanggal,
-            'lembur'
+            '📤 Pengajuan Lembur Baru',
+            $user->nama . ' mengajukan lembur pada tanggal ' . $lembur->tanggal,
+            'lembur_perlu_approval'
         );
 
         return response()->json([
@@ -155,15 +155,15 @@ class LemburController extends Controller
             $lembur->status = 'Proses';
             $lembur->save();
 
-            // Kirim ke pemohon bahwa lemburnya disetujui tahap awal
+            // Kirim ke pemohon
             NotificationHelper::sendLemburDisetujuiStep1($lembur->user, $lembur);
 
             // Kirim ke semua user yang punya fitur approve step2
             NotificationHelper::sendToFitur(
                 'approve_lembur_step2',
-                'Lembur Perlu Persetujuan Final',
-                $lembur->user->name . ' lemburnya disetujui tahap awal, perlu persetujuan final.',
-                'lembur'
+                '📤 Lembur Perlu Persetujuan Final',
+                $lembur->user->nama . ' lemburnya disetujui tahap awal, perlu persetujuan final.',
+                'lembur_perlu_approval_final'
             );
 
             return response()->json([

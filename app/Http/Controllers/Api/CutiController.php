@@ -117,9 +117,9 @@ class CutiController extends Controller
         // Kirim ke semua user dengan fitur approve tahap 1
         NotificationHelper::sendToFitur(
             'approve_cuti_step1',
-            'Pengajuan Cuti Baru',
-            $user->name . ' mengajukan cuti dari ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai,
-            'cuti'
+            '📤 Pengajuan Cuti Baru',
+            $user->nama . ' mengajukan cuti dari ' . $cuti->tanggal_mulai . ' s/d ' . $cuti->tanggal_selesai,
+            'cuti_perlu_approval'
         );
 
         return response()->json([
@@ -157,9 +157,9 @@ class CutiController extends Controller
             // Kirim ke semua user yang punya fitur approve step2
             NotificationHelper::sendToFitur(
                 'approve_cuti_step2',
-                'Cuti Perlu Persetujuan Final',
-                $cuti->user->name . ' cutinya disetujui tahap awal, perlu persetujuan final.',
-                'cuti'
+                '📤 Cuti Perlu Persetujuan Final',
+                $cuti->user->nama . ' cutinya disetujui tahap awal, perlu persetujuan final.',
+                'cuti_perlu_approval_final'
             );
 
             return response()->json([

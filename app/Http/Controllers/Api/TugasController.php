@@ -350,6 +350,9 @@ class TugasController extends Controller
             ], 403);
         }
 
+        $tugas->lampiran_lat = $request->lampiran_lat;
+        $tugas->lampiran_lng = $request->lampiran_lng;
+
         // === PROSES UPLOAD ===
         if ($request->hasFile('lampiran')) {
             if ($tugas->lampiran) {
@@ -386,7 +389,7 @@ class TugasController extends Controller
             'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
             'tugas'
         );
-        
+
         // Kirim notifikasi ke user (hapus progres bar + tunggal)
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
