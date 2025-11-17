@@ -97,10 +97,16 @@ class NotificationHelper
     {
         if (!$user->device_token) return;
 
+        Log::info('📤 Kirim Notifikasi Tugas Baru', [
+            'kepada' => $user->nama . ' (ID: ' . $user->id . ')',
+            'tugas' => $tugas->nama_tugas,
+        ]);
+
         app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
             'tipe' => 'tugas_baru',
             'judul' => $tugas->nama_tugas,
             'tugas_id' => (string) $tugas->id,
+            'target_user_id' => (string) $user->id, // ✅ Validasi di Flutter
             'batas_penugasan' => Carbon::parse($tugas->batas_penugasan)->toIso8601String(),
         ]);
     }
@@ -113,8 +119,14 @@ class NotificationHelper
         $title = 'Tugas Diperbarui';
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah diperbarui oleh admin.';
 
+        Log::info('📤 Kirim Notifikasi Tugas Update', [
+            'kepada' => $user->nama . ' (ID: ' . $user->id . ')',
+            'tugas' => $tugas->nama_tugas,
+        ]);
+
         self::logAndSend($user, $title, $message, 'tugas_update', [
             'tugas_id' => (string) $tugas->id,
+            'target_user_id' => (string) $user->id, // ✅ Validasi di Flutter
             'status' => $tugas->status,
             'judul' => $tugas->nama_tugas,
             'batas_penugasan' => Carbon::parse($tugas->batas_penugasan)->toIso8601String(),
@@ -122,20 +134,7 @@ class NotificationHelper
     }
 
     /**
-     * Utility internal: log notifikasi ke database dan kirim ke FCM.
-     */
-    private static function logAndSend($user, string $title, string $message, string $type, array $data = []): void
-    {
-        if (!$user->device_token) return;
-
-        $data['tipe'] = $type;
-
-        app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, $data);
-    }
-
-    /**
      * Kirim notifikasi saat tugas dialihkan ke user lain.
-     * ✅ FIXED: Mengirim data FCM lengkap dengan hapus_progress
      */
     public static function sendTugasDialihkan($userLama, $tugas): void
     {
@@ -143,6 +142,11 @@ class NotificationHelper
         $message = 'Tugas "' . $tugas->nama_tugas . '" telah dipindahkan ke user lain.';
 
         if ($userLama->device_token) {
+            Log::info('📤 Kirim Notifikasi Tugas Dialihkan', [
+                'kepada' => $userLama->nama . ' (ID: ' . $userLama->id . ')',
+                'tugas' => $tugas->nama_tugas,
+            ]);
+
             app(FirebaseService::class)->sendMessage(
                 $userLama->device_token,
                 $title,
@@ -150,7 +154,9 @@ class NotificationHelper
                 [
                     'tipe' => 'tugas_pindah',
                     'tugas_id' => (string) $tugas->id,
+                    'target_user_id' => (string) $userLama->id, // ✅ Validasi
                     'judul' => $tugas->nama_tugas,
+                    'hapus_progress' => 'true',
                 ]
             );
         }
@@ -158,10 +164,10 @@ class NotificationHelper
 
     /**
      * Kirim notifikasi saat user upload lampiran.
-     * ✅ FIXED: Parameter salah - seharusnya kirim ke admin, bukan user
      */
     public static function sendLampiranDikirim($user, $tugas): void
     {
+        // Kirim ke ADMIN
         $admins = User::whereHas('peran.fitur', function ($q) {
             $q->where('nama_fitur', 'lihat_semua_tugas');
         })->get();
@@ -171,28 +177,41 @@ class NotificationHelper
 
         foreach ($admins as $admin) {
             if ($admin->device_token) {
+                Log::info('📤 Kirim Notifikasi Lampiran ke Admin', [
+                    'kepada' => $admin->nama . ' (ID: ' . $admin->id . ')',
+                    'dari_user' => $user->nama,
+                ]);
+
                 app(FirebaseService::class)->sendMessage($admin->device_token, $title, $message, [
                     'tipe' => 'tugas_lampiran',
                     'tugas_id' => (string) $tugas->id,
+                    'target_user_id' => (string) $admin->id, // ✅ Admin sebagai target
                     'judul' => $tugas->nama_tugas,
                 ]);
             }
         }
 
-        // 🔹 Kirim juga ke USER bahwa tugasnya berhasil dikirim
+        // Kirim ke USER
         $selfTitle = 'Tugas Dikirim';
         $selfMessage = 'Kamu telah mengirim hasil tugas "' . $tugas->nama_tugas . '". Menunggu verifikasi admin.';
+        
         if ($user->device_token) {
+            Log::info('📤 Kirim Notifikasi Lampiran Terkirim ke User', [
+                'kepada' => $user->nama . ' (ID: ' . $user->id . ')',
+            ]);
+
             app(FirebaseService::class)->sendMessage($user->device_token, $selfTitle, $selfMessage, [
                 'tipe' => 'tugas_lampiran_dikirim',
                 'tugas_id' => (string) $tugas->id,
+                'target_user_id' => (string) $user->id, // ✅ Validasi
+                'judul' => $tugas->nama_tugas,
+                'hapus_progress' => 'true',
             ]);
         }
     }
 
     /**
-     * Kirim notifikasi saat tugas dihapus oleh admin.
-     * ✅ FIXED: Mengirim data FCM lengkap dengan hapus_progress
+     * Kirim notifikasi saat tugas dihapus.
      */
     public static function sendTugasDihapus($user, $tugas): void
     {
@@ -205,13 +224,15 @@ class NotificationHelper
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'tugas_hapus',
                 'tugas_id' => (string) $tugas->id,
+                'target_user_id' => (string) $user->id, // ✅ Validasi
                 'judul' => $tugas->nama_tugas,
+                'hapus_progress' => 'true',
             ]);
         }
     }
 
     /**
-     * Kirim notifikasi saat tugas diubah statusnya menjadi Selesai.
+     * Kirim notifikasi saat tugas selesai.
      */
     public static function sendTugasSelesai($user, $tugas): void
     {
@@ -222,13 +243,15 @@ class NotificationHelper
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'tugas_selesai',
                 'tugas_id' => (string) $tugas->id,
+                'target_user_id' => (string) $user->id, // ✅ Validasi
                 'judul' => $tugas->nama_tugas,
+                'hapus_progress' => 'true',
             ]);
         }
     }
 
     /**
-     * Kirim notifikasi saat tugas di ubah menjadi proses.
+     * Kirim notifikasi saat tugas diproses.
      */
     public static function sendTugasDiproses($user, $tugas): void
     {
@@ -239,9 +262,17 @@ class NotificationHelper
             app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, [
                 'tipe' => 'tugas_update_proses',
                 'tugas_id' => (string) $tugas->id,
+                'target_user_id' => (string) $user->id, // ✅ Validasi
                 'judul' => $tugas->nama_tugas,
             ]);
         }
+    }
+
+    private static function logAndSend($user, string $title, string $message, string $type, array $data = []): void
+    {
+        if (!$user->device_token) return;
+        $data['tipe'] = $type;
+        app(FirebaseService::class)->sendMessage($user->device_token, $title, $message, $data);
     }
 
     // ==========================================
