@@ -195,7 +195,6 @@ class TugasController extends Controller
                     $tugas
                 );
             }
-
         } else {
             // 🔹 Jika tidak ada pergantian PIC, berarti cuma update biasa
             if ($tugas->user->device_token) {
@@ -381,14 +380,6 @@ class TugasController extends Controller
             $tugas->status = "Menunggu Admin";
             $tugas->save();
         }
-
-        // Kirim notifikasi ke admin
-        NotificationHelper::sendToFitur(
-            'lihat_semua_tugas',
-            'Lampiran Baru Dikirim',
-            'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
-            'tugas'
-        );
 
         // Kirim notifikasi ke user (hapus progres bar + tunggal)
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
