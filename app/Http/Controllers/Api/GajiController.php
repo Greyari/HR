@@ -43,7 +43,6 @@ class GajiController extends Controller
         $bulan = $now->month;
         $tahun = $now->year;
 
-        // Ambil total absensi bulan & tahun sekarang
         $absensiCounts = Absensi::select('user_id', DB::raw('count(*) as total'))
             ->whereNotNull('checkin_date')
             ->whereMonth('checkin_date', $bulan)
@@ -51,70 +50,65 @@ class GajiController extends Controller
             ->groupBy('user_id')
             ->pluck('total', 'user_id');
 
-        foreach ($users as $user) {
-            $gajiPerHari = $user->gaji_per_hari ?? 0;
-            $jumlahHariHadir = $absensiCounts->get($user->id, 0);
+        // ⛔ MATIKAN OBSERVER SAAT PERHITUNGAN
+        Gaji::withoutEvents(function () use ($users, $potonganList, $bulan, $tahun, $absensiCounts, &$result) {
+            foreach ($users as $user) {
 
-            // Gaji kotor
-            $gajiPokok = $jumlahHariHadir * $gajiPerHari;
+                $gajiPerHari = $user->gaji_per_hari ?? 0;
+                $jumlahHariHadir = $absensiCounts->get($user->id, 0);
 
-            // Lembur (sementara 0)
-            $totalLembur = 0;
+                $gajiPokok = $jumlahHariHadir * $gajiPerHari;
+                $totalLembur = 0;
 
-            // Hitung potongan
-            $totalPotongan = 0;
-            $detailPotongan = [];
-            foreach ($potonganList as $potongan) {
-                $nilaiPotongan = ($gajiPokok * $potongan->persen / 100);
-                $totalPotongan += $nilaiPotongan;
-                $detailPotongan[] = [
-                    'nama_potongan' => $potongan->nama_potongan,
-                    'persen'        => $potongan->persen,
-                    'nilai'         => $nilaiPotongan,
+                $totalPotongan = 0;
+                $detailPotongan = [];
+                foreach ($potonganList as $potongan) {
+                    $nilaiPotongan = ($gajiPokok * $potongan->persen / 100);
+                    $totalPotongan += $nilaiPotongan;
+                    $detailPotongan[] = [
+                        'nama_potongan' => $potongan->nama_potongan,
+                        'persen'        => $potongan->persen,
+                        'nilai'         => $nilaiPotongan,
+                    ];
+                }
+
+                $gajiBersih = $gajiPokok + $totalLembur - $totalPotongan;
+
+                $gaji = Gaji::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'bulan'   => $bulan,
+                        'tahun'   => $tahun,
+                    ],
+                    [
+                        'total_kehadiran' => $jumlahHariHadir,
+                        'gaji_kotor'      => $gajiPokok,
+                        'total_potongan'  => $totalPotongan,
+                        'detail_potongan' => $detailPotongan,
+                        'gaji_bersih'     => $gajiBersih,
+                    ]
+                );
+
+                $result[] = [
+                    'id' => $gaji->id,
+                    'user' => ['id' => $user->id, 'nama' => $user->nama],
+                    'total_kehadiran' => $jumlahHariHadir,
+                    'gaji_kotor' => $gajiPokok,
+                    'gaji_per_hari' => $gajiPerHari,
+                    'total_lembur' => $totalLembur,
+                    'potongan' => $detailPotongan,
+                    'total_potongan' => $totalPotongan,
+                    'gaji_bersih' => $gajiBersih,
+                    'status' => $gaji->status,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
                 ];
             }
-
-            // Gaji bersih
-            $gajiBersih = $gajiPokok + $totalLembur - $totalPotongan;
-
-            // Simpan / update data gaji bulan ini
-            $gaji = Gaji::updateOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'bulan'   => $bulan,
-                    'tahun'   => $tahun,
-                ],
-                [
-                    'total_kehadiran' => $jumlahHariHadir,
-                    'gaji_kotor'      => $gajiPokok,
-                    'total_potongan'  => $totalPotongan,
-                    'detail_potongan' => $detailPotongan,
-                    'gaji_bersih'     => $gajiBersih,
-                ]
-            );
-
-            $result[] = [
-                'id'              => $gaji->id,
-                'user'            => ['id' => $user->id, 'nama' => $user->nama],
-                'total_kehadiran' => $jumlahHariHadir,
-                'gaji_per_hari'   => $gajiPerHari,
-                'gaji_kotor'      => $gajiPokok,
-                'total_lembur'    => $totalLembur,
-                'potongan'        => $detailPotongan,
-                'total_potongan'  => $totalPotongan,
-                'gaji_bersih'     => $gajiBersih,
-                'status'          => $gaji->status,
-                'bulan'           => $bulan,
-                'tahun'           => $tahun,
-            ];
-        }
-
-        // 🔑 Tambahkan filter supaya response hanya bulan & tahun sekarang
-        $filtered = collect($result)->where('bulan', $bulan)->where('tahun', $tahun)->values();
+        });
 
         return response()->json([
             'message' => 'Data gaji bulan ini berhasil dihitung',
-            'data'    => $filtered
+            'data'    => $result
         ]);
     }
 

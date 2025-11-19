@@ -382,14 +382,6 @@ class TugasController extends Controller
             $tugas->save();
         }
 
-        // Kirim notifikasi ke admin
-        NotificationHelper::sendToFitur(
-            'lihat_semua_tugas',
-            'Lampiran Baru Dikirim',
-            'User ' . $tugas->user->name . ' mengunggah hasil tugas "' . $tugas->nama_tugas . '".',
-            'tugas'
-        );
-
         // Kirim notifikasi ke user (hapus progres bar + tunggal)
         NotificationHelper::sendLampiranDikirim($tugas->user, $tugas);
 
