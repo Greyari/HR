@@ -84,7 +84,7 @@ class FiturSeeder extends Seeder
 
             // ---------------------- Buka akun ----------------------
             ['buka_akun', 'menejemen akun yang terkunci'],
-            
+
             // ---------------------- menejemen device ----------------------
             ['reset_device', 'menejemen akun untuk reset device terkait'],
 

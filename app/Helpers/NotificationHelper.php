@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use App\Models\User;
-use App\Models\Notification;
 use App\Services\FirebaseService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -194,7 +193,7 @@ class NotificationHelper
         // Kirim ke USER
         $selfTitle = 'Tugas Dikirim';
         $selfMessage = 'Kamu telah mengirim hasil tugas "' . $tugas->nama_tugas . '". Menunggu verifikasi admin.';
-        
+
         if ($user->device_token) {
             Log::info('📤 Kirim Notifikasi Lampiran Terkirim ke User', [
                 'kepada' => $user->nama . ' (ID: ' . $user->id . ')',

@@ -60,6 +60,9 @@ class UserController extends Controller
                 'peran_id.required' => 'Peran wajib dipilih.',
                 'peran_id.exists' => 'Peran yang dipilih tidak valid.',
 
+                'jabatan_id.required' => 'Jabatan wajib dipilih.',
+                'departemen_id.required' => 'Departemen wajib dipilih.',
+
                 'jabatan_id.exists' => 'Jabatan yang dipilih tidak valid.',
                 'departemen_id.exists' => 'Departemen yang dipilih tidak valid.',
 
@@ -96,6 +99,9 @@ class UserController extends Controller
                 'nama.max' => 'Name may not exceed 255 characters.',
 
                 'peran_id.required' => 'Role is required.',
+                'jabatan_id.required' => 'Position is required.',
+                'departemen_id.required' => 'Department is required.',
+
                 'peran_id.exists' => 'The selected role is invalid.',
 
                 'jabatan_id.exists' => 'The selected position is invalid.',
@@ -132,8 +138,8 @@ class UserController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'peran_id' => 'required|exists:peran,id',
-            'jabatan_id' => 'nullable|exists:jabatan,id',
-            'departemen_id' => 'nullable|exists:departemen,id',
+            'jabatan_id' => 'required|exists:jabatan,id',
+            'departemen_id' => 'required|exists:departemen,id',
             'gaji_per_hari' => 'required|numeric|min:0',
             'npwp' => [
                 'required',

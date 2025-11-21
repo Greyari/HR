@@ -57,6 +57,7 @@ class HakAksesSeeder extends Seeder
                 'potongan_gaji',
                 'absensi',
                 'lihat_absensi_sendiri',
+                'pengingat'
             ],
 
             // Admin Office Aplikasi
@@ -84,6 +85,7 @@ class HakAksesSeeder extends Seeder
                 'potongan_gaji',
                 'absensi',
                 'lihat_absensi_sendiri',
+                'pengingat'
             ],
 
             // Teknisi Website

@@ -13,13 +13,17 @@ class DataResetEvent
     public $tahun;
     public $jumlah;
     public $user_id;
+    public $ip;
+    public $agent;
 
-    public function __construct($module, $bulan, $tahun, $jumlah, $user_id)
+    public function __construct($module, $bulan, $tahun, $jumlah, $user_id, $ip, $agent)
     {
+        $this->user_id = $user_id;
         $this->module  = $module;
         $this->bulan   = $bulan;
         $this->tahun   = $tahun;
         $this->jumlah  = $jumlah;
-        $this->user_id = $user_id;
+        $this->ip      = $ip;
+        $this->agent   = $agent;
     }
 }

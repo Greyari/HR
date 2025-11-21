@@ -12,6 +12,8 @@ use App\Models\Tugas;
 use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Storage;
 use App\Events\DataResetEvent;
+use Illuminate\Support\Facades\Log;
+
 
 class DengerController extends Controller
 {
@@ -42,7 +44,9 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deleted,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
 
 
@@ -57,7 +61,8 @@ class DengerController extends Controller
             ->groupBy('tahun', 'bulan')
             ->orderBy('tahun', 'desc')
             ->orderBy('bulan', 'desc')
-            ->get();
+            ->get()
+            ->makeHidden(['keterangan_status']);
 
         return response()->json($data);
     }
@@ -89,8 +94,11 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deleted,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
+
 
         return response()->json([
             'message' => "Sebanyak $deleted data lembur bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
@@ -103,7 +111,8 @@ class DengerController extends Controller
             ->groupBy('tahun', 'bulan')
             ->orderBy('tahun', 'desc')
             ->orderBy('bulan', 'desc')
-            ->get();
+            ->get()
+            ->makeHidden(['keterangan_status']);
 
         return response()->json($data);
     }
@@ -135,7 +144,9 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deleted,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
 
         return response()->json([
@@ -194,7 +205,9 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deletedCount,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
 
         return response()->json([
@@ -233,6 +246,10 @@ class DengerController extends Controller
         }
 
         $deleted = $query->delete();
+        Log::info("=== DEBUG: CONTROLLER DISPATCH EVENT ===", [
+            'route' => $request->path(),
+            'module' => 'cuti/lembur/gaji/tugas/log/absen'
+        ]);
 
         // Trigger Observer Event
         DataResetEvent::dispatch(
@@ -240,8 +257,11 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deleted,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
+
 
         return response()->json([
             'message' => "Sebanyak $deleted log aktivitas bulan {$request->bulan} tahun {$request->tahun} berhasil dihapus"
@@ -297,7 +317,9 @@ class DengerController extends Controller
             $request->bulan,
             $request->tahun,
             $deleted,
-            $request->user()->id
+            $request->user()->id,
+            $request->ip(),
+            $request->userAgent()
         );
 
         return response()->json([
