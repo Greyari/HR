@@ -8,8 +8,6 @@ use App\Models\Absensi;
 use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-// use Cloudinary\Api\Upload\UploadApi;
-// use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -36,11 +34,13 @@ class AbsensiController extends Controller
                 ->get();
         } else {
             return response()->json([
+                'status'  => false,
                 'message' => 'Anda tidak punya akses untuk melihat absensi'
             ], 403);
         }
 
         return response()->json([
+            'status'  => false,
             'message' => 'Data absensi berhasil diambil',
             'data'    => $absensiList
         ]);
@@ -94,6 +94,7 @@ class AbsensiController extends Controller
         $jarak = $this->hitungJarak($request->lat, $request->lng, $kantor->lat, $kantor->lng);
         if ($jarak > $kantor->radius_meter) {
             return response()->json([
+                'status'  => false,
                 'message' => 'Anda berada di luar radius kantor!'
             ], 403);
         }
@@ -105,6 +106,7 @@ class AbsensiController extends Controller
 
         if ($absensi) {
             return response()->json([
+                'status'  => false,
                 'message' => 'Anda sudah melakukan check-in pada tanggal ini.'
             ], 400);
         }
@@ -138,6 +140,7 @@ class AbsensiController extends Controller
             Log::error('Upload video gagal: ' . $e->getMessage());
 
             return response()->json([
+                'status'  => false,
                 'message' => 'Upload video gagal: ' . $e->getMessage(),
             ], 500);
         }
@@ -154,6 +157,7 @@ class AbsensiController extends Controller
         ]);
 
         return response()->json([
+            'status'    => true,
             'message'   => 'Check-in berhasil',
             'data'      => $absensi,
             'video_url' => $videoUrl,
@@ -184,12 +188,14 @@ class AbsensiController extends Controller
 
         if (!$absensi) {
             return response()->json([
+                'status' => false,
                 'message' => 'Anda belum melakukan check-in pada tanggal ini.'
             ], 400);
         }
 
         if ($absensi->checkout_time) {
             return response()->json([
+                'status' => false,
                 'message' => 'Anda sudah melakukan check-out hari ini.'
             ], 400);
         }
@@ -202,6 +208,7 @@ class AbsensiController extends Controller
         ]);
 
         return response()->json([
+            'status' => true,
             'message' => 'Check-out berhasil',
             'data' => $absensi
         ]);
