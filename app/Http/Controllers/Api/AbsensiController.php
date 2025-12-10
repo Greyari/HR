@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class AbsensiController extends Controller
 {
+
     /**
      * Ambil semua data absensi
      */

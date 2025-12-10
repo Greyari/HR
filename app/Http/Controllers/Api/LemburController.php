@@ -11,6 +11,17 @@ use App\Models\Pengaturan;
 
 class LemburController extends Controller
 {
+
+    // Method dummy untuk testing
+    public function submitDummy(Request $request)
+    {
+        return response()->json([
+            'message' => 'Dummy lembur submitted successfully',
+            'data' => $request->all()
+        ], 200);
+    }
+
+
     // Menampilkan daftar lembur
     public function index()
     {
