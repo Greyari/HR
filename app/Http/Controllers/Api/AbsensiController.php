@@ -8,13 +8,12 @@ use App\Models\Absensi;
 use App\Models\Kantor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-// use Cloudinary\Api\Upload\UploadApi;
-// use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class AbsensiController extends Controller
 {
+
     /**
      * Ambil semua data absensi
      */
@@ -42,7 +41,7 @@ class AbsensiController extends Controller
         }
 
         return response()->json([
-            'status'  => true,
+            'status'  => false,
             'message' => 'Data absensi berhasil diambil',
             'data'    => $absensiList
         ]);
@@ -137,7 +136,6 @@ class AbsensiController extends Controller
                 Storage::disk('public')->put($filePath, $videoData);
                 $videoUrl = Storage::url($filePath);
             }
-
         } catch (\Exception $e) {
             Log::error('Upload video gagal: ' . $e->getMessage());
 
@@ -226,11 +224,11 @@ class AbsensiController extends Controller
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
 
-        $a = sin($dLat/2) * sin($dLat/2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($dLng/2) * sin($dLng/2);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLng / 2) * sin($dLng / 2);
 
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
     }

@@ -8,11 +8,18 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Jenssegers\Agent\Agent;
+use App\Models\Pengaturan;
+use Illuminate\Validation\ValidationException;
+
 
 class AuthController extends Controller
 {
+    private function getUserLanguage($userId)
+    {
+        return Pengaturan::where('user_id', $userId)->value('bahasa') ?? 'indonesia';
+    }
+
     // Fitur login
     public function login(Request $request)
     {
@@ -192,41 +199,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // ganti email
-    public function updateEmail(Request $request)
-    {
-        // Dapatkan pengguna yang sedang login
-        $user = User::find(Auth::id());
-
-        // Validasi input
-        $validator = Validator::make($request->all(), [
-            'old_password' => 'required|string',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-        ]);
-
-        // Jika validasi gagal
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        if (!Hash::check($request->old_password, $user->password)) {
-            return response()->json([
-                'message' => 'Password salah',
-            ], 422);
-        }
-
-        // Update email pengguna
-        $user->email = $request->email;
-        $user->save();
-
-        return response()->json([
-            'message' => 'Email berhasil diperbarui',
-            'data' => ['email' => $user->email]
-        ], 200);
-    }
 
     // Ambil data user dari token
     public function me(Request $request)
@@ -239,39 +211,126 @@ class AuthController extends Controller
         ]);
     }
 
-    // Ganti password
-    public function changePassword(Request $request)
+    // Ganti email
+    public function updateEmail(Request $request)
     {
-        $user = $request->user();
+        $user = User::find(Auth::id());
+        $bahasa = $this->getUserLanguage($user->id);
 
-        // Validasi input
-        $validator = Validator::make($request->all(), [
-            'old_password' => 'required|string',
-            'new_password' => 'required|string|min:6|confirmed',
-        ]);
+        // === PESAN VALIDASI ===
+        $messages = [
+            'indonesia' => [
+                'old_password.required' => 'Password lama wajib diisi.',
+                'email.required' => 'Email wajib diisi.',
+                'email.email' => 'Email tidak valid.',
+                'email.max' => 'Email tidak boleh lebih dari 255 karakter.',
+                'email.unique' => 'Email sudah digunakan.',
+            ],
+            'inggris' => [
+                'old_password.required' => 'Old password is required.',
+                'email.required' => 'Email is required.',
+                'email.email' => 'Invalid email format.',
+                'email.max' => 'Email must not exceed 255 characters.',
+                'email.unique' => 'Email is already taken.',
+            ]
+        ];
 
-        if ($validator->fails()) {
+        try {
+            $validated = $request->validate([
+                'old_password' => 'required|string',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            ], $messages[$bahasa]);
+
+        } catch (ValidationException $e) {
+            $errorMessages = $e->errors();
+            $firstError = collect($errorMessages)->flatten()->first();
+
             return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
+                'message' => $firstError,
+                'errors' => $errorMessages,
             ], 422);
         }
 
         // Cek password lama
         if (!Hash::check($request->old_password, $user->password)) {
             return response()->json([
-                'message' => 'Password lama salah',
+                'message' => $bahasa === 'indonesia'
+                    ? 'Password lama salah.'
+                    : 'Incorrect old password.',
             ], 422);
         }
 
-        // Update password baru
+        // Update email
+        $user->email = $request->email;
+        $user->save();
+
+        return response()->json([
+            'message' => $bahasa === 'indonesia'
+                ? 'Email berhasil diperbarui.'
+                : 'Email updated successfully.',
+            'data' => ['email' => $user->email]
+        ], 200);
+    }
+
+
+    // Ganti password
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+        $bahasa = $this->getUserLanguage($user->id);
+
+        // === PESAN VALIDASI ===
+        $messages = [
+            'indonesia' => [
+                'old_password.required' => 'Password lama wajib diisi.',
+                'new_password.required' => 'Password baru wajib diisi.',
+                'new_password.min' => 'Password baru minimal 6 karakter.',
+                'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
+            ],
+            'inggris' => [
+                'old_password.required' => 'Old password is required.',
+                'new_password.required' => 'New password is required.',
+                'new_password.min' => 'New password must be at least 6 characters.',
+                'new_password.confirmed' => 'Password confirmation does not match.',
+            ]
+        ];
+
+        try {
+            $validated = $request->validate([
+                'old_password' => 'required|string',
+                'new_password' => 'required|string|min:6|confirmed',
+            ], $messages[$bahasa]);
+
+        } catch (ValidationException $e) {
+            $errorMessages = $e->errors();
+            $firstError = collect($errorMessages)->flatten()->first();
+
+            return response()->json([
+                'message' => $firstError,
+                'errors' => $errorMessages,
+            ], 422);
+        }
+
+        // Cek password lama
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'message' => $bahasa === 'indonesia'
+                    ? 'Password lama salah.'
+                    : 'Incorrect old password.',
+            ], 422);
+        }
+
+        // Update password
         $user->password = Hash::make($request->new_password);
         $user->save();
 
         return response()->json([
-            'message' => 'Password berhasil diperbarui'
+            'message' => $bahasa === 'indonesia'
+                ? 'Password berhasil diperbarui.'
+                : 'Password updated successfully.',
         ], 200);
     }
+
 
     // Fitur logout
     public function logout(Request $request)

@@ -32,6 +32,8 @@ Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink'
 // auth sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::post('/test-lembur', [LemburController::class, 'submitDummy']);
+
     // route token user
     Route::get('/me', [AuthController::class, 'me']);
 
