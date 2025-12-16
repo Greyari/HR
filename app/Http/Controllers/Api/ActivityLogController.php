@@ -11,6 +11,11 @@ class ActivityLogController extends Controller
     public function index()
     {
         $logs = ActivityLog::with('user:id,nama')
+            ->whereNotNull('user_id')
+            ->whereNotNull('action')
+            ->whereNotNull('module')
+            ->whereNotNull('description')
+            ->whereNotNull('created_at')
             ->latest()
             ->get();
 
