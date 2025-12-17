@@ -140,14 +140,25 @@ class AuthController extends Controller
             $punyaWeb = in_array('web', $fiturUser);
 
             if (!$punyaWeb) {
-                // 🔍 Cek apakah device_hash sudah terdaftar di user lain
-                $existing = Device::where('device_hash', $request->device_hash)
-                                ->where('user_id', '!=', $user->id)
-                                ->first();
+                // Cek apakah device_hash sudah terdaftar di user lain
+                $deviceSudahDigunakan = Device::where('device_hash', $request->device_hash)
+                                            ->where('user_id', '!=', $user->id)
+                                            ->exists();
 
-                if ($existing) {
+                if ($deviceSudahDigunakan) {
                     return response()->json([
                         'message' => 'Perangkat ini sudah terhubung ke akun lain. Silakan hubungi admin.'
+                    ], 403);
+                }
+
+                // Apakah user ini sudah login di device lain?
+                $userPunyaDeviceLain = Device::where('user_id', $user->id)
+                                            ->where('device_hash', '!=', $request->device_hash)
+                                            ->exists();
+
+                if ($userPunyaDeviceLain) {
+                    return response()->json([
+                        'message' => 'Akun Anda sudah login di perangkat lain. Logout terlebih dahulu atau hubungi admin.'
                     ], 403);
                 }
 
