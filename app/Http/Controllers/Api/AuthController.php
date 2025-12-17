@@ -158,7 +158,7 @@ class AuthController extends Controller
 
                 if ($userPunyaDeviceLain) {
                     return response()->json([
-                        'message' => 'Akun Anda sudah login di perangkat lain. Silakan hubungi admin.'
+                        'message' => 'Akun Anda sudah pernah login di perangkat lain. Silakan hubungi admin.'
                     ], 403);
                 }
 
