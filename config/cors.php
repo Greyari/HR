@@ -17,9 +17,9 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-	'https://103.161.188.102:443',
-	'https://103.161.188.102:444',
-	'http://103.161.188.102:80'
+	'https://27.112.70.84:443',
+	'https://27.112.70.84:444',
+	'http://27.112.70.84:80'
     ],
 
     'allowed_origins_patterns' => [],
