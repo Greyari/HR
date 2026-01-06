@@ -15,7 +15,7 @@ class DemoTugasSeeder extends Seeder
 
         $user = User::where('email', 'karyawan@demo.local')->first();
 
-        Tugas::create([
+        Tugas::updateOrCreate([
             'user_id' => $user->id,
             'nama_tugas' => 'Input absensi demo',
             'tanggal_penugasan' => Carbon::now(),

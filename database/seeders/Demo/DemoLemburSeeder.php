@@ -15,7 +15,7 @@ class DemoLemburSeeder extends Seeder
 
         $user = User::first();
 
-        Lembur::create([
+        Lembur::updateOrCreate([
             'user_id' => $user->id,
             'tanggal' => Carbon::yesterday(),
             'jam_mulai' => '18:00',

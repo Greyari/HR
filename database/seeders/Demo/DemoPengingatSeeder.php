@@ -12,7 +12,7 @@ class DemoPengingatSeeder extends Seeder
     {
         Pengingat::truncate();
 
-        Pengingat::create([
+        Pengingat::updateOrCreate([
             'peran_id' => 1,
             'judul' => 'Pengingat Sidang',
             'deskripsi' => 'Pastikan semua fitur HRIS siap demo',

@@ -43,7 +43,7 @@ class DemoUserSeeder extends Seeder
 
 
             //////////////// Super admin ////////////////
-            User::create([
+            User::updateOrCreate([
                 'nama' => 'bekcup',
                 'email' => 'bekcupsuper@gmail.com',
                 'password' => Hash::make('123'),
@@ -60,7 +60,7 @@ class DemoUserSeeder extends Seeder
 
 
             //////////////// Admin  Office ////////////////
-            User::create([
+            User::updateOrCreate([
                 'nama' => 'bekcup',
                 'email' => 'bekcupoffice@gmail.com',
                 'password' => Hash::make('123'),
@@ -76,7 +76,7 @@ class DemoUserSeeder extends Seeder
             ]);
 
 
-            User::create([
+            User::updateOrCreate([
                 'nama' => 'bekcup',
                 'email' => 'bekcupteknisi@gmail.com',
                 'password' => Hash::make('123'),
