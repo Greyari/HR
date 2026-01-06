@@ -22,7 +22,6 @@ class Pengingat extends Model
         'judul',
         'deskripsi',
         'tanggal_jatuh_tempo',
-        'mengulang',
         'status',
     ];
 

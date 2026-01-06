@@ -18,8 +18,7 @@ class DemoPengingatSeeder extends Seeder
             'judul' => 'Pengingat Sidang',
             'deskripsi' => 'Pastikan semua fitur HRIS siap demo',
             'tanggal_jatuh_tempo' => Carbon::now()->addDays(1),
-            'mengulang' => false,
-            'status' => 'aktif',
+            'status' => 'Selesai',
         ]);
     }
 }
