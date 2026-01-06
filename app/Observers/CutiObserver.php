@@ -22,6 +22,12 @@ class CutiObserver
     public function updated(Cuti $cuti): void
     {
         $actor = Auth::user();
+
+        // Jika tidak ada user yang terautentikasi, keluar dari fungsi untuk seeder demo
+        if (!$actor) {
+            return;
+        }
+
         $namaActor = $actor->nama;
         $peranActor = $actor->peran->nama_peran;
         $pemohon = $cuti->user->nama;

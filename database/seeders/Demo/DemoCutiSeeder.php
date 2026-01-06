@@ -18,7 +18,6 @@ class DemoCutiSeeder extends Seeder
         Cuti::updateOrCreate(
             ['user_id' => $user->id],
         [
-
             'tipe_cuti' => 'Sakit',
             'tanggal_mulai' => Carbon::now()->addDays(3),
             'tanggal_selesai' => Carbon::now()->addDays(5),

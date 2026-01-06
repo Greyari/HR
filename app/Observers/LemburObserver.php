@@ -21,6 +21,12 @@ class LemburObserver
     public function updated(Lembur $lembur): void
     {
         $actor = Auth::user();
+
+        // Jika tidak ada user yang terautentikasi, keluar dari fungsi untuk seeder demo
+        if (!$actor) {
+            return;
+        }
+        
         $namaActor = $actor->nama;
         $peranActor = $actor->peran->nama_peran;
         $pemohon = $lembur->user->nama;
