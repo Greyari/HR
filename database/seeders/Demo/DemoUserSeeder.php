@@ -43,9 +43,10 @@ class DemoUserSeeder extends Seeder
 
 
             //////////////// Super admin ////////////////
-            User::updateOrCreate([
+            User::updateOrCreate(
+                ['email' => 'bekcupsuper@gmail.com'],
+                [
                 'nama' => 'bekcup',
-                'email' => 'bekcupsuper@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanGM->id,
                 'peran_id' => $peranSA->id,
@@ -60,9 +61,10 @@ class DemoUserSeeder extends Seeder
 
 
             //////////////// Admin  Office ////////////////
-            User::updateOrCreate([
+            User::updateOrCreate(
+                ['email' => 'bekcupoffice@gmail.com'],
+                [
                 'nama' => 'bekcup',
-                'email' => 'bekcupoffice@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanAos->id,
                 'peran_id' => $peranAoWeb->id,
@@ -76,9 +78,10 @@ class DemoUserSeeder extends Seeder
             ]);
 
 
-            User::updateOrCreate([
+            User::updateOrCreate(
+                ['email' => 'bekcupteknisi@gmail.com'],
+                [
                 'nama' => 'bekcup',
-                'email' => 'bekcupteknisi@gmail.com',
                 'password' => Hash::make('123'),
                 'jabatan_id' => $jabatanTs->id,
                 'peran_id' => $peranTnApk->id,

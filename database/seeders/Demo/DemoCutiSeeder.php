@@ -15,8 +15,10 @@ class DemoCutiSeeder extends Seeder
 
         $user = User::first();
 
-        Cuti::updateOrCreate([
-            'user_id' => $user->id,
+        Cuti::updateOrCreate(
+            ['user_id' => $user->id],
+        [
+
             'tipe_cuti' => 'Sakit',
             'tanggal_mulai' => Carbon::now()->addDays(3),
             'tanggal_selesai' => Carbon::now()->addDays(5),
@@ -25,8 +27,9 @@ class DemoCutiSeeder extends Seeder
             'approval_step' => 2,
         ]);
 
-        Cuti::updateOrCreate([
-            'user_id' => $user->id,
+        Cuti::updateOrCreate(
+            ['user_id' => $user->id],
+            [
             'tipe_cuti' => 'Izin',
             'tanggal_mulai' => Carbon::now()->addDays(3),
             'tanggal_selesai' => Carbon::now()->addDays(5),
