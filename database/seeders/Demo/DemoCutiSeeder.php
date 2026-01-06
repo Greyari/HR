@@ -17,12 +17,22 @@ class DemoCutiSeeder extends Seeder
 
         Cuti::create([
             'user_id' => $user->id,
-            'tipe_cuti' => 'Tahunan',
+            'tipe_cuti' => 'Sakit',
             'tanggal_mulai' => Carbon::now()->addDays(3),
             'tanggal_selesai' => Carbon::now()->addDays(5),
             'alasan' => 'Cuti demo untuk sidang',
             'status' => 'disetujui',
             'approval_step' => 2,
+        ]);
+
+        Cuti::create([
+            'user_id' => $user->id,
+            'tipe_cuti' => 'Izin',
+            'tanggal_mulai' => Carbon::now()->addDays(3),
+            'tanggal_selesai' => Carbon::now()->addDays(5),
+            'alasan' => 'Cuti demo untuk sidang',
+            'status' => 'disetujui',
+            'approval_step' => 3,
         ]);
     }
 }
