@@ -13,7 +13,7 @@ class DemoTugasSeeder extends Seeder
     {
         Tugas::truncate();
 
-        $user = User::where('email', 'karyawan@demo.local')->first();
+        $user = User::where('email', 'siddiq@gmail.com')->first();
 
         Tugas::updateOrCreate(
             ['user_id' => $user->id],
