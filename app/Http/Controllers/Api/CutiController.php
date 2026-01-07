@@ -143,10 +143,11 @@ class CutiController extends Controller
 
         // ====== STEP 1 APPROVE ======
         if (in_array('approve_cuti_step1', $fiturUser)) {
-            // hanya bisa approve step 1
-            if (!in_array($cuti->approval_step, [0, 3])) {
-                return response()->json(['message' => 'Cuti sudah diproses tahap awal'], 400);
+            // hanya bisa approve step 1 jika masih step 0 (Pending)
+            if ($cuti->approval_step !== 0) {  // HANYA BISA APPROVE YANG PENDING
+                return response()->json(['message' => 'Cuti sudah diproses atau ditolak, tidak bisa disetujui'], 400);
             }
+
             $cuti->approval_step = 1;
             $cuti->status = 'Proses';
             $cuti->save();

@@ -159,9 +159,11 @@ class LemburController extends Controller
 
         // ====== STEP 1 APPROVE ======
         if (in_array('approve_lembur_step1', $fiturUser)) {
-            if (!in_array($lembur->approval_step, [0, 3])) {
-                return response()->json(['message' => 'Lembur sudah diproses tahap awal'], 400);
+            // hanya bisa approve step 1 jika masih step 0 (Pending)
+            if ($lembur->approval_step !== 0) {
+                return response()->json(['message' => 'Lembur sudah diproses atau ditolak, tidak bisa disetujui'], 400);
             }
+            
             $lembur->approval_step = 1;
             $lembur->status = 'Proses';
             $lembur->save();
