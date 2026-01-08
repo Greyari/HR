@@ -7,6 +7,7 @@ use App\Models\Pengingat;
 use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
 
 class PengingatController extends Controller
 {
@@ -98,18 +99,13 @@ class PengingatController extends Controller
 
         $validated = $request->validate([
             'peran_id' => 'required|exists:peran,id',
-            'judul' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('pengingat', 'judul'),
-            ],
+            'judul'=> 'required|string|max:255|unique:pengingat,judul',
             'deskripsi' => 'nullable|string',
             'tanggal_jatuh_tempo' => 'required|date',
             'status' => 'in:Pending,Selesai,Terlambat',
         ], $messages[$bahasa]);
 
-        $validated['tanggal_jatuh_tempo'] = \Carbon\Carbon::parse($validated['tanggal_jatuh_tempo'])
+        $validated['tanggal_jatuh_tempo'] = Carbon::parse($validated['tanggal_jatuh_tempo'])
             ->setTime(23, 59, 59);
 
         $pengingat = Pengingat::create($validated);
@@ -160,7 +156,7 @@ class PengingatController extends Controller
 
         // jika update tanggal
         if (isset($validated['tanggal_jatuh_tempo'])) {
-            $validated['tanggal_jatuh_tempo'] = \Carbon\Carbon::parse($validated['tanggal_jatuh_tempo'])
+            $validated['tanggal_jatuh_tempo'] = Carbon::parse($validated['tanggal_jatuh_tempo'])
                 ->setTime(23, 59, 59);
         }
 

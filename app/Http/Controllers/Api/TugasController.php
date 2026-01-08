@@ -164,12 +164,12 @@ class TugasController extends Controller
 
         // ==== CEK APAKAH PIC DIGANTI ====
         if ($isPICChanged) {
-            // 🔸 Kirim notif ke user lama bahwa tugas sudah dialihkan
+            // Kirim notif ke user lama bahwa tugas sudah dialihkan
             if ($userLama->device_token) {
                 NotificationHelper::sendTugasDialihkan($userLama, $tugas);
             }
 
-            // 🔸 Kirim notif ke user baru bahwa dia dapat tugas baru
+            // Kirim notif ke user baru bahwa dia dapat tugas baru
             if ($tugas->user->device_token) {
                 NotificationHelper::sendTugasBaru(
                     $tugas->user,

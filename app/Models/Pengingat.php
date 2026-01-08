@@ -36,18 +36,16 @@ class Pengingat extends Model
         $now = Carbon::now();
         $jatuhTempo = $this->tanggal_jatuh_tempo;
 
-        // kalau sudah lewat
         if ($jatuhTempo->isPast()) {
             return $jatuhTempo->diffForHumans($now, [
-                'parts' => 2,      // batasi detail (misal: "2 hari 3 jam yang lalu")
-                'short' => false,  // pakai format panjang
+                'parts' => 2,
+                'short' => false,
                 'syntax' => Carbon::DIFF_RELATIVE_TO_NOW
             ]);
         }
 
-        // kalau masih ada sisa waktu
         return $now->diffForHumans($jatuhTempo, [
-            'parts' => 2,      // batasi detail
+            'parts' => 2,     
             'short' => false,
             'syntax' => Carbon::DIFF_ABSOLUTE
         ]);

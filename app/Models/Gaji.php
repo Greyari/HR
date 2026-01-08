@@ -29,7 +29,7 @@ class Gaji extends Model
         'detail_potongan' => 'array',
     ];
 
-    // Relasi ke User (karyawan)
+    // Relasi ke User 
     public function user()
     {
         return $this->belongsTo(User::class);

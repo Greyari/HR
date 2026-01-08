@@ -9,7 +9,7 @@ class Pengaturan extends Model
 {
     use HasFactory;
 
-    protected $table = 'pengaturan'; // pastikan sesuai migration
+    protected $table = 'pengaturan';
 
     protected $fillable = [
         'user_id',

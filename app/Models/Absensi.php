@@ -31,7 +31,7 @@ class Absensi extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Relasi ke Tugas (optional)
+    // Relasi ke Tugas 
     public function tugas()
     {
         return $this->belongsTo(Tugas::class);

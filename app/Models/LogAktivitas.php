@@ -9,8 +9,8 @@ class LogAktivitas extends Model
     protected $table = 'activity_log';
     protected $fillable = [
         'user_id',
-        'action',       // sebelumnya 'aksi'
-        'description',  // sebelumnya 'deskripsi'
+        'action',
+        'description',  
         'created_at'
     ];
 }

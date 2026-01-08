@@ -27,7 +27,6 @@ class Tugas extends Model
         'menit_terlambat',
     ];
 
-    // Tambahkan ini supaya otomatis jadi objek Carbon
     protected $casts = [
         'tanggal_penugasan' => 'datetime',
         'batas_penugasan' => 'datetime',
