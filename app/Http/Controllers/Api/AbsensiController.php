@@ -132,7 +132,7 @@ class AbsensiController extends Controller
             } elseif ($request->filled('video_base64')) {
                 $videoData = base64_decode($request->video_base64);
                 $fileName = uniqid() . '.mp4';
-                $filePath = 'absensi/' . $fileName;
+                $filePath = 'absensi/video' . $fileName;
                 Storage::disk('public')->put($filePath, $videoData);
                 $videoUrl = Storage::url($filePath);
             }

@@ -306,7 +306,7 @@ class TugasController extends Controller
 
         $tugas = Tugas::findOrFail($id);
 
-        // Simpan koordinat lampiran jika ada
+        // Simpan koordinat lampiran
         if ($request->filled('lampiran_lat')) {
             $tugas->lampiran_lat = $request->lampiran_lat;
         }
