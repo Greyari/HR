@@ -69,7 +69,7 @@ class AbsensiController extends Controller
             'video_base64' => 'nullable|string',
         ]);
 
-        // Debug log untuk Railway
+        // Debug log untuk
         Log::info('Checkin request received', [
             'files'       => $request->allFiles(),
             'has_video'   => $request->hasFile('video_user') ? 'yes' : 'no',
@@ -114,9 +114,7 @@ class AbsensiController extends Controller
 
         // Gabungkan date + time untuk evaluasi keterlambatan
         $checkinDateTime = Carbon::parse($checkinDate . ' ' . $checkinTime);
-        $toleransi = Carbon::parse($kantor->jam_masuk)
-            ->addMinutes($kantor->minimal_keterlambatan);
-
+        $toleransi = Carbon::parse($kantor->jam_masuk)->addMinutes($kantor->minimal_keterlambatan);
         $status = $checkinDateTime->lte($toleransi) ? 'Tepat Waktu' : 'Terlambat';
 
         // ================================

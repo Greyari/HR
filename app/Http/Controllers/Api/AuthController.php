@@ -131,6 +131,7 @@ class AuthController extends Controller
         if ($platform === 'apk') {
             $request->validate([
                 'device_hash'         => 'required|string',
+                'device_id'           => 'nullable|string',
                 'device_model'        => 'nullable|string',
                 'device_manufacturer' => 'nullable|string',
                 'device_version'      => 'nullable|string',
@@ -163,7 +164,7 @@ class AuthController extends Controller
                 }
 
                 // Simpan atau perbarui data device user ini
-                $device = Device::updateOrCreate(
+                Device::updateOrCreate(
                     ['device_hash' => $request->device_hash],
                     [
                         'user_id'            => $user->id,
@@ -307,7 +308,7 @@ class AuthController extends Controller
         ];
 
         try {
-            $validated = $request->validate([
+            $request->validate([
                 'old_password' => 'required|string',
                 'new_password' => 'required|string|min:6|confirmed',
             ], $messages[$bahasa]);
