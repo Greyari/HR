@@ -37,7 +37,6 @@
         },
         "files": [
             "app/Helpers/activity.php",
-            "app/Helpers/EnvHelper.php",
             "app/Helpers/NotificationHelper.php"
         ]
     },
