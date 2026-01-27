@@ -190,6 +190,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route tracking lokasi realtime
     Route::prefix('tracking')->middleware(CheckFitur::class . ':tracking')->group(function () {
         Route::get('', [TrackingController::class, 'index']);
+        Route::get('/filtered', [TrackingController::class, 'filtered']);
+        Route::get('/{id}', [TrackingController::class, 'show']);
     });
 
     // untuk update lokasi realtime
