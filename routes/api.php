@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PengaturanController;
 use App\Http\Controllers\Api\PengingatController;
 use App\Http\Controllers\Api\PeranController;
 use App\Http\Controllers\Api\PotonganGajiController;
+use App\Http\Controllers\Api\TrackingController;
 use App\Http\Controllers\Api\TugasController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
@@ -139,7 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('', [AbsensiController::class, 'getAbsensi']);
         });
     });
-    
+
     // Log Activity Route
     Route::prefix('log')->middleware(CheckFitur::class . ':log_aktifitas')->group(function () {
         Route::get('', [ActivityLogController::class, 'index']);
@@ -185,6 +186,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('absensi/reset', [DengerController::class, 'resetAbsenByMonth']);
         Route::get('absensi/months', [DengerController::class, 'availableAbsenMonths']);
     });
+
+    // Route tracking lokasi realtime
+    Route::prefix('tracking')->middleware(CheckFitur::class . ':tracking')->group(function () {
+        Route::get('', [TrackingController::class, 'index']);
+    });
+
+    // untuk update lokasi realtime
+    Route::post('/tracking/update', [TrackingController::class, 'update']);
 
     // ambil data tampa midlaware
     Route::get('user/tugas', [UserController::class, 'index']);

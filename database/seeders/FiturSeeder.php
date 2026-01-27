@@ -37,9 +37,6 @@ class FiturSeeder extends Seeder
             // ---------------------- Tugas ----------------------
             ['lihat_tugas', 'Melihat daftar tugas'],
             ['lihat_semua_tugas', 'Karyawan dapat melihat semua daftar tugas'],
-            ['tambah_tugas', 'Menambahkan tugas baru'],
-            ['edit_tugas', 'Mengedit tugas'],
-            ['hapus_tugas', 'Menghapus tugas'],
             ['lihat_tugas_sendiri', 'Karyawan hanya dapat melihat daftar tugas'],
             ['tambah_tugas', 'Menambahkan tugas baru'],
             ['edit_tugas', 'Mengedit tugas'],
@@ -88,6 +85,8 @@ class FiturSeeder extends Seeder
             // ---------------------- menejemen device ----------------------
             ['reset_device', 'menejemen akun untuk reset device terkait'],
 
+            // ---------------------- menejemen device ----------------------
+            ['tracking', 'melacak lokasi karyawan secara realtime'],
         ];
 
         foreach ($fiturs as [$nama, $deskripsi]) {

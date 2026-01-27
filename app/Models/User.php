@@ -36,6 +36,8 @@ class User extends Authenticatable
         'coba_login',
         'terkunci',
         'device_token',
+        'latitude',
+        'longitude'
     ];
 
     /**
