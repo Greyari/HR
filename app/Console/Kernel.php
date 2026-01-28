@@ -4,40 +4,63 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class Kernel extends ConsoleKernel
 {
-    protected function schedule(Schedule $schedule): void
-    {
+protected function schedule(Schedule $schedule): void
+{
         Log::channel('scheduler')->info('[Scheduler] schedule() dipanggil');
 
+        /**
+         * ===============================
+         * REMINDER PEMBAYARAN (EMAIL)
+         * ===============================
+         */
         if (app()->environment('production')) {
             $schedule->command('pengingat:kirim')
                 ->dailyAt('08:00')
-                ->before(function () {
-                    Log::channel('scheduler')->info("[PRODUCTION] pengingat:kirim akan dijalankan jam 08:00");
-                })
-                ->after(function () {
-                    Log::channel('scheduler')->info('[PRODUCTION] pengingat:kirim selesai dijalankan pada ' . now());
-                });
+                ->before(fn () =>
+                    Log::channel('scheduler')->info('[PROD] pengingat:kirim (EMAIL) akan dijalankan')
+                )
+                ->after(fn () =>
+                    Log::channel('scheduler')->info('[PROD] pengingat:kirim (EMAIL) selesai')
+                );
         } else {
             $schedule->command('pengingat:kirim')
                 ->everyMinute()
-                ->before(function () {
-                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim akan dijalankan');
-                })
-                ->after(function () {
-                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim selesai dijalankan pada ' . now());
-                });
+                ->before(fn () =>
+                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim (EMAIL) akan dijalankan')
+                )
+                ->after(fn () =>
+                    Log::channel('scheduler')->info('[LOCAL] pengingat:kirim (EMAIL) selesai')
+                );
+        }
+
+        /**
+         * ===============================
+         * REMINDER ABSENSI (PUSH NOTIF)
+         * ===============================
+         */
+        if (app()->environment('production')) {
+            $schedule->command('absensi:pengingat')
+                ->hourly()
+                ->before(fn () =>
+                    Log::channel('scheduler')->info('[PROD] absensi:pengingat (PUSH) akan dijalankan')
+                )
+                ->after(fn () =>
+                    Log::channel('scheduler')->info('[PROD] absensi:pengingat (PUSH) selesai')
+                );
+        } else {
+            $schedule->command('absensi:pengingat')
+                ->everyMinute() // testing lokal
+                ->before(fn () =>
+                    Log::channel('scheduler')->info('[LOCAL] absensi:pengingat (PUSH) akan dijalankan')
+                )
+                ->after(fn () =>
+                    Log::channel('scheduler')->info('[LOCAL] absensi:pengingat (PUSH) selesai')
+                );
         }
     }
 
-    protected function commands(): void
-    {
-        $this->load(__DIR__.'/Commands');
-        require base_path('routes/console.php');
-    }
 }

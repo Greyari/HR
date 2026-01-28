@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\NotificationHelper;
 
 class AbsensiController extends Controller
 {
@@ -154,6 +155,16 @@ class AbsensiController extends Controller
             'video_user'   => $videoUrl,
             'status'       => $status,
         ]);
+
+        // ================================
+        // NOTIFIKASI KE ADMIN / HR
+        // ================================
+        NotificationHelper::sendToFitur(
+            'lihat_semua_absensi',
+            '📌 Absensi Baru',
+            'Karyawan ' . $user->nama . ' melakukan check-in pada ' . $request->checkin_time,
+            'absensi_checkin'
+        );
 
         return response()->json([
             'status'    => true,
