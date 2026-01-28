@@ -23,16 +23,10 @@ class KirimPengingatAbsensi extends Command
             return;
         }
 
-        /**
-         * Ambil user:
-         * - status aktif
-         * - TIDAK punya fitur "lihat_semua_absensi"
-         */
-        $users = User::where('status', 'aktif')
-            ->whereDoesntHave('peran.fitur', function ($q) {
-                $q->where('nama_fitur', 'lihat_semua_absensi');
-            })
-            ->get();
+        // Ambil semua user kecuali yang punya fitur 'lihat_semua_absensi'
+        $users = User::whereDoesntHave('peran.fitur', function ($q) {
+            $q->where('nama_fitur', 'lihat_semua_absensi');
+        })->get();
 
         foreach ($users as $user) {
 

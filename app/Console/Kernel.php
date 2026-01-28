@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
-protected function schedule(Schedule $schedule): void
-{
+    protected function schedule(Schedule $schedule): void
+    {
         Log::channel('scheduler')->info('[Scheduler] schedule() dipanggil');
 
         /**
