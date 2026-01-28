@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
+use App\Models\Kantor;
 use App\Models\Absensi;
 use App\Helpers\NotificationHelper;
 use Carbon\Carbon;
@@ -15,38 +16,56 @@ class KirimPengingatAbsensi extends Command
 
     public function handle()
     {
-        $hariIni = Carbon::today()->format('Y-m-d');
-        $jamSekarang = Carbon::now();
+        $this->info('🚀 absensi:pengingat DIMULAI');
 
-        // Batasi jam kerja (misal setelah jam 08:00)
-        if ($jamSekarang->hour < 8) {
+        $kantor = Kantor::first();
+
+        if (!$kantor) {
+            $this->error('❌ Data kantor tidak ditemukan');
             return;
         }
 
-        // Ambil semua user kecuali yang punya fitur 'lihat_semua_absensi'
-        $users = User::whereDoesntHave('peran.fitur', function ($q) {
-            $q->where('nama_fitur', 'lihat_semua_absensi');
-        })->get();
+        $now = Carbon::now();
+        $jamMasuk = Carbon::createFromTimeString($kantor->jam_masuk);
+        $jamKeluar = Carbon::createFromTimeString($kantor->jam_keluar);
+
+        // Cek apakah masih jam kerja
+        if ($now->lt($jamMasuk) || $now->gt($jamKeluar)) {
+            $this->warn('⏱️ Di luar jam kerja, skip');
+            return;
+        }
+
+        $hariIni = Carbon::today()->toDateString();
+
+        $users = User::whereNotNull('device_token')
+            ->whereDoesntHave('peran.fitur', function ($q) {
+                $q->where('nama_fitur', 'lihat_semua_absensi');
+            })
+            ->get();
+
+        $this->info('👥 Total user: ' . $users->count());
 
         foreach ($users as $user) {
 
-            // Skip user tanpa device token
-            if (!$user->device_token) continue;
-
-            // Cek apakah sudah absen hari ini
             $sudahAbsen = Absensi::where('user_id', $user->id)
                 ->whereDate('checkin_date', $hariIni)
                 ->exists();
 
-            if ($sudahAbsen) continue;
+            if ($sudahAbsen) {
+                continue;
+            }
 
-            // Kirim notifikasi pengingat
             NotificationHelper::sendToUser(
                 $user,
                 '⏰ Pengingat Absensi',
-                'Anda belum melakukan absensi hari ini. Silakan check-in.',
+                'Anda belum melakukan absensi hari ini.',
                 'absensi_reminder'
             );
+
+            $this->info("🔔 Notif dikirim ke {$user->nama}");
         }
+
+        $this->info('🏁 absensi:pengingat SELESAI');
     }
+
 }
