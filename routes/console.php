@@ -32,6 +32,8 @@ if (app()->environment('production')) {
      */
     Schedule::command('absensi:pengingat')
         ->hourly()
+        ->when(fn () => ! now()->isSunday())
+        ->withoutOverlapping()
         ->before(fn () =>
             Log::channel('scheduler')->info('[PROD] absensi:pengingat (PUSH) akan dijalankan')
         )
