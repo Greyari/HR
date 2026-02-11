@@ -201,4 +201,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user/tugas', [UserController::class, 'index']);
     Route::get('kantor/jam', [KantorController::class, 'index']);
     Route::get('/fitur', [FiturController::class, 'index']);
+
+    // untuk cek jaringan IP publik atau IP privat
+    Route::get('/ping', function () {
+        return response()->json([
+            'status' => 'ok',
+            'time'   => now()
+        ], 200);
+    });
 });
