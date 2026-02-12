@@ -30,7 +30,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // lupa kata sandi route
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 
-// untuk cek jaringan IP publik atau IP privat
+// untuk cek jaringan IP
 Route::get('/ping', function () {
     return response()->json([
         'status' => 'ok',
